@@ -15,9 +15,9 @@
     "bannerUrl":"banner.jpg",
     "packages":[
         {
-            "name":"https://github.com/PawlygonStudio/VRC-Facetracking",
+            "name":"https://github.com/PawlygonStudio/VRC-Facetracking/index.json",
             "releases":[
-                "https://github.com/PawlygonStudio/VRC-Facetracking/releases/download/1.0.0/net.pawlygon.vrc-facetracking-1.0.0.zip",
+                "https://github.com/PawlygonStudio/VRC-Facetracking/releases/download/1.0.0/net.pawlygon.vrc-facetracking-1.0.0.zip"
             ]
         }
     ]
