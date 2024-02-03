@@ -1,0 +1,24 @@
+{
+    "name":"Pawlygon - VRC Facetracking",
+    "id":"net.pawlygon.vrc-facetracking",
+    "url":"https://github.com/PawlygonStudio/VRC-Facetracking",
+    "author":{
+        "email":"choki@pawlygon.net",
+        "name":"Choki",
+        "url":"https://pawlygon.net"
+    },
+    "description":"Template to be used on models with Unified Expressions Face Tracking",
+    "infoLink":{
+        "url":"https://github.com/PawlygonStudio/Face-Tracking-Template",
+        "text":"View on GitHub"
+    },
+    "bannerUrl":"banner.png",
+    "packages":[
+        {
+            "name":"https://github.com/PawlygonStudio/Face-Tracking-Template",
+            "releases":[
+                "https://github.com/PawlygonStudio/Face-Tracking-Template/releases/download/1.0.0/net.pawlygon.vrc-facetracking.zip",
+            ]
+        }
+    ]
+}
