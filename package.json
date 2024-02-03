@@ -5,9 +5,9 @@
     "description": "Template to be used on models with Unified Expressions Face Tracking",
     "unity": "2022.3",
     "unityRelease": "6f1",
-    "documentationUrl": "https://github.com/PawlygonStudio/Face-Tracking-Template",
-    "changelogUrl": "https://github.com/PawlygonStudio/Face-Tracking-Template/releases",
-    "licensesUrl": "https://github.com/PawlygonStudio/Face-Tracking-Template/blob/main/LICENSE",
+    "documentationUrl": "https://github.com/PawlygonStudio/VRC-Facetracking",
+    "changelogUrl": "https://github.com/PawlygonStudio/VRC-Facetracking/releases",
+    "licensesUrl": "https://github.com/PawlygonStudio/VRC-Facetracking/blob/main/LICENSE",
     "keywords": [
       "vrchat",
       "facetracking",
