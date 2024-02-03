@@ -13,8 +13,6 @@
         "text":"View on GitHub"
     },
     "bannerUrl":"banner.png",
-    "githubRepos":[
-    ],
     "packages":[
         {
             "name":"https://github.com/PawlygonStudio/Face-Tracking-Template",
