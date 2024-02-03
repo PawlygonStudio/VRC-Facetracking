@@ -21,7 +21,7 @@ jobs:
         id: version
         uses: notiz-dev/github-action-json-property@7c8cf5cc36eb85d8d287a8086a39dac59628eb31
         with: 
-            path: "${{env.packageName}}/package.json"
+            path: "package.json"
             prop_path: "version"
     
       - name: Set Environment Variables
@@ -33,8 +33,8 @@ jobs:
         uses: thedoctor0/zip-release@09336613be18a8208dfa66bd57efafd9e2685657
         with:
           type: "zip"
-          directory: "Packages/${{env.packageName}}/"
-          filename: "../${{env.zipFile}}" # make the zip file two directories up, since we start two directories in above
+          directory: "/"
+          filename: "/${{env.zipFile}}" # make the zip file two directories up, since we start two directories in above
           
       - run: find "Packages/${{env.packageName}}/" -name \*.meta >> metaList
           
