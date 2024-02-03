@@ -36,7 +36,7 @@ jobs:
           directory: "."
           filename: "${{env.zipFile}}" # make the zip file two directories up, since we start two directories in above
           
-      - run: find "Packages/${{env.packageName}}/" -name \*.meta >> metaList
+      - run: find "." -name \*.meta >> metaList
           
       - name: Create UnityPackage
         uses: pCYSl5EDgo/create-unitypackage@cfcd3cf0391a5ef1306342794866a9897c32af0b
@@ -52,4 +52,4 @@ jobs:
           files: |
             ${{ env.zipFile }}
             ${{ env.unityPackage }}
-            Packages/${{ env.packageName }}/package.json
+            package.json
