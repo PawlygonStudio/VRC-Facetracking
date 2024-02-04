@@ -1,5 +1,6 @@
 # Pawlygon VRC Facetracking
 Facetracking Template for [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking), built to be used on Avatars with Unified Expressions Blendshapes.
+[![Build Release](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml/badge.svg)](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml)
 ## Requisites
 * VRCFT v5 or newer [VRCFaceTracking Releases](https://github.com/benaclejames/VRCFaceTracking/releases/latest)
 * Latest [VRCFury](https://vrcfury.com/download)
