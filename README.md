@@ -13,3 +13,4 @@ Join our discord on [Pawlygon](https://discord.com/invite/pZew3JGpjb)
 ## Credits
 * [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking)
 * [regzo2 - OSCmooth](https://github.com/regzo2/OSCmooth)
+* [Adjerry91 - FaceTracking Template](https://github.com/Adjerry91/VRCFaceTracking-Templates)
