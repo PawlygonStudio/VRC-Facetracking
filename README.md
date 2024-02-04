@@ -10,3 +10,6 @@ Facetracking Template for [VRCFaceTracking](https://github.com/benaclejames/VRCF
 3. Locate VRCFury prefab located in the `Packages/VRCFT - Pawlygon - VRC Facetracking/Prefabs` and add to your avatar.
 ## Support
 Join our discord on [Pawlygon](https://discord.com/invite/pZew3JGpjb)
+## Credits
+* [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking)
+* [regzo2 - OSCmooth](https://github.com/regzo2/OSCmooth)
