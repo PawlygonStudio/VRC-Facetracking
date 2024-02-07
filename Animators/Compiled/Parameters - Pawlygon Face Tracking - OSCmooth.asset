@@ -41,7 +41,7 @@ MonoBehaviour:
   - name: FT/v2/BrowExpressionRight
     valueType: 1
     saved: 0
-    defaultValue: 0
+    defaultValue: 0.8
     networkSynced: 0
   - name: OSCm/Binary/1/sh2wEnrxrv/potF/RTisBoegi
     valueType: 2
@@ -66,7 +66,7 @@ MonoBehaviour:
   - name: FT/v2/EyeLidLeft
     valueType: 1
     saved: 0
-    defaultValue: 0
+    defaultValue: 0.8
     networkSynced: 0
   - name: OSCm/Binary/1/t2Liydev/LF/TEef
     valueType: 2
