@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8584899821783518951}
-  - component: {fileID: 2015897163704047535}
+  - component: {fileID: 5935684452049030158}
+  - component: {fileID: 5256780220065602053}
   m_Layer: 0
   m_Name: '!Pawlygon - Facetracking Controller'
   m_TagString: Untagged
@@ -32,7 +33,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2015897163704047535
+--- !u!114 &5935684452049030158
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -44,18 +45,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 2
+  version: 3
   unityVersion: 2022.3.6f1
-  vrcfuryVersion: 1.694.0
-  config:
-    features:
-    - rid: 3878928631792926720
-    - rid: 3878928631792926721
+  vrcfuryVersion: 1.746.0
   somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 3878928797557325824
   references:
     version: 2
     RefIds:
-    - rid: 3878928631792926720
+    - rid: 3878928797557325824
       type: {class: FullController, ns: VF.Model.Feature, asm: VRCFury}
       data:
         version: 4
@@ -64,8 +65,8 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: c68b285dd4a9219428d203b58911a17c|Assets/!Pawlygon/VRCFT - Pawlygon
-              Template/Animators/Compiled/FX - Pawlygon Face TrackingProxy  - OSCmooth.controller
+            id: c68b285dd4a9219428d203b58911a17c|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/FX
+              - Pawlygon Face TrackingProxy  - OSCmooth.controller
             objRef: {fileID: 9100000, guid: c68b285dd4a9219428d203b58911a17c, type: 2}
           type: 5
           ResetMePlease2: 0
@@ -73,9 +74,8 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: 73a26bf403e36ad4b85dbacabbb8662a|Assets/!Pawlygon/VRCFT - Pawlygon
-              Template/Animators/Compiled/Additive - Pawlygon Eye RotationProxy -
-              OSCmooth.controller
+            id: 73a26bf403e36ad4b85dbacabbb8662a|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Additive
+              - Pawlygon Eye RotationProxy - OSCmooth.controller
             objRef: {fileID: 9100000, guid: 73a26bf403e36ad4b85dbacabbb8662a, type: 2}
           type: 2
           ResetMePlease2: 0
@@ -84,8 +84,8 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: 16d40c78c05c6d84f9547933b516f8f2|Assets/!Pawlygon/VRCFT - Pawlygon
-              Template/Animators/Menu/Face Tracking Menu.asset
+            id: 16d40c78c05c6d84f9547933b516f8f2|Packages/net.pawlygon.vrc-facetracking/Animators/Menu/Face
+              Tracking Menu.asset
             objRef: {fileID: 11400000, guid: 16d40c78c05c6d84f9547933b516f8f2, type: 2}
           prefix: VRCFT
           ResetMePlease2: 0
@@ -94,8 +94,8 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: c7d12f67b3c3a9a42ab4f5771d545500|Assets/!Pawlygon/VRCFT - Pawlygon
-              Template/Animators/Compiled/Parameters - Pawlygon Face Tracking - OSCmooth.asset
+            id: c7d12f67b3c3a9a42ab4f5771d545500|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Parameters
+              - Pawlygon Face Tracking - OSCmooth.asset
             objRef: {fileID: 11400000, guid: c7d12f67b3c3a9a42ab4f5771d545500, type: 2}
           ResetMePlease2: 0
         smoothedPrms: []
@@ -130,7 +130,30 @@ MonoBehaviour:
         submenu: 
         removePrefixes: []
         addPrefix: 
-    - rid: 3878928631792926721
+--- !u!114 &5256780220065602053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6084169695969873917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 3
+  unityVersion: 2022.3.6f1
+  vrcfuryVersion: 1.746.0
+  somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 3878928797557325825
+  references:
+    version: 2
+    RefIds:
+    - rid: 3878928797557325825
       type: {class: SetIcon, ns: VF.Model.Feature, asm: VRCFury}
       data:
         version: 1
@@ -139,6 +162,5 @@ MonoBehaviour:
           version: 1
           fileID: 0
           guid: 
-          id: 4105aaf2100e14146a4677091ebb879c|Assets/!Pawlygon/VRCFT - Pawlygon
-            Template/Icons/FaceTrackingIcon.png
+          id: 4105aaf2100e14146a4677091ebb879c|Packages/net.pawlygon.vrc-facetracking/Icons/FaceTrackingIcon.png
           objRef: {fileID: 2800000, guid: 4105aaf2100e14146a4677091ebb879c, type: 3}
