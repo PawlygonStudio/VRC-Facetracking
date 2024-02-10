@@ -38,17 +38,12 @@ jobs:
           exclusions: '*.git* *.github* Website'
           
       - run: find . -name \*.meta >> metaList
-
-      - name: Create UnityPackage Folders
-        run: |
-          mkdir -p Packages/${{ env.packageName }}
-          mv $(cat metaList) Packages/${{ env.packageName }}
-
+      
       - name: Create UnityPackage
         uses: pCYSl5EDgo/create-unitypackage@cfcd3cf0391a5ef1306342794866a9897c32af0b
         with:
           package-path: ${{ env.unityPackage }}
-          include-files: Packages/${{ env.packageName }}/*.meta
+          include-files: metaList
         
         
       - name: Make Release
