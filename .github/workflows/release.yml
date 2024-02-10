@@ -40,7 +40,7 @@ jobs:
       - name: Create UnityPackage Folders
         run: |
           mkdir -p Packages/${{ env.packageName }}
-          mv !(Packages) Packages/${{ env.packageName }}/
+          mv Animations Animators Icons Prefabs package.json Packages/${{ env.packageName }}/
 
       - run: find "Packages/${{env.packageName}}/" -name \*.meta >> metaList
 
