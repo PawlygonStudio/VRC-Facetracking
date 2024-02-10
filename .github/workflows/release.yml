@@ -42,7 +42,7 @@ jobs:
       - name: Create UnityPackage
         uses: pCYSl5EDgo/create-unitypackage@cfcd3cf0391a5ef1306342794866a9897c32af0b
         with:
-          package-path: ${{ env.unityPackage }}
+          package-path: test
           include-files: metaList
         
         
