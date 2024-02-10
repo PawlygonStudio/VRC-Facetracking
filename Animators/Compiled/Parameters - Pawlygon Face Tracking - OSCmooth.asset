@@ -693,26 +693,6 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 1
-  - name: FT/v2/MouthDimple
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/l2thoDmv/iF/TeMup
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/l2thoDmv/iF/TeMup
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/l2thoDmv/iF/TeMup
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
   - name: FT/v2/MouthPress
     valueType: 1
     saved: 0
