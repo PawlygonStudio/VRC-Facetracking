@@ -939,10 +939,10 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Lip Funnel
+  m_Name: Lip Funnel (MouthClosedLimiter)
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 80854f576ef243a4391c925ddff5dff9, type: 2}
+    m_Motion: {fileID: 2202819597367142674}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -950,14 +950,14 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 93d74043a1eeb0d4d8d3a8ae5055ca56, type: 2}
+    m_Motion: {fileID: 7400000, guid: 80854f576ef243a4391c925ddff5dff9, type: 2}
     m_Threshold: 0.8
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: FT/v2/LipFunnel
+  m_BlendParameter: FT/v2/MouthClosed
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 0.8
@@ -1203,253 +1203,247 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: LipTrackingActive
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: EyeDilationEnable
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: VisemesEnable
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FacialExpressionsDisabled
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeLeftX
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeRightX
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeY
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/BrowExpressionLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/BrowExpressionRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeLidLeft
     m_Type: 1
     m_DefaultFloat: 0.8
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeLidRight
     m_Type: 1
     m_DefaultFloat: 0.8
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeSquintLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/EyeSquintRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/JawOpen
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthClosed
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthUpperUp
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthLowerDown
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/SmileFrownLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/SmileFrownRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/CheekPuffSuckLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/CheekPuffSuckRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/LipFunnel
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/LipPucker
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthX
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/NoseSneer
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthStretchLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthStretchRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthTightenerLeft
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthTightenerRight
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/LipSuckUpper
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/LipSuckLower
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/JawForward
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/JawX
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/TongueOut
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/TongueX
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/TongueY
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/PupilDilation
     m_Type: 1
     m_DefaultFloat: 0.733
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthRaiserLower
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthRaiserUpper
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: FT/v2/MouthDimple
-    m_Type: 1
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: FT/v2/MouthPress
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Eye Tracking State
@@ -1524,10 +1518,10 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mouth Raiser Upper
+  m_Name: Mouth Raiser Upper (MouthClosedLimiter)
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: b5091b892409f1f4e9b0888fe99248b1, type: 2}
+    m_Motion: {fileID: 1494842241744341344}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -1535,14 +1529,14 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 81a237528b517bc4f8467890627f10b2, type: 2}
+    m_Motion: {fileID: 7400000, guid: b5091b892409f1f4e9b0888fe99248b1, type: 2}
     m_Threshold: 0.8
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: FT/v2/MouthRaiserUpper
+  m_BlendParameter: FT/v2/MouthClosed
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 0.8
@@ -1574,6 +1568,37 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   m_BlendParameter: FT/v2/EyeLidLeft
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 0.8
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
+--- !u!206 &1494842241744341344
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Mouth Raiser Upper
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: b5091b892409f1f4e9b0888fe99248b1, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 81a237528b517bc4f8467890627f10b2, type: 2}
+    m_Threshold: 0.8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: FT/v2/MouthRaiserUpper
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 0.8
@@ -1641,6 +1666,37 @@ BlendTree:
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
+--- !u!206 &2202819597367142674
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BlendTree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 80854f576ef243a4391c925ddff5dff9, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 93d74043a1eeb0d4d8d3a8ae5055ca56, type: 2}
+    m_Threshold: 0.8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: FT/v2/LipFunnel
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 0.8
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
@@ -1767,10 +1823,10 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mouth Raiser Lower
+  m_Name: Mouth Raiser Lower (MouthClosedLimiter)
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 8e0597e574932f1439ca9a325d3ba18d, type: 2}
+    m_Motion: {fileID: 7305245159467319669}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -1778,14 +1834,14 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 1dfa71fdd89e49a42b16565e2e17f69b, type: 2}
+    m_Motion: {fileID: 7400000, guid: 8e0597e574932f1439ca9a325d3ba18d, type: 2}
     m_Threshold: 0.8
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: FT/v2/MouthRaiserLower
+  m_BlendParameter: FT/v2/MouthClosed
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 0.8
@@ -2431,7 +2487,7 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -5903478982808247639}
+    m_Motion: {fileID: 6325306265601234662}
     m_Threshold: 0.16666667
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2439,7 +2495,7 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7445658083040445386}
+    m_Motion: {fileID: -5903478982808247639}
     m_Threshold: 0.19444445
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2447,15 +2503,15 @@ BlendTree:
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -6669447199268508478}
+    m_Motion: {fileID: 7445658083040445386}
     m_Threshold: 0.22222222
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
-    m_DirectBlendParameter: LipTrackingActive
+    m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 4209590841375370640}
+    m_Motion: {fileID: -6669447199268508478}
     m_Threshold: 0.25
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2463,7 +2519,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -9205176758400465803}
+    m_Motion: {fileID: 4209590841375370640}
     m_Threshold: 0.2777778
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2471,7 +2527,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 6602825071294058767}
+    m_Motion: {fileID: -9205176758400465803}
     m_Threshold: 0.30555555
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2479,7 +2535,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 4810251646768879896}
+    m_Motion: {fileID: 6602825071294058767}
     m_Threshold: 0.33333334
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2487,7 +2543,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -3093758744928950854}
+    m_Motion: {fileID: 4810251646768879896}
     m_Threshold: 0.3611111
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2495,7 +2551,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -1043180034998241939}
+    m_Motion: {fileID: -3093758744928950854}
     m_Threshold: 0.3888889
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2503,7 +2559,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 768180084643335198}
+    m_Motion: {fileID: -1043180034998241939}
     m_Threshold: 0.41666666
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2511,7 +2567,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -7114127738347206961}
+    m_Motion: {fileID: 768180084643335198}
     m_Threshold: 0.44444445
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2519,7 +2575,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 6918161082634432288}
+    m_Motion: {fileID: -7114127738347206961}
     m_Threshold: 0.4722222
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2527,7 +2583,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 3558681825719241951}
+    m_Motion: {fileID: 6918161082634432288}
     m_Threshold: 0.5
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2535,7 +2591,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -1192098934917243371}
+    m_Motion: {fileID: 3558681825719241951}
     m_Threshold: 0.5277778
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2543,7 +2599,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -8346747175342282369}
+    m_Motion: {fileID: -1192098934917243371}
     m_Threshold: 0.5555556
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2551,7 +2607,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -292821296816059857}
+    m_Motion: {fileID: -8346747175342282369}
     m_Threshold: 0.5833333
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2559,7 +2615,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -6510839997957188145}
+    m_Motion: {fileID: -292821296816059857}
     m_Threshold: 0.6111111
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2567,7 +2623,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -3163213095920172296}
+    m_Motion: {fileID: -6510839997957188145}
     m_Threshold: 0.6388889
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2575,7 +2631,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -4989918700387701703}
+    m_Motion: {fileID: -3163213095920172296}
     m_Threshold: 0.6666667
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2583,7 +2639,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 4535063226865368995}
+    m_Motion: {fileID: -4989918700387701703}
     m_Threshold: 0.6944444
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2591,7 +2647,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -5278000385337660727}
+    m_Motion: {fileID: 4535063226865368995}
     m_Threshold: 0.7222222
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2599,7 +2655,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -1572560593256513585}
+    m_Motion: {fileID: -5278000385337660727}
     m_Threshold: 0.75
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2607,7 +2663,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 3147173614270313298}
+    m_Motion: {fileID: -1572560593256513585}
     m_Threshold: 0.7777778
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2615,7 +2671,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 6894189824412451592}
+    m_Motion: {fileID: 3147173614270313298}
     m_Threshold: 0.8055556
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2623,7 +2679,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -8735218845632203922}
+    m_Motion: {fileID: 6894189824412451592}
     m_Threshold: 0.8333333
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2631,7 +2687,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 6195312232367679726}
+    m_Motion: {fileID: -8735218845632203922}
     m_Threshold: 0.8611111
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2639,7 +2695,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -3907797171623055168}
+    m_Motion: {fileID: 6195312232367679726}
     m_Threshold: 0.8888889
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2647,7 +2703,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 3399336398599376458}
+    m_Motion: {fileID: -3907797171623055168}
     m_Threshold: 0.9166667
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2655,7 +2711,7 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 893579463709697233}
+    m_Motion: {fileID: 3399336398599376458}
     m_Threshold: 0.9444444
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -2663,20 +2719,20 @@ BlendTree:
     m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: -297510070135002175}
+    m_Motion: {fileID: 893579463709697233}
     m_Threshold: 0.9722222
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
-    m_DirectBlendParameter: EyeTrackingActive
+    m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 6325306265601234662}
+    m_Motion: {fileID: -297510070135002175}
     m_Threshold: 1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
-    m_DirectBlendParameter: EyeTrackingActive
+    m_DirectBlendParameter: LipTrackingActive
     m_Mirror: 0
   m_BlendParameter: EyeTrackingActive
   m_BlendParameterY: EyeTrackingActive
@@ -2685,6 +2741,37 @@ BlendTree:
   m_UseAutomaticThresholds: 1
   m_NormalizedBlendValues: 0
   m_BlendType: 4
+--- !u!206 &7305245159467319669
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Mouth Raiser Lower
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 8e0597e574932f1439ca9a325d3ba18d, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 1dfa71fdd89e49a42b16565e2e17f69b, type: 2}
+    m_Threshold: 0.8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: FT/v2/MouthRaiserLower
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 0.8
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!206 &7445658083040445386
 BlendTree:
   m_ObjectHideFlags: 1
