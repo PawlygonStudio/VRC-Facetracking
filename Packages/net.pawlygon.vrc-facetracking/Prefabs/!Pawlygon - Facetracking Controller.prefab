@@ -65,18 +65,18 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: c68b285dd4a9219428d203b58911a17c|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/FX
-              - Pawlygon Face TrackingProxy  - OSCmooth.controller
-            objRef: {fileID: 9100000, guid: c68b285dd4a9219428d203b58911a17c, type: 2}
+            id: cc80b411a9156474e86dc0ff5dec855c|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/FX
+              v1.1.0  - Pawlygon Face Tracking.controller
+            objRef: {fileID: 9100000, guid: cc80b411a9156474e86dc0ff5dec855c, type: 2}
           type: 5
           ResetMePlease2: 0
         - controller:
             version: 1
             fileID: 0
             guid: 
-            id: 73a26bf403e36ad4b85dbacabbb8662a|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Additive
-              - Pawlygon Eye RotationProxy - OSCmooth.controller
-            objRef: {fileID: 9100000, guid: 73a26bf403e36ad4b85dbacabbb8662a, type: 2}
+            id: d833244f4abbf324898b356ef12060f1|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Additive
+              v1.1.0  - Pawlygon Eye Rotation.controller
+            objRef: {fileID: 9100000, guid: d833244f4abbf324898b356ef12060f1, type: 2}
           type: 2
           ResetMePlease2: 0
         menus:
@@ -94,9 +94,9 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: c7d12f67b3c3a9a42ab4f5771d545500|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Parameters
-              - Pawlygon Face Tracking - OSCmooth.asset
-            objRef: {fileID: 11400000, guid: c7d12f67b3c3a9a42ab4f5771d545500, type: 2}
+            id: 96aa5bb14229c5c4a80ada8023900f3d|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Parameters
+              v1.1.0 - Pawlygon Face Tracking.asset
+            objRef: {fileID: 11400000, guid: 96aa5bb14229c5c4a80ada8023900f3d, type: 2}
           ResetMePlease2: 0
         smoothedPrms: []
         globalParams:

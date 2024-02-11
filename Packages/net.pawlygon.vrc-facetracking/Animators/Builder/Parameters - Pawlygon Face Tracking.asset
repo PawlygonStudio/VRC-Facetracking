@@ -83,7 +83,12 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 1
-  - name: FT/v2/MouthUpperUp
+  - name: FT/v2/MouthUpperUpLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: FT/v2/MouthUpperUpRight
     valueType: 1
     saved: 0
     defaultValue: 0
