@@ -65,18 +65,18 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: cc80b411a9156474e86dc0ff5dec855c|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/FX
-              v1.1.0  - Pawlygon Face Tracking.controller
-            objRef: {fileID: 9100000, guid: cc80b411a9156474e86dc0ff5dec855c, type: 2}
+            id: 59360d93aae462d4e9fbc4fa21cd905e|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/FX
+              - Pawlygon Face TrackingProxy.controller
+            objRef: {fileID: 9100000, guid: 59360d93aae462d4e9fbc4fa21cd905e, type: 2}
           type: 5
           ResetMePlease2: 0
         - controller:
             version: 1
             fileID: 0
             guid: 
-            id: d833244f4abbf324898b356ef12060f1|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Additive
-              v1.1.0  - Pawlygon Eye Rotation.controller
-            objRef: {fileID: 9100000, guid: d833244f4abbf324898b356ef12060f1, type: 2}
+            id: 0633c86b1d0ff2e46bc3f30b87014d46|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Additive
+              - Pawlygon Eye RotationProxy.controller
+            objRef: {fileID: 9100000, guid: 0633c86b1d0ff2e46bc3f30b87014d46, type: 2}
           type: 2
           ResetMePlease2: 0
         menus:
@@ -94,9 +94,9 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: 96aa5bb14229c5c4a80ada8023900f3d|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Parameters
-              v1.1.0 - Pawlygon Face Tracking.asset
-            objRef: {fileID: 11400000, guid: 96aa5bb14229c5c4a80ada8023900f3d, type: 2}
+            id: b831610408ac1ae4997f8f85fa8f336d|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/v1.1.0/Parameters
+              - Pawlygon Face TrackingProxy.asset
+            objRef: {fileID: 11400000, guid: b831610408ac1ae4997f8f85fa8f336d, type: 2}
           ResetMePlease2: 0
         smoothedPrms: []
         globalParams:
