@@ -11,7 +11,7 @@ Facetracking Template for [VRCFaceTracking](https://github.com/benaclejames/VRCF
 2. Import Pawlygon VRC Facetracking using [Vrchat Creator Companion ](https://vcc.pawlygon.net/) or import the [unity package manually](https://github.com/PawlygonStudio/VRC-Facetracking/releases/latest)
 3. Locate VRCFury prefab located in the `Packages/Pawlygon - VRC Facetracking/Prefabs` and add to your avatar.
 ## Support
-Join our discord on [Pawlygon](https://discord.com/invite/pZew3JGpjb).
+Join our discord on [Pawlygon](https://discord.com/invite/pZew3JGpjb)
 ## Credits
 * [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking)
 * [regzo2 - OSCmooth](https://github.com/regzo2/OSCmooth)
