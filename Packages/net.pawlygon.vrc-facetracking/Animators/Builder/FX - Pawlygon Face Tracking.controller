@@ -642,7 +642,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BlendTree
+  m_Name: Jaw Open Helper (Tongue Out)
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: fb45888f21253ce4dbb45f8fbcbb53bc, type: 2}
