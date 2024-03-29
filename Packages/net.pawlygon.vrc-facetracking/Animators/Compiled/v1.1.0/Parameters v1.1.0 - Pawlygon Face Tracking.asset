@@ -766,7 +766,7 @@ MonoBehaviour:
   - name: FacialExpressionsDisabled
     valueType: 2
     saved: 1
-    defaultValue: 0
+    defaultValue: 1
     networkSynced: 1
   - name: FT/v2/EyeLeftX
     valueType: 1
