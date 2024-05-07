@@ -1,6 +1,6 @@
 {
     "name": "net.pawlygon.vrc-facetracking",
-    "version": "1.1.4",
+    "version": "1.2.2",
     "displayName": "Pawlygon - VRC Facetracking",
     "description": "Template to be used on models with Unified Expressions Face Tracking",
     "unity": "2022.3",
@@ -18,14 +18,5 @@
       "name": "Choki",
       "email": "choki@pawlygon.net",
       "url": "https://github.com/PawlygonStudio/"
-    },
-    "legacyFolders": {
-      "Assets\\!Pawlygon\\VRC - Facetracking Template\\Animations": "31ed9f1ef45b5104fb941531a9c5b76f",
-      "Assets\\!Pawlygon\\VRC - Facetracking Template\\Animators": "ed3f3493822bb5d46b4a6d0d893e37e6",
-      "Assets\\!Pawlygon\\VRC - Facetracking Template\\Icons": "2459b0fb2f8525e4b84919ff3811ba24",
-      "Assets\\!Pawlygon\\VRC - Facetracking Template\\Prefabs": "89ba2a10b0f03894e9beddc91b0a4a9c"
-    },
-    "legacyFiles": {
-      "!Pawlygon - Facetracking Controller.prefab" : "ca618adb2c3333545a1f36d72a73a3ef"
     }
   }
