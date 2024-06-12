@@ -66,16 +66,32 @@ MonoBehaviour:
             fileID: 0
             guid: 
             id: a25f5d89e66a98a47b223d99e1700d09|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Unified
-              Expressions/v1.2.0/FX v1.2.0 - Pawlygon Face Tracking.controller
+              Expressions/FX - Pawlygon Face Tracking.controller
             objRef: {fileID: 9100000, guid: a25f5d89e66a98a47b223d99e1700d09, type: 2}
           type: 5
         - controller:
             version: 1
             fileID: 0
             guid: 
+            id: a5324b03d298c354d808aa1cf8c4a234|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/FX
+              - Local Smoothness Controller.controller
+            objRef: {fileID: 9100000, guid: a5324b03d298c354d808aa1cf8c4a234, type: 2}
+          type: 5
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
             id: eddb6b8421797f74681e893ea5d7c3f2|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Unified
-              Expressions/v1.2.0/Additive v1.2.0 - Pawlygon Eye Rotation.controller
+              Expressions/Additive  - Pawlygon Eye Rotation.controller
             objRef: {fileID: 9100000, guid: eddb6b8421797f74681e893ea5d7c3f2, type: 2}
+          type: 2
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 95aee94918fb2b34c836d2128f01589b|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Additive 
+              - Local Smoothness Controller.controller
+            objRef: {fileID: 9100000, guid: 95aee94918fb2b34c836d2128f01589b, type: 2}
           type: 2
         menus:
         - menu:
@@ -86,14 +102,29 @@ MonoBehaviour:
               Tracking Menu.asset
             objRef: {fileID: 11400000, guid: 16d40c78c05c6d84f9547933b516f8f2, type: 2}
           prefix: VRCFT
+        - menu:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 55bcd9b5d8b85664186bb210cc6e8abf|Packages/net.pawlygon.vrc-facetracking/Animators/Menu/Local
+              Smoothing Controller.asset
+            objRef: {fileID: 11400000, guid: 55bcd9b5d8b85664186bb210cc6e8abf, type: 2}
+          prefix: VRCFT/Extra
         prms:
         - parameters:
             version: 1
             fileID: 0
             guid: 
             id: 124193d5007f67d4b916b54a32cb2a34|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Unified
-              Expressions/v1.2.0/Parameters - Pawlygon Face Tracking.asset
+              Expressions/Parameters  - Pawlygon Face Tracking.asset
             objRef: {fileID: 11400000, guid: 124193d5007f67d4b916b54a32cb2a34, type: 2}
+        - parameters:
+            version: 1
+            fileID: 0
+            guid: 
+            id: be0e558fb548acf468f09087c28be9a9|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Local
+              Smoothing Parameters.asset
+            objRef: {fileID: 11400000, guid: be0e558fb548acf468f09087c28be9a9, type: 2}
         smoothedPrms: []
         globalParams:
         - '*'
