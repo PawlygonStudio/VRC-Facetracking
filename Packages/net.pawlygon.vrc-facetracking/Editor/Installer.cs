@@ -19,12 +19,12 @@ public class PrefabInstallerWindow : EditorWindow
     private string[] childMeshRendererNames = new string[0];
     private int selectedChildIndex = 0;
 
-    [MenuItem("Tools/!Pawlygon/Face Tracking Template/Installer")]
-    public static void ShowWindow()
-    {
-        var window = GetWindow<PrefabInstallerWindow>("Pawlygon - Template Installer");
-        window.LoadLogo();
-    }
+    // [MenuItem("Tools/!Pawlygon/Face Tracking Template/Installer")]
+    // public static void ShowWindow()
+    // {
+    //     var window = GetWindow<PrefabInstallerWindow>("Pawlygon - Template Installer");
+    //     window.LoadLogo();
+    // }
 
     private void LoadLogo()
     {
