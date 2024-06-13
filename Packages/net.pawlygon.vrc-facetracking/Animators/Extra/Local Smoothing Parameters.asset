@@ -23,3 +23,8 @@ MonoBehaviour:
     saved: 1
     defaultValue: 0.15
     networkSynced: 0
+  - name: ResetLocalSmoothness
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0

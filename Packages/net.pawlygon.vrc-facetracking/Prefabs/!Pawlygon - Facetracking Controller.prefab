@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8584899821783518951}
   - component: {fileID: 5935684452049030158}
   - component: {fileID: 5256780220065602053}
+  - component: {fileID: 1209756067646721136}
   m_Layer: 0
   m_Name: '!Pawlygon - Facetracking Controller'
   m_TagString: Untagged
@@ -191,3 +192,37 @@ MonoBehaviour:
           guid: 
           id: 4105aaf2100e14146a4677091ebb879c|Packages/net.pawlygon.vrc-facetracking/Icons/FaceTrackingIcon.png
           objRef: {fileID: 2800000, guid: 4105aaf2100e14146a4677091ebb879c, type: 3}
+--- !u!114 &1209756067646721136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6084169695969873917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 3
+  unityVersion: 2022.3.6f1
+  vrcfuryVersion: 1.858.0
+  somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 1756486626784313396
+  references:
+    version: 2
+    RefIds:
+    - rid: 1756486626784313396
+      type: {class: SetIcon, ns: VF.Model.Feature, asm: VRCFury}
+      data:
+        version: 1
+        path: VRCFT/Extra
+        icon:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 1cfc2318857faf64a991c3c46801d330|Packages/net.pawlygon.vrc-facetracking/Icons/extra.png
+          objRef: {fileID: 2800000, guid: 1cfc2318857faf64a991c3c46801d330, type: 3}

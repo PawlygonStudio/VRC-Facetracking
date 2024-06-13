@@ -24,6 +24,16 @@ MonoBehaviour:
     subParameters:
     - name: LocalEyeTrackingSmoothness
     labels: []
+  - name: Reset Default Values
+    icon: {fileID: 2800000, guid: ce3fa1eda4190fa49b040d655be0af6f, type: 3}
+    type: 101
+    parameter:
+      name: ResetLocalSmoothness
+    value: 1
+    style: 0
+    subMenu: {fileID: 0}
+    subParameters: []
+    labels: []
   - name: Lip Smoothness
     icon: {fileID: 2800000, guid: 7e829cd7447a2e142b57492a7bf68c29, type: 3}
     type: 203
