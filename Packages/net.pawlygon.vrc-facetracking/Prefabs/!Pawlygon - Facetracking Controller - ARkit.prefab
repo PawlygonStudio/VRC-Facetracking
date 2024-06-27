@@ -1,0 +1,228 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9198168685266492856
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2395228362534807095}
+  - component: {fileID: 1447040382046627624}
+  - component: {fileID: 5045210669308282102}
+  - component: {fileID: 3628300198098718474}
+  m_Layer: 0
+  m_Name: '!Pawlygon - Facetracking Controller - ARkit'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2395228362534807095
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9198168685266492856}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1447040382046627624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9198168685266492856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 3
+  unityVersion: 2022.3.22f1
+  vrcfuryVersion: 1.977.0
+  somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 1756486935436066927
+  references:
+    version: 2
+    RefIds:
+    - rid: 1756486935436066927
+      type: {class: FullController, ns: VF.Model.Feature, asm: VRCFury}
+      data:
+        version: 4
+        controllers:
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
+            id: b96098ae421b7f54baa018a0c3ac7ae3|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/ARkit/FX
+              - Pawlygon Face Tracking - ARkit.controller
+            objRef: {fileID: 9100000, guid: b96098ae421b7f54baa018a0c3ac7ae3, type: 2}
+          type: 5
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
+            id: a5324b03d298c354d808aa1cf8c4a234|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/FX
+              - Local Smoothness Controller.controller
+            objRef: {fileID: 9100000, guid: a5324b03d298c354d808aa1cf8c4a234, type: 2}
+          type: 5
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
+            id: eddb6b8421797f74681e893ea5d7c3f2|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Additive 
+              - Pawlygon Eye Rotation.controller
+            objRef: {fileID: 9100000, guid: eddb6b8421797f74681e893ea5d7c3f2, type: 2}
+          type: 2
+        - controller:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 95aee94918fb2b34c836d2128f01589b|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Additive 
+              - Local Smoothness Controller.controller
+            objRef: {fileID: 9100000, guid: 95aee94918fb2b34c836d2128f01589b, type: 2}
+          type: 2
+        menus:
+        - menu:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 16d40c78c05c6d84f9547933b516f8f2|Packages/net.pawlygon.vrc-facetracking/Animators/Menu/Face
+              Tracking Menu.asset
+            objRef: {fileID: 11400000, guid: 16d40c78c05c6d84f9547933b516f8f2, type: 2}
+          prefix: VRCFT
+        - menu:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 55bcd9b5d8b85664186bb210cc6e8abf|Packages/net.pawlygon.vrc-facetracking/Animators/Menu/Local
+              Smoothing Controller.asset
+            objRef: {fileID: 11400000, guid: 55bcd9b5d8b85664186bb210cc6e8abf, type: 2}
+          prefix: VRCFT/Extra
+        prms:
+        - parameters:
+            version: 1
+            fileID: 0
+            guid: 
+            id: 271e20a9b93b47b47b7aeafa92cbf17e|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/ARkit/Parameters
+              - Pawlygon Face Tracking - ARkit.asset
+            objRef: {fileID: 11400000, guid: 271e20a9b93b47b47b7aeafa92cbf17e, type: 2}
+        - parameters:
+            version: 1
+            fileID: 0
+            guid: 
+            id: be0e558fb548acf468f09087c28be9a9|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Local
+              Smoothing Parameters.asset
+            objRef: {fileID: 11400000, guid: be0e558fb548acf468f09087c28be9a9, type: 2}
+        smoothedPrms: []
+        globalParams:
+        - '*'
+        allNonsyncedAreGlobal: 0
+        ignoreSaved: 0
+        toggleParam: 
+        rootObjOverride: {fileID: 0}
+        rootBindingsApplyToAvatar: 0
+        rewriteBindings: []
+        allowMissingAssets: 0
+        controller:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 
+          objRef: {fileID: 0}
+        menu:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 
+          objRef: {fileID: 0}
+        parameters:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 
+          objRef: {fileID: 0}
+        submenu: 
+        removePrefixes: []
+        addPrefix: 
+        useSecurityForToggle: 0
+--- !u!114 &5045210669308282102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9198168685266492856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 3
+  unityVersion: 2022.3.22f1
+  vrcfuryVersion: 1.977.0
+  somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 3878928797557325825
+  references:
+    version: 2
+    RefIds:
+    - rid: 3878928797557325825
+      type: {class: SetIcon, ns: VF.Model.Feature, asm: VRCFury}
+      data:
+        version: 1
+        path: VRCFT
+        icon:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 4105aaf2100e14146a4677091ebb879c|Packages/net.pawlygon.vrc-facetracking/Icons/FaceTrackingIcon.png
+          objRef: {fileID: 2800000, guid: 4105aaf2100e14146a4677091ebb879c, type: 3}
+--- !u!114 &3628300198098718474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9198168685266492856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e94e501a2d4c95bff3d5601013d923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 3
+  unityVersion: 2022.3.22f1
+  vrcfuryVersion: 1.977.0
+  somethingIsBroken: 0
+  config:
+    features: []
+  content:
+    rid: 1756486626784313396
+  references:
+    version: 2
+    RefIds:
+    - rid: 1756486626784313396
+      type: {class: SetIcon, ns: VF.Model.Feature, asm: VRCFury}
+      data:
+        version: 1
+        path: VRCFT/Extra
+        icon:
+          version: 1
+          fileID: 0
+          guid: 
+          id: 1cfc2318857faf64a991c3c46801d330|Packages/net.pawlygon.vrc-facetracking/Icons/extra.png
+          objRef: {fileID: 2800000, guid: 1cfc2318857faf64a991c3c46801d330, type: 3}
