@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.3.2] - 2024-06-26
+- Add VRCFury Reorder menu Item to force VRCFT menu to be first from the right.
+
 ## [1.3.1] - 2024-06-26
 - Remove Mouth Closed Limiter based on Jaw open, seemed to be causing issues.
 
