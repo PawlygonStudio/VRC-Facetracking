@@ -25601,7 +25601,7 @@ BlendTree:
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: e85af830bf232e7489e7206a66ae4246, type: 2}
-    m_Threshold: -0.7
+    m_Threshold: -1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -25617,7 +25617,7 @@ BlendTree:
     m_Mirror: 0
   m_BlendParameter: OSCm/Proxy/FT/v2/BrowExpressionRight
   m_BlendParameterY: Blend
-  m_MinThreshold: -0.7
+  m_MinThreshold: -1
   m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
@@ -33474,7 +33474,7 @@ BlendTree:
     m_Mirror: 0
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 1037a19027059ca4db1af85def6ed20d, type: 2}
-    m_Threshold: 0.7
+    m_Threshold: 1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -33483,7 +33483,7 @@ BlendTree:
   m_BlendParameter: OSCm/Proxy/FT/v2/BrowExpressionLeft
   m_BlendParameterY: Blend
   m_MinThreshold: 0
-  m_MaxThreshold: 0.7
+  m_MaxThreshold: 1
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
@@ -88906,7 +88906,7 @@ BlendTree:
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 5554eb15eed45654e9e1cf7e66eb43e8, type: 2}
-    m_Threshold: -0.7
+    m_Threshold: -1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -88922,7 +88922,7 @@ BlendTree:
     m_Mirror: 0
   m_BlendParameter: OSCm/Proxy/FT/v2/BrowExpressionLeft
   m_BlendParameterY: Blend
-  m_MinThreshold: -0.7
+  m_MinThreshold: -1
   m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
@@ -99159,7 +99159,7 @@ BlendTree:
     m_Mirror: 0
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 0e67b089a368f2b419cbac137b68e788, type: 2}
-    m_Threshold: 0.7
+    m_Threshold: 1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -99168,7 +99168,7 @@ BlendTree:
   m_BlendParameter: OSCm/Proxy/FT/v2/BrowExpressionRight
   m_BlendParameterY: Blend
   m_MinThreshold: 0
-  m_MaxThreshold: 0.7
+  m_MaxThreshold: 1
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
