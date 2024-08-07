@@ -99,7 +99,7 @@ public class ThresholdEditor : EditorWindow
 
         if (animatorController != null && parameterMotionData.Count > 0)
         {
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Width(position.width), GUILayout.Height(position.height - 150));
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Width(position.width), GUILayout.Height(position.height - 400));
             foreach (var param in predefinedParams)
             {
                 if (!parameterMotionData.ContainsKey(param) || parameterMotionData[param].Count == 0) continue;
