@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.4.0] - 2024-08-07
+- Added a new menu to control internal thresholds for all parameters, this is an advanced feature for users. You can find it under the menu Tools> !Pawlygon> Threshold Editor. Please read the Help and Warnings tooltips before using it.
+
 ## [1.3.4] - 2024-07-19
 - Temporaly remove Gesture State controller layer components.There was an issue that would make the parameter reset to enabed when swapping worlds. I will reimplement this feature in the future. 
 - Gesture Disabled is active by default but now should be saved when disabled.
