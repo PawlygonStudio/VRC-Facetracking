@@ -14861,7 +14861,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Limit Lip Funnel
+  m_Name: Lip Funnel Limit - Tongue Out
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: a7a4955f2ef41434a9bff6ed82207c56, type: 2}
@@ -66288,7 +66288,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mouth Raiser Upper (MouthClosedLimiter)
+  m_Name: Mouth Raiser Upper (Mouth Closed Limiter)
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 1494842241744341344}
@@ -74305,7 +74305,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BlendTree
+  m_Name: Lip Funnel
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 80854f576ef243a4391c925ddff5dff9, type: 2}
@@ -82406,7 +82406,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mouth Raiser Lower (MouthClosedLimiter)
+  m_Name: Mouth Raiser Lower (Mouth Closed Limiter)
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7305245159467319669}
