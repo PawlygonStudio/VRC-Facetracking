@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.4.2] - 2024-08-07
+- Remove VRCFury Reorder Menu Item component from prefabs, was causing issues on some scenarios.
+
 ## [1.4.0] - 2024-08-07
 - Added a new menu to control internal thresholds for all parameters, this is an advanced feature for users. You can find it under the menu Tools> !Pawlygon> Threshold Editor. Please read the Help and Warnings tooltips before using it.
 
