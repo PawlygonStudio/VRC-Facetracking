@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.4.3] - 2024-11-02
+- Add small deadzone from 0 to 0.3 on tongue out.
+
 ## [1.4.2] - 2024-08-07
 - Remove VRCFury Reorder Menu Item component from prefabs, was causing issues on some scenarios.
 
