@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.4.4] - 2024-11-02
+- Fix commit missing file for 1.4.3.
+
 ## [1.4.3] - 2024-11-02
 - Add small deadzone from 0 to 0.3 on tongue out.
 
