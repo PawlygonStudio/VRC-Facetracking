@@ -74,9 +74,9 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: faf19ce3ffed2954dba700be065856bf|Packages/net.pawlygon.vrc-facetracking/Animators/Builder/Additive
+            id: d12520554b2ea064c8d22008ba734b53|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Additive
               - Pawlygon Eye Rotation.controller
-            objRef: {fileID: 9100000, guid: faf19ce3ffed2954dba700be065856bf, type: 2}
+            objRef: {fileID: 9100000, guid: d12520554b2ea064c8d22008ba734b53, type: 2}
           type: 2
         menus:
         - menu:

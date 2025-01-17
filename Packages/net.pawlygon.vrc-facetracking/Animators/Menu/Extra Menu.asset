@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -340790334, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
-  m_Name: Local Smoothing Controller
+  m_Name: Extra Menu
   m_EditorClassIdentifier: 
   Parameters: {fileID: 0}
   controls:
@@ -23,13 +23,13 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: LocalEyeTrackingSmoothness
+    - name: Local/EyeTrackingSmoothness
     labels: []
   - name: Reset Default Values
     icon: {fileID: 2800000, guid: ce3fa1eda4190fa49b040d655be0af6f, type: 3}
     type: 101
     parameter:
-      name: ResetLocalSmoothness
+      name: ResetSmoothness
     value: 1
     style: 0
     subMenu: {fileID: 0}
@@ -44,5 +44,5 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: LocalLipTrackingSmoothness
+    - name: Local/LipTrackingSmoothness
     labels: []

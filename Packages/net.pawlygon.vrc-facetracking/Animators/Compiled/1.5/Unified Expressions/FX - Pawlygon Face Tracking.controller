@@ -42452,6 +42452,37 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!206 &-3191806324890079413
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Eye Tracking Smoothness
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: cd8be0b42a51a0e41bf58c8a27a82852, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 74bc3815beb7c0a4ba970c9ad5c12483, type: 2}
+    m_Threshold: 1
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: Local/EyeTrackingSmoothness
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!114 &-3184360617299719361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44134,6 +44165,46 @@ BlendTree:
   m_Name: OSCm_Local
   m_Childs:
   - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 10f76a6aa9c7e374db3743ed00bd4c07, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/BlendSet
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0234a50e669d79a4e82723d3bea1052a, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/TimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0bb52825ae47fc94ab19eb787d86d1a6, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/LastTimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -3191806324890079413}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/FrameTime
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 1933546032720828731}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/FrameTime
+    m_Mirror: 0
+  - serializedVersion: 2
     m_Motion: {fileID: 5836536361991902122}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}
@@ -44432,7 +44503,7 @@ BlendTree:
   m_BlendParameter: Blend
   m_BlendParameterY: Blend
   m_MinThreshold: 0
-  m_MaxThreshold: 1
+  m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 4
@@ -59295,6 +59366,21 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!206 &-599576450972163389
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BlendTree
+  m_Childs: []
+  m_BlendParameter: Blend
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 1
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!1109 &-598953672072674499
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -64179,7 +64265,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/BrowExpressionRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -64203,7 +64289,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -64227,7 +64313,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -64815,7 +64901,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/PupilDilation
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -64954,6 +65040,24 @@ AnimatorController:
   - m_Name: OSCm/Remote/Smooth/FT/v2/CheekSquintLeft
     m_Type: 1
     m_DefaultFloat: 0.7
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 0}
+  - m_Name: OSCm/FrameTime
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 0}
+  - m_Name: OSCm/LastTimeSinceLoad
+    m_Type: 1
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 0}
+  - m_Name: OSCm/TimeSinceLoad
+    m_Type: 1
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -77597,6 +77701,46 @@ BlendTree:
   m_Name: OSCm_Binary_Root
   m_Childs:
   - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 10f76a6aa9c7e374db3743ed00bd4c07, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/BlendSet
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0234a50e669d79a4e82723d3bea1052a, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/TimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0bb52825ae47fc94ab19eb787d86d1a6, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/LastTimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: a664230c50993e04b94d88069bd21523, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/FrameTime
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 2c3875ddc0c3ce041b888d0875f099ca, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/FrameTime
+    m_Mirror: 0
+  - serializedVersion: 2
     m_Motion: {fileID: -4166561235765308670}
     m_Threshold: 0
     m_Position: {x: 0, y: 0}
@@ -77855,7 +77999,7 @@ BlendTree:
   m_BlendParameter: Blend
   m_BlendParameterY: Blend
   m_MinThreshold: 0
-  m_MaxThreshold: 1
+  m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 4
@@ -78428,6 +78572,37 @@ BlendTree:
     m_DirectBlendParameter: Blend
     m_Mirror: 0
   m_BlendParameter: OSCm/Binary/1/2guoev/XF/TTn
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
+--- !u!206 &1933546032720828731
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Lip Tracking Smoothness
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 13c49b893c28cfd4bbf8fda12f04b8f6, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 28979e9b12d87d24baa33af61dcebe48, type: 2}
+    m_Threshold: 1
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: Local/LipTrackingSmoothness
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1
