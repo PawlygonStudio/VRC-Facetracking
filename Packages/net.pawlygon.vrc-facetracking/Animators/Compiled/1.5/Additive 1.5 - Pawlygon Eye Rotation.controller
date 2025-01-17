@@ -2406,7 +2406,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Additive - Pawlygon Eye Rotation
+  m_Name: Additive 1.5 - Pawlygon Eye Rotation
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: EyeTrackingActive

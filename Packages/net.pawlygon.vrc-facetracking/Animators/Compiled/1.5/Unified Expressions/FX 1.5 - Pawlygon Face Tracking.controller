@@ -63198,7 +63198,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FX - Pawlygon Face Tracking
+  m_Name: FX 1.5 - Pawlygon Face Tracking
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: EyeTrackingActive
