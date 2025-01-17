@@ -1,6 +1,6 @@
 {
     "name": "net.pawlygon.vrc-facetracking",
-    "version": "1.4.4",
+    "version": "1.5.0",
     "displayName": "Pawlygon - VRC Facetracking",
     "description": "Template to be used on models with Unified Expressions Face Tracking",
     "unity": "2022.3",
