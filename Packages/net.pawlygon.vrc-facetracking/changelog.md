@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.5] - 2025-01-19
+- Fix ThresholdEditor to use newer compiled FX.
+- Made Unified Expressions prefab to user newer FX/Additive/Parameters
+- Removed CleanOSC script since it's not an issue anymore.
+- Removed Installer script, coming back later on.
+
 ## [1.5.4] - 2025-01-18
 - MouthTightenerStretchLeft had a different logic then I was expecting, negative means Stretch, positive means Tightener. It's now correct.
 - Added back negative binary from BrowExpressionRight that was missing on 1.5.3
