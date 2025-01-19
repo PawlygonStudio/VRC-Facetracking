@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: -1506855854, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
   m_Name: Parameters - Pawlygon Face Tracking
   m_EditorClassIdentifier: 
+  isEmpty: 0
   parameters:
   - name: EyeTrackingActive
     valueType: 2
@@ -36,8 +37,23 @@ MonoBehaviour:
   - name: FacialExpressionsDisabled
     valueType: 2
     saved: 1
-    defaultValue: 0
+    defaultValue: 1
     networkSynced: 1
+  - name: Local/EyeTrackingSmoothness
+    valueType: 1
+    saved: 1
+    defaultValue: 0.2
+    networkSynced: 0
+  - name: Local/LipTrackingSmoothness
+    valueType: 1
+    saved: 1
+    defaultValue: 0.15
+    networkSynced: 0
+  - name: ResetSmoothness
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
   - name: FT/v2/EyeLeftX
     valueType: 1
     saved: 0
@@ -108,6 +124,16 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 0
+  - name: FT/v2/CheekSquintRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: FT/v2/CheekSquintLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
   - name: FT/v2/LipFunnel
     valueType: 1
     saved: 0
@@ -138,22 +164,12 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 0
-  - name: FT/v2/MouthStretchLeft
+  - name: FT/v2/MouthTightenerStretchLeft
     valueType: 1
     saved: 0
     defaultValue: 0
     networkSynced: 0
-  - name: FT/v2/MouthStretchRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: FT/v2/MouthTightenerLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: FT/v2/MouthTightenerRight
+  - name: FT/v2/MouthTightenerStretchRight
     valueType: 1
     saved: 0
     defaultValue: 0

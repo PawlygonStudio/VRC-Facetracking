@@ -25,8 +25,8 @@ public class ThresholdEditor : EditorWindow
     private Vector2 scrollPosition;
     private bool changesPending = false;
     private Dictionary<string, bool> foldouts = new Dictionary<string, bool>();
-    private string selectedControllerGuid = "a25f5d89e66a98a47b223d99e1700d09";
-    private string unifiedExpressionGuid = "a25f5d89e66a98a47b223d99e1700d09";
+    private string selectedControllerGuid = "aaa670c1cbc5c1844a469adb8c237563";
+    private string unifiedExpressionGuid = "aaa670c1cbc5c1844a469adb8c237563";
     private string arkitGuid = "b96098ae421b7f54baa018a0c3ac7ae3";
     private bool isUnifiedExpressions = true;
     private bool showHelp = true;
