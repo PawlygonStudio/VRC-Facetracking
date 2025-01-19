@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.4] - 2025-01-18
+- MouthTightenerStretchLeft had a different logic then I was expecting, negative means Stretch, positive means Tightener. It's now correct.
+- Added back negative binary from BrowExpressionRight that was missing on 1.5.3
+
 ## [1.5.3] - 2025-01-17
 - Tightener and Stretch have been merged into a single combined parameter MouthTightenerStretchLeft. 
 - CheekSquint Right/Left is now their own parameters, before they were being mapped with Smile Right and Left

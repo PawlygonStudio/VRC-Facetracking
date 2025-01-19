@@ -66,17 +66,17 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: b265195c335725c409c90d5d1f086bf9|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Unified
-              Expressions/FX - Pawlygon Face Tracking.controller
-            objRef: {fileID: 9100000, guid: b265195c335725c409c90d5d1f086bf9, type: 2}
+            id: aaa670c1cbc5c1844a469adb8c237563|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Unified
+              Expressions/FX - Pawlygon Face TrackingProxy.controller
+            objRef: {fileID: 9100000, guid: aaa670c1cbc5c1844a469adb8c237563, type: 2}
           type: 5
         - controller:
             version: 1
             fileID: 0
             guid: 
-            id: d12520554b2ea064c8d22008ba734b53|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Additive
-              - Pawlygon Eye Rotation.controller
-            objRef: {fileID: 9100000, guid: d12520554b2ea064c8d22008ba734b53, type: 2}
+            id: 12700cd2c475f0b468e713880f34533f|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Additive
+              - Pawlygon Eye RotationProxy.controller
+            objRef: {fileID: 9100000, guid: 12700cd2c475f0b468e713880f34533f, type: 2}
           type: 2
         menus:
         - menu:
@@ -92,9 +92,9 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: 53a1f0b8198263647940c570e3afb1b4|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Parameters
-              - Pawlygon Face Tracking.asset
-            objRef: {fileID: 11400000, guid: 53a1f0b8198263647940c570e3afb1b4, type: 2}
+            id: 8602cf6d666545245a0b52297910dbc5|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.5/Unified
+              Expressions/Parameters - Pawlygon Face TrackingProxy.asset
+            objRef: {fileID: 11400000, guid: 8602cf6d666545245a0b52297910dbc5, type: 2}
         smoothedPrms: []
         globalParams:
         - '*'
