@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.5.6] - 2025-01-23
+- Fix CheekSquintLeft/Right Blendtrees to be enabled with LipTrackingActive instead of EyeTrackingActive.
+
 ## [1.5.5] - 2025-01-19
 - Fix ThresholdEditor to use newer compiled FX.
 - Made Unified Expressions prefab to user newer FX/Additive/Parameters
