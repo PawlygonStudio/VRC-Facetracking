@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.5.7] - 2025-01-25
+- Include back CleanOSC script since it seems to be still relevant.
+
 ## [1.5.6] - 2025-01-23
 - Fix CheekSquintLeft/Right Blendtrees to be enabled with LipTrackingActive instead of EyeTrackingActive.
 
