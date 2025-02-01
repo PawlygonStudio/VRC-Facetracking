@@ -2554,7 +2554,7 @@ BlendTree:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Cheek Suck
+  m_Name: Cheek Suck Left
   m_Childs:
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: 2b6aa83ed105db44ba3b0062cc7dd8ec, type: 2}

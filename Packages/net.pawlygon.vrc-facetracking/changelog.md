@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.6.0] - 2025-02-01
+- Initial changes for Azmidi's OSCmooth Multi Driver implementation. This completely removes Binary Encoding on Avatar and uses Binaries directly from VRChat.
+
 ## [1.5.7] - 2025-01-25
 - Include back CleanOSC script since it seems to be still relevant.
 
