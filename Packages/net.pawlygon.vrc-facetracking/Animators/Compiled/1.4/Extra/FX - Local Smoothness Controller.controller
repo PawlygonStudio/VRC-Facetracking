@@ -11594,7 +11594,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: ResetLocalSmoothness
+    m_ConditionEvent: ResetSmoothness
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3114497291883649430}
@@ -34606,253 +34606,253 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: LipTrackingActive
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: ResetLocalSmoothness
+    m_Controller: {fileID: 0}
+  - m_Name: ResetSmoothness
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: LocalEyeTrackingSmoothness
+    m_Controller: {fileID: 0}
+  - m_Name: Local/EyeTrackingSmoothness
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: LocalLipTrackingSmoothness
+    m_Controller: {fileID: 0}
+  - m_Name: Local/LipTrackingSmoothness
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLeftX
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeRightX
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeY
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/BrowExpressionLeft
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/BrowExpressionRight
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidLeft
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidRight
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeSquintLeft
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeSquintRight
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawOpen
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthClosed
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthUpperUpLeft
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthUpperUpRight
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthLowerDown
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/SmileFrownLeft
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/SmileFrownRight
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekPuffSuckLeft
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekPuffSuckRight
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipFunnel
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipPucker
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthX
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/NoseSneer
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthStretchLeft
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthStretchRight
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthTightenerLeft
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthTightenerRight
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipSuckUpper
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipSuckLower
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawForward
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawX
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueOut
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueX
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueY
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/PupilDilation
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthRaiserLower
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthRaiserUpper
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthPress
     m_Type: 1
     m_DefaultFloat: 0.15
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Local Smoothness Control
@@ -37638,7 +37638,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: LocalEyeTrackingSmoothness
+  m_BlendParameter: Local/EyeTrackingSmoothness
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1
@@ -41187,7 +41187,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: ResetLocalSmoothness
+    m_ConditionEvent: ResetSmoothness
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 5440306623187579280}
@@ -47369,7 +47369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parameters:
   - type: 0
-    name: LocalEyeTrackingSmoothness
+    name: Local/EyeTrackingSmoothness
     source: 
     value: 0.2
     valueMin: 0
@@ -47381,7 +47381,7 @@ MonoBehaviour:
     destMin: 0
     destMax: 0
   - type: 0
-    name: LocalLipTrackingSmoothness
+    name: Local/LipTrackingSmoothness
     source: 
     value: 0.15
     valueMin: 0
@@ -57357,7 +57357,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: LocalLipTrackingSmoothness
+  m_BlendParameter: Local/LipTrackingSmoothness
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1

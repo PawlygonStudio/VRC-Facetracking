@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.5.8] - 2025-02-03
+- Fix ARKit Smoothing parameters names and prefab.
+
 ## [1.5.7] - 2025-01-25
 - Include back CleanOSC script since it seems to be still relevant.
 
