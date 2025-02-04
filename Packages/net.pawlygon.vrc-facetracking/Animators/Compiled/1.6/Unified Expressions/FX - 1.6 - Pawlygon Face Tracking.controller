@@ -1149,6 +1149,53 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events: []
+--- !u!206 &-8970065412330387041
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BlendTree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 10f76a6aa9c7e374db3743ed00bd4c07, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/BlendSet
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0234a50e669d79a4e82723d3bea1052a, type: 2}
+    m_Threshold: 0.22222224
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/TimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 0bb52825ae47fc94ab19eb787d86d1a6, type: 2}
+    m_Threshold: 0.44444448
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/LastTimeSinceLoad
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: a664230c50993e04b94d88069bd21523, type: 2}
+    m_Threshold: 0.6666667
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/FrameTime
+    m_Mirror: 0
+  m_BlendParameter: EyeTrackingActive
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 0.6666667
+  m_UseAutomaticThresholds: 1
+  m_NormalizedBlendValues: 0
+  m_BlendType: 4
 --- !u!206 &-8930713569515904009
 BlendTree:
   m_ObjectHideFlags: 1
@@ -11048,6 +11095,29 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!206 &-6020034808494840766
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Blend Tree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: -8970065412330387041}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: OSCm/BlendSet
+    m_Mirror: 0
+  m_BlendParameter: EyeTrackingActive
+  m_BlendParameterY: EyeTrackingActive
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 1
+  m_NormalizedBlendValues: 0
+  m_BlendType: 4
 --- !u!206 &-5982021410447497884
 BlendTree:
   m_ObjectHideFlags: 1
@@ -36016,7 +36086,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLeftX
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36034,7 +36104,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeRightX
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36052,7 +36122,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeY
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36070,7 +36140,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/BrowExpressionLeft
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36094,7 +36164,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/BrowExpressionRight
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36118,7 +36188,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidLeft
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36142,7 +36212,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLidRight
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36166,7 +36236,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeSquintLeft
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36190,7 +36260,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeSquintRight
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36214,7 +36284,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawOpen
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36232,7 +36302,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthClosed
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36250,7 +36320,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthUpperUpLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36274,7 +36344,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthUpperUpRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36298,7 +36368,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthLowerDown
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36322,7 +36392,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/SmileFrownLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36346,7 +36416,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/SmileFrownRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36370,7 +36440,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekPuffSuckLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36394,7 +36464,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekPuffSuckRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36418,7 +36488,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipFunnel
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36442,7 +36512,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipPucker
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36466,7 +36536,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthX
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36490,7 +36560,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/NoseSneer
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36514,7 +36584,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthTightenerStretchLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36538,7 +36608,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthTightenerStretchRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36562,7 +36632,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipSuckUpper
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36586,7 +36656,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/LipSuckLower
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36610,7 +36680,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawForward
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36634,7 +36704,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/JawX
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36658,7 +36728,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueOut
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36682,7 +36752,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueX
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36706,7 +36776,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/TongueY
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36730,7 +36800,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/PupilDilation
     m_Type: 1
-    m_DefaultFloat: 0.2
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36754,7 +36824,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthRaiserLower
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36778,7 +36848,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthRaiserUpper
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36802,7 +36872,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/MouthPress
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36826,7 +36896,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekSquintRight
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -36850,7 +36920,7 @@ AnimatorController:
     m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/CheekSquintLeft
     m_Type: 1
-    m_DefaultFloat: 0.15
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -54739,7 +54809,7 @@ BlendTree:
   m_BlendParameter: Blend
   m_BlendParameterY: Blend
   m_MinThreshold: 0
-  m_MaxThreshold: 1
+  m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 4
@@ -70376,6 +70446,37 @@ BlendTree:
   m_MinThreshold: 0
   m_MaxThreshold: 1
   m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
+--- !u!206 &8148022618277580364
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BlendTree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: a664230c50993e04b94d88069bd21523, type: 2}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: fdeda5c01fa59ad46a5cb4e2f4597189, type: 2}
+    m_Threshold: 1
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: EyeTrackingActive
+    m_Mirror: 0
+  m_BlendParameter: OSCm/BlendSet
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 1
   m_NormalizedBlendValues: 0
   m_BlendType: 0
 --- !u!74 &8162267002743756277
