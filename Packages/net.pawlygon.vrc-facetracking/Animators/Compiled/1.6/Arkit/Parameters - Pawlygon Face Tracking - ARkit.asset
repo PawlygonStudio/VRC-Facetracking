@@ -10,9 +10,620 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1506855854, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
-  m_Name: Parameters  - Pawlygon Face Tracking
+  m_Name: Parameters - Pawlygon Face Tracking - ARkit
   m_EditorClassIdentifier: 
+  isEmpty: 0
   parameters:
+  - name: FT/v2/BrowExpressionLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/BrowExpressionLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionLeft8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionLeftNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/BrowExpressionRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/BrowExpressionRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionRight8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/BrowExpressionRightNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/EyeLidLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0.75
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/EyeLidLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 1
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidLeft8
+    valueType: 2
+    saved: 0
+    defaultValue: 1
+    networkSynced: 1
+  - name: FT/v2/EyeLidRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/EyeLidRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 1
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeLidRight8
+    valueType: 2
+    saved: 0
+    defaultValue: 1
+    networkSynced: 1
+  - name: FT/v2/EyeSquintLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/EyeSquintLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeSquintLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeSquintLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/EyeSquintRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/EyeSquintRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeSquintRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/EyeSquintRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthUpperUpLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthUpperUpLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthUpperUpLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthUpperUpLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthUpperUpRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthUpperUpRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthUpperUpRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthUpperUpRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthLowerDown
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthLowerDown1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthLowerDown2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthLowerDown4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/SmileFrownLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/SmileFrownLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownLeft8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownLeftNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/SmileFrownRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/SmileFrownRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownRight8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/SmileFrownRightNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/CheekPuffSuck
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/CheekPuffSuck1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/CheekPuffSuck2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/CheekPuffSuck4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/CheekPuffSuck8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/CheekPuffSuckNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/LipFunnel
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/LipFunnel1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipFunnel2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipFunnel4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipFunnel8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/LipPucker
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/LipPucker1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipPucker2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipPucker4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipPucker8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthX1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthX2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthX4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthX8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthXNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/NoseSneer
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/NoseSneer1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/NoseSneer2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/NoseSneer4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/NoseSneer8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthStretchLeft
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthStretchLeft1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthStretchLeft2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthStretchLeft4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthStretchRight
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthStretchRight1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthStretchRight2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthStretchRight4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/LipSuckUpper
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/LipSuckUpper1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipSuckUpper2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipSuckUpper4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/LipSuckLower
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/LipSuckLower1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipSuckLower2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/LipSuckLower4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/JawForward
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/JawForward1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawForward2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawForward4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/JawX
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/JawX1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawX2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawX4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawX8
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/JawXNegative
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/TongueOut
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/TongueOut1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/TongueOut2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/TongueOut4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthRaiserLower
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthRaiserLower1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthRaiserLower2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthRaiserLower4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthRaiserUpper
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthRaiserUpper1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthRaiserUpper2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthRaiserUpper4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: FT/v2/MouthPress
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
+  - name: OSCm/Binary/FT/v2/MouthPress1
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthPress2
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
+  - name: OSCm/Binary/FT/v2/MouthPress4
+    valueType: 2
+    saved: 0
+    defaultValue: 0
+    networkSynced: 1
   - name: EyeTrackingActive
     valueType: 2
     saved: 1
@@ -28,749 +639,14 @@ MonoBehaviour:
     saved: 1
     defaultValue: 0
     networkSynced: 1
-  - name: FacialExpressionsDisabled
-    valueType: 2
-    saved: 1
-    defaultValue: 1
-    networkSynced: 1
   - name: VisemesEnable
     valueType: 2
     saved: 1
     defaultValue: 1
-    networkSynced: 1
-  - name: FT/v2/BrowExpressionLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
     networkSynced: 0
-  - name: OSCm/Binary/1/st2wEnrxrv/poF/LTesBoefi
+  - name: FacialExpressionsDisabled
     valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/st2wEnrxrv/poF/LTesBoefi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/st2wEnrxrv/poF/LTesBoefi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/st2wEnrxrv/poF/LTesBoefi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/BrowExpressionRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/sh2wEnrxrv/potF/RTisBoegi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/sh2wEnrxrv/potF/RTisBoegi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/sh2wEnrxrv/potF/RTisBoegi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/sh2wEnrxrv/potF/RTisBoegi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/EyeLidLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0.75
-    networkSynced: 0
-  - name: OSCm/Binary/1/t2Liydev/LF/TEef
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/t2Liydev/LF/TEef
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/t2Liydev/LF/TEef
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/t2Liydev/LF/TEef
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/EyeLidRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0.75
-    networkSynced: 0
-  - name: OSCm/Binary/1/h2Liydiv/RF/TtEeg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/h2Liydiv/RF/TtEeg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/h2Liydiv/RF/TtEeg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/h2Liydiv/RF/TtEeg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/EyeSquintLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/L2Sqyunv/itF/TeEetf
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/L2Sqyunv/itF/TeEetf
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/L2Sqyunv/itF/TeEetf
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/EyeSquintRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/R2Sqtyunv/ihF/TiEetg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/R2Sqtyunv/ihF/TiEetg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/R2Sqtyunv/ihF/TiEetg
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthUpperUpLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/r2theoUpv/pLF/fTtUMuep
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/r2theoUpv/pLF/fTtUMuep
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/r2theoUpv/pLF/fTtUMuep
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/r2theoUpv/pLF/fTtUMuep
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthUpperUpRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/r2thioUpv/pRF/gThUMuetp
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/r2thioUpv/pRF/gThUMuetp
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/r2thioUpv/pRF/gThUMuetp
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/r2thioUpv/pRF/gThUMuetp
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthLowerDown
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/r2thnoLwv/owF/TDMueo
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/r2thnoLwv/owF/TDMueo
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/r2thnoLwv/owF/TDMueo
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/SmileFrownLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/n2letmFov/rfF/TLSiwe
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/n2letmFov/rfF/TLSiwe
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/n2letmFov/rfF/TLSiwe
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/n2letmFov/rfF/TLSiwe
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/n2letmFov/rfF/TLSiwe
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/SmileFrownRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/n2lehmFov/rgF/tTRSiwi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/n2lehmFov/rgF/tTRSiwi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/n2lehmFov/rgF/tTRSiwi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/n2lehmFov/rgF/tTRSiwi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/n2lehmFov/rgF/tTRSiwi
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/CheekPuffSuckLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/S2ekLhPfv/ukF/eTfuCeftc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/S2ekLhPfv/ukF/eTfuCeftc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/S2ekLhPfv/ukF/eTfuCeftc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/S2ekLhPfv/ukF/eTfuCeftc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/CheekPuffSuckRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/St2ekRhPfv/ukF/iTguCefhc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/St2ekRhPfv/ukF/iTguCefhc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/St2ekRhPfv/ukF/iTguCefhc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/St2ekRhPfv/ukF/iTguCefhc
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/LipFunnel
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2Fuinev/nF/TLpl
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2Fuinev/nF/TLpl
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2Fuinev/nF/TLpl
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/LipPucker
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2Puicev/kF/TLpr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2Puicev/kF/TLpr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2Puicev/kF/TLpr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthX
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2thoXv/F/TMu
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2thoXv/F/TMu
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2thoXv/F/TMu
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/2thoXv/F/TMu
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/2thoXv/F/TMu
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/NoseSneer
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2eSonev/eF/TNsr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2eSonev/eF/TNsr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2eSonev/eF/TNsr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthStretchLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/t2theoSrv/tLF/fTtcMueh
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/t2theoSrv/tLF/fTtcMueh
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/t2theoSrv/tLF/fTtcMueh
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthStretchRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/t2thioSrv/tRF/gThcMueth
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/t2thioSrv/tRF/gThcMueth
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/t2thioSrv/tRF/gThcMueth
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthTightenerLeft
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/tt2throTgv/ieF/LTeeMuhfn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/tt2throTgv/ieF/LTeeMuhfn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/tt2throTgv/ieF/LTeeMuhfn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthTightenerRight
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/th2throTgv/ietF/RTieMuhgn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/th2throTgv/ietF/RTieMuhgn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/th2throTgv/ietF/RTieMuhgn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/LipSuckUpper
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/p2SuicUv/kF/TeLppr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/p2SuicUv/kF/TeLppr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/p2SuicUv/kF/TeLppr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/LipSuckLower
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/w2SuicLv/kF/TeLpor
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/w2SuicLv/kF/TeLpor
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/w2SuicLv/kF/TeLpor
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/JawForward
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/d2Foarav/wF/TJwr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/d2Foarav/wF/TJwr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/d2Foarav/wF/TJwr
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/JawX
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2Xav/F/TJw
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2Xav/F/TJw
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2Xav/F/TJw
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/2Xav/F/TJw
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/2Xav/F/TJw
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/TongueOut
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2guoeuv/OF/TTnt
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2guoeuv/OF/TTnt
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2guoeuv/OF/TTnt
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/8/2guoeuv/OF/TTnt
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/TongueX
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2guoev/XF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2guoev/XF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2guoev/XF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/2guoev/XF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/TongueY
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/2guoev/YF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/2guoev/YF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/2guoev/YF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/Negative/2guoev/YF/TTn
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/PupilDilation
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/t2iluDlv/inF/TiPpao
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/t2iluDlv/inF/TiPpao
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/t2iluDlv/inF/TiPpao
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthRaiserLower
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/e2thwoRiv/aoF/eTrrMusL
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/e2thwoRiv/aoF/eTrrMusL
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/e2thwoRiv/aoF/eTrrMusL
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthRaiserUpper
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/e2thpoRiv/apF/eTrrMusU
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/e2thpoRiv/apF/eTrrMusU
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/e2thpoRiv/apF/eTrrMusU
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: FT/v2/MouthPress
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
-  - name: OSCm/Binary/1/s2thoPev/rF/TMus
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/2/s2thoPev/rF/TMus
-    valueType: 2
-    saved: 0
-    defaultValue: 0
-    networkSynced: 1
-  - name: OSCm/Binary/4/s2thoPev/rF/TMus
-    valueType: 2
-    saved: 0
+    saved: 1
     defaultValue: 0
     networkSynced: 1
   - name: FT/v2/EyeLeftX
@@ -798,3 +674,8 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 1
+  - name: FT/v2/CheekPuffSuck
+    valueType: 1
+    saved: 0
+    defaultValue: 0
+    networkSynced: 0
