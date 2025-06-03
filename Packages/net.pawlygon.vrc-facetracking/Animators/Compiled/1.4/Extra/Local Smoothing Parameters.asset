@@ -12,18 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: -1506855854, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
   m_Name: Local Smoothing Parameters
   m_EditorClassIdentifier: 
+  isEmpty: 0
   parameters:
-  - name: LocalEyeTrackingSmoothness
+  - name: Local/EyeTrackingSmoothness
     valueType: 1
     saved: 1
     defaultValue: 0.2
     networkSynced: 0
-  - name: LocalLipTrackingSmoothness
+  - name: Local/LipTrackingSmoothness
     valueType: 1
     saved: 1
     defaultValue: 0.15
     networkSynced: 0
-  - name: ResetLocalSmoothness
+  - name: ResetSmoothness
     valueType: 2
     saved: 0
     defaultValue: 0

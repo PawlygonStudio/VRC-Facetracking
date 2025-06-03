@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: -1506855854, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
   m_Name: Parameters - Pawlygon Face Tracking - ARkit
   m_EditorClassIdentifier: 
+  isEmpty: 0
   parameters:
   - name: FT/v2/BrowExpressionLeft
     valueType: 1
@@ -76,7 +77,7 @@ MonoBehaviour:
   - name: FT/v2/EyeLidLeft
     valueType: 1
     saved: 0
-    defaultValue: 0
+    defaultValue: 0.75
     networkSynced: 0
   - name: OSCm/Binary/1/t2Liydev/LF/TEef
     valueType: 2
@@ -101,7 +102,7 @@ MonoBehaviour:
   - name: FT/v2/EyeLidRight
     valueType: 1
     saved: 0
-    defaultValue: 0
+    defaultValue: 0.75
     networkSynced: 0
   - name: OSCm/Binary/1/h2Liydiv/RF/TtEeg
     valueType: 2

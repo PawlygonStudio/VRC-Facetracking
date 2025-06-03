@@ -452,7 +452,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: EyeTrackingActive
     m_Mirror: 0
-  m_BlendParameter: LocalEyeTrackingSmoothness
+  m_BlendParameter: Local/EyeTrackingSmoothness
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1
@@ -499,7 +499,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: ResetLocalSmoothness
+    m_ConditionEvent: ResetSmoothness
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4355855932937448667}
@@ -1951,7 +1951,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parameters:
   - type: 0
-    name: LocalEyeTrackingSmoothness
+    name: Local/EyeTrackingSmoothness
     source: 
     value: 0.2
     valueMin: 0
@@ -2536,37 +2536,37 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: LocalEyeTrackingSmoothness
+    m_Controller: {fileID: 0}
+  - m_Name: Local/EyeTrackingSmoothness
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeLeftX
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeRightX
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   - m_Name: OSCm/Local/Smooth/FT/v2/EyeY
     m_Type: 1
     m_DefaultFloat: 0.2
     m_DefaultInt: 0
     m_DefaultBool: 1
-    m_Controller: {fileID: 9100000}
-  - m_Name: ResetLocalSmoothness
+    m_Controller: {fileID: 0}
+  - m_Name: ResetSmoothness
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
+    m_Controller: {fileID: 0}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Local Smoothness Control
@@ -3637,7 +3637,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: ResetLocalSmoothness
+    m_ConditionEvent: ResetSmoothness
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -502963457562241173}

@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.986.0
+  vrcfuryVersion: 1.1172.0
   somethingIsBroken: 0
   config:
     features: []
@@ -66,7 +66,7 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: b96098ae421b7f54baa018a0c3ac7ae3|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/ARkit/FX
+            id: b96098ae421b7f54baa018a0c3ac7ae3|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/ARkit/FX
               - Pawlygon Face Tracking - ARkit.controller
             objRef: {fileID: 9100000, guid: b96098ae421b7f54baa018a0c3ac7ae3, type: 2}
           type: 5
@@ -74,7 +74,7 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: a5324b03d298c354d808aa1cf8c4a234|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/FX
+            id: a5324b03d298c354d808aa1cf8c4a234|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/Extra/FX
               - Local Smoothness Controller.controller
             objRef: {fileID: 9100000, guid: a5324b03d298c354d808aa1cf8c4a234, type: 2}
           type: 5
@@ -82,7 +82,7 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: eddb6b8421797f74681e893ea5d7c3f2|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/Additive 
+            id: eddb6b8421797f74681e893ea5d7c3f2|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/Additive 
               - Pawlygon Eye Rotation.controller
             objRef: {fileID: 9100000, guid: eddb6b8421797f74681e893ea5d7c3f2, type: 2}
           type: 2
@@ -90,7 +90,7 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: 95aee94918fb2b34c836d2128f01589b|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Additive 
+            id: 95aee94918fb2b34c836d2128f01589b|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/Extra/Additive 
               - Local Smoothness Controller.controller
             objRef: {fileID: 9100000, guid: 95aee94918fb2b34c836d2128f01589b, type: 2}
           type: 2
@@ -103,27 +103,19 @@ MonoBehaviour:
               Tracking Menu.asset
             objRef: {fileID: 11400000, guid: 16d40c78c05c6d84f9547933b516f8f2, type: 2}
           prefix: VRCFT
-        - menu:
-            version: 1
-            fileID: 0
-            guid: 
-            id: 55bcd9b5d8b85664186bb210cc6e8abf|Packages/net.pawlygon.vrc-facetracking/Animators/Menu/Local
-              Smoothing Controller.asset
-            objRef: {fileID: 11400000, guid: 55bcd9b5d8b85664186bb210cc6e8abf, type: 2}
-          prefix: VRCFT/Extra
         prms:
         - parameters:
             version: 1
             fileID: 0
             guid: 
-            id: 271e20a9b93b47b47b7aeafa92cbf17e|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/ARkit/Parameters
+            id: 271e20a9b93b47b47b7aeafa92cbf17e|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/ARkit/Parameters
               - Pawlygon Face Tracking - ARkit.asset
             objRef: {fileID: 11400000, guid: 271e20a9b93b47b47b7aeafa92cbf17e, type: 2}
         - parameters:
             version: 1
             fileID: 0
             guid: 
-            id: be0e558fb548acf468f09087c28be9a9|Packages/net.pawlygon.vrc-facetracking/Animators/Extra/Local
+            id: be0e558fb548acf468f09087c28be9a9|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.4/Extra/Local
               Smoothing Parameters.asset
             objRef: {fileID: 11400000, guid: be0e558fb548acf468f09087c28be9a9, type: 2}
         smoothedPrms: []
@@ -136,6 +128,8 @@ MonoBehaviour:
         rootBindingsApplyToAvatar: 0
         rewriteBindings: []
         allowMissingAssets: 0
+        injectSpsDepthParam: 
+        injectSpsVelocityParam: 
         controller:
           version: 1
           fileID: 0
@@ -172,7 +166,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.986.0
+  vrcfuryVersion: 1.1172.0
   somethingIsBroken: 0
   config:
     features: []
@@ -206,7 +200,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.986.0
+  vrcfuryVersion: 1.1172.0
   somethingIsBroken: 0
   config:
     features: []
