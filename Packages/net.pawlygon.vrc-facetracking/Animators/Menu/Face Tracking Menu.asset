@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: -340790334, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
   m_Name: Face Tracking Menu
   m_EditorClassIdentifier: 
-  Parameters: {fileID: 0}
+  Parameters: {fileID: 11400000, guid: dfc800104b279aa4783af980ca45cdb2, type: 2}
   controls:
   - name: Eye Dilation
     icon: {fileID: 2800000, guid: f069e4003f2e8db47bbfe7e0e4d8941b, type: 3}
