@@ -3,6 +3,7 @@
 - Initial changes for Azmidi's OSCmooth Multi Driver implementation. This completely removes Binary Encoding on Avatar and uses Binaries directly from VRChat.
 - Fixed Local Smoothing and removed remote frame time smoothing, will rework this on future v2.0.
 
+
 ## [1.5.8] - 2025-02-03
 - Fix ARKit Smoothing parameters names and prefab.
 

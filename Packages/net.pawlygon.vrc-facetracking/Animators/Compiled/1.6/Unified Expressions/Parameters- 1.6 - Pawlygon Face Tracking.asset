@@ -777,7 +777,7 @@ MonoBehaviour:
   - name: Local/EyeTrackingSmoothness
     valueType: 1
     saved: 1
-    defaultValue: 0.15
+    defaultValue: 0.2
     networkSynced: 0
   - name: Local/LipTrackingSmoothness
     valueType: 1
