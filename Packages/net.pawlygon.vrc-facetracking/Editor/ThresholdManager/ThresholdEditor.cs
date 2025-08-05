@@ -19,15 +19,16 @@ public class ThresholdEditor : EditorWindow
         "LipFunnel", "LipPucker", "MouthX", "NoseSneer", "MouthStretchLeft",
         "MouthStretchRight", "MouthTightenerLeft", "MouthTightenerRight", "LipSuckUpper",
         "LipSuckLower", "JawForward", "JawX", "TongueOut", "TongueX", "TongueY",
-        "PupilDilation", "MouthRaiserLower", "MouthRaiserUpper", "MouthPress"
+        "PupilDilation", "MouthRaiserLower", "MouthRaiserUpper", "MouthPress",
+        "MouthTightenerStretchLeft", "MouthTightenerStretchRight", "CheekSquintRight", "CheekSquintLeft"
     };
     private Dictionary<string, List<MotionData>> parameterMotionData = new Dictionary<string, List<MotionData>>();
     private Vector2 scrollPosition;
     private bool changesPending = false;
     private Dictionary<string, bool> foldouts = new Dictionary<string, bool>();
-    private string selectedControllerGuid = "aaa670c1cbc5c1844a469adb8c237563";
-    private string unifiedExpressionGuid = "aaa670c1cbc5c1844a469adb8c237563";
-    private string arkitGuid = "b96098ae421b7f54baa018a0c3ac7ae3";
+    private string selectedControllerGuid = "9633f793f4e23c645b722b5db7d61098";
+    private string unifiedExpressionGuid = "9633f793f4e23c645b722b5db7d61098";
+    private string arkitGuid = "c03308fa293ed3541b06d8e7bb5c3260";
     private bool isUnifiedExpressions = true;
     private bool showHelp = true;
 
@@ -35,7 +36,7 @@ public class ThresholdEditor : EditorWindow
     private float popupStartTime;
     private const float popupDuration = 2f;
 
-    [MenuItem("Tools/!Pawlygon/Threshold Editor")]
+    [MenuItem("Tools/!Pawlygon/Advanced/Threshold Editor")]
     public static void ShowWindow()
     {
         var window = GetWindow<ThresholdEditor>("Threshold Editor");
