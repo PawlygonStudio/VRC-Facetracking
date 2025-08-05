@@ -82,12 +82,12 @@ MonoBehaviour:
   - name: OSCm/Binary/FT/v2/EyeLidLeft1
     valueType: 2
     saved: 0
-    defaultValue: 1
+    defaultValue: 0
     networkSynced: 1
   - name: OSCm/Binary/FT/v2/EyeLidLeft2
     valueType: 2
     saved: 0
-    defaultValue: 1
+    defaultValue: 0
     networkSynced: 1
   - name: OSCm/Binary/FT/v2/EyeLidLeft4
     valueType: 2
@@ -97,7 +97,7 @@ MonoBehaviour:
   - name: OSCm/Binary/FT/v2/EyeLidLeft8
     valueType: 2
     saved: 0
-    defaultValue: 0
+    defaultValue: 1
     networkSynced: 1
   - name: FT/v2/EyeLidRight
     valueType: 1
@@ -107,12 +107,12 @@ MonoBehaviour:
   - name: OSCm/Binary/FT/v2/EyeLidRight1
     valueType: 2
     saved: 0
-    defaultValue: 1
+    defaultValue: 0
     networkSynced: 1
   - name: OSCm/Binary/FT/v2/EyeLidRight2
     valueType: 2
     saved: 0
-    defaultValue: 1
+    defaultValue: 0
     networkSynced: 1
   - name: OSCm/Binary/FT/v2/EyeLidRight4
     valueType: 2
@@ -122,7 +122,7 @@ MonoBehaviour:
   - name: OSCm/Binary/FT/v2/EyeLidRight8
     valueType: 2
     saved: 0
-    defaultValue: 0
+    defaultValue: 1
     networkSynced: 1
   - name: FT/v2/EyeSquintLeft
     valueType: 1
