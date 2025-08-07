@@ -592,7 +592,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Mouth_Raiser_Lower 0",
-            "BlendTreeName": "Mouth Raiser Lower (Mouth Closed Limiter)"
+            "BlendTreeName": "Mouth Raiser Lower (MouthClosedLimiter)"
         },
         {
             "Param": "MouthClosed",
@@ -603,7 +603,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Mouth_Raiser_Upper 0",
-            "BlendTreeName": "Mouth Raiser Upper (Mouth Closed Limiter)"
+            "BlendTreeName": "Mouth Raiser Upper (MouthClosedLimiter)"
         },
         {
             "Param": "MouthUpperUpLeft",
@@ -789,8 +789,8 @@
             "IsXParameter": true,
             "IsYParameter": false,
             "Is2D": false,
-            "AnimationClipName": "Cheek_Suck",
-            "BlendTreeName": "Cheek Suck"
+            "AnimationClipName": "Cheek_Suck_Left",
+            "BlendTreeName": "Cheek Suck Left"
         },
         {
             "Param": "CheekPuffSuckLeft",
@@ -800,8 +800,8 @@
             "IsXParameter": true,
             "IsYParameter": false,
             "Is2D": false,
-            "AnimationClipName": "Cheek_Suck 0",
-            "BlendTreeName": "Cheek Suck"
+            "AnimationClipName": "Cheek_Suck_Left 0",
+            "BlendTreeName": "Cheek Suck Left"
         },
         {
             "Param": "CheekPuffSuckRight",
@@ -826,6 +826,28 @@
             "BlendTreeName": "Cheek Puff Right"
         },
         {
+            "Param": "CheekPuffSuckRight",
+            "Threshold": -1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Suck_Right",
+            "BlendTreeName": "Cheek Suck Right"
+        },
+        {
+            "Param": "CheekPuffSuckRight",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Suck_Right 0",
+            "BlendTreeName": "Cheek Suck Right"
+        },
+        {
             "Param": "LipFunnel",
             "Threshold": 0.0,
             "PositionX": 0.0,
@@ -834,7 +856,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Lip_Funnel 0",
-            "BlendTreeName": "Lip Funnel"
+            "BlendTreeName": "BlendTree"
         },
         {
             "Param": "LipFunnel",
@@ -845,7 +867,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Lip_Funnel",
-            "BlendTreeName": "Lip Funnel"
+            "BlendTreeName": "BlendTree"
         },
         {
             "Param": "LipFunnel",
@@ -856,7 +878,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Tongue_Out",
-            "BlendTreeName": "Lip Funnel Limit - Tongue Out"
+            "BlendTreeName": "Limit Lip Funnel"
         },
         {
             "Param": "LipFunnel",
@@ -867,7 +889,7 @@
             "IsYParameter": false,
             "Is2D": false,
             "AnimationClipName": "Tongue_Out 0",
-            "BlendTreeName": "Lip Funnel Limit - Tongue Out"
+            "BlendTreeName": "Limit Lip Funnel"
         },
         {
             "Param": "LipPucker",
@@ -945,94 +967,6 @@
             "Is2D": false,
             "AnimationClipName": "Nose_Sneer",
             "BlendTreeName": "Nose Sneer"
-        },
-        {
-            "Param": "MouthStretchLeft",
-            "Threshold": 0.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Stretch_Left 0",
-            "BlendTreeName": "Mouth Stretch Left"
-        },
-        {
-            "Param": "MouthStretchLeft",
-            "Threshold": 1.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Stretch_Left",
-            "BlendTreeName": "Mouth Stretch Left"
-        },
-        {
-            "Param": "MouthStretchRight",
-            "Threshold": 0.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Stretch_Right 0",
-            "BlendTreeName": "Mouth Stretch Right"
-        },
-        {
-            "Param": "MouthStretchRight",
-            "Threshold": 1.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Stretch_Right",
-            "BlendTreeName": "Mouth Stretch Right"
-        },
-        {
-            "Param": "MouthTightenerLeft",
-            "Threshold": 0.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Tightener_Left 0",
-            "BlendTreeName": "Mouth Tightener Left"
-        },
-        {
-            "Param": "MouthTightenerLeft",
-            "Threshold": 1.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Tightener_Left",
-            "BlendTreeName": "Mouth Tightener Left"
-        },
-        {
-            "Param": "MouthTightenerRight",
-            "Threshold": 0.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Tightener_Right 0",
-            "BlendTreeName": "Mouth Tightener Right"
-        },
-        {
-            "Param": "MouthTightenerRight",
-            "Threshold": 1.0,
-            "PositionX": 0.0,
-            "PositionY": 0.0,
-            "IsXParameter": true,
-            "IsYParameter": false,
-            "Is2D": false,
-            "AnimationClipName": "Mouth_Tightener_Right",
-            "BlendTreeName": "Mouth Tightener Right"
         },
         {
             "Param": "LipSuckUpper",
@@ -1135,7 +1069,7 @@
         },
         {
             "Param": "TongueOut",
-            "Threshold": 0.0,
+            "Threshold": 0.30000001192092898,
             "PositionX": 0.0,
             "PositionY": 0.0,
             "IsXParameter": true,
@@ -1473,6 +1407,138 @@
             "Is2D": false,
             "AnimationClipName": "Mouth_Press",
             "BlendTreeName": "Mouth Press"
+        },
+        {
+            "Param": "MouthTightenerStretchLeft",
+            "Threshold": -1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Stretch_Left",
+            "BlendTreeName": "Mouth Stretch Left"
+        },
+        {
+            "Param": "MouthTightenerStretchLeft",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Stretch_Left 0",
+            "BlendTreeName": "Mouth Stretch Left"
+        },
+        {
+            "Param": "MouthTightenerStretchLeft",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Tightener_Left 0",
+            "BlendTreeName": "Mouth Tightener Left"
+        },
+        {
+            "Param": "MouthTightenerStretchLeft",
+            "Threshold": 1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Tightener_Left",
+            "BlendTreeName": "Mouth Tightener Left"
+        },
+        {
+            "Param": "MouthTightenerStretchRight",
+            "Threshold": -1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Stretch_Right",
+            "BlendTreeName": "Mouth Stretch Right"
+        },
+        {
+            "Param": "MouthTightenerStretchRight",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Stretch_Right 0",
+            "BlendTreeName": "Mouth Stretch Right"
+        },
+        {
+            "Param": "MouthTightenerStretchRight",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Tightener_Right 0",
+            "BlendTreeName": "Mouth Tightener Right"
+        },
+        {
+            "Param": "MouthTightenerStretchRight",
+            "Threshold": 1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Mouth_Tightener_Right",
+            "BlendTreeName": "Mouth Tightener Right"
+        },
+        {
+            "Param": "CheekSquintRight",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Squint_Right 0",
+            "BlendTreeName": "Cheek Squint Right"
+        },
+        {
+            "Param": "CheekSquintRight",
+            "Threshold": 1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Squint_Right",
+            "BlendTreeName": "Cheek Squint Right"
+        },
+        {
+            "Param": "CheekSquintLeft",
+            "Threshold": 0.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Squint_Left 0",
+            "BlendTreeName": "Cheek Squint Left"
+        },
+        {
+            "Param": "CheekSquintLeft",
+            "Threshold": 1.0,
+            "PositionX": 0.0,
+            "PositionY": 0.0,
+            "IsXParameter": true,
+            "IsYParameter": false,
+            "Is2D": false,
+            "AnimationClipName": "Cheek_Squint_Left",
+            "BlendTreeName": "Cheek Squint Left"
         }
     ]
 }

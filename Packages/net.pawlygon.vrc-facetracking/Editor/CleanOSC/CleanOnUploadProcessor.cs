@@ -30,7 +30,7 @@ namespace Pawlygon.CleanOnUpload
             TryDeleteOscConfigFile(avatarId);
         }
         
-        [MenuItem("Tools/!Pawlygon/Remove OSC Config File")]
+        [MenuItem("Tools/!Pawlygon/Advanced/Remove OSC Config File")]
         private static void RemoveOSCConfig()
         {
             if (!APIUser.IsLoggedIn)
