@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.1230.0
+  vrcfuryVersion: 1.1248.0
   somethingIsBroken: 0
   config:
     features: []
@@ -92,9 +92,9 @@ MonoBehaviour:
             version: 1
             fileID: 0
             guid: 
-            id: d70fffaa31610bb439ab5b68044dd095|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.6/Unified
-              Expressions/Parameters - 1.6  - Pawlygon Face Tracking.asset
-            objRef: {fileID: 11400000, guid: d70fffaa31610bb439ab5b68044dd095, type: 2}
+            id: 0e9112b54c4afef4cb0d71bb855a6817|Packages/net.pawlygon.vrc-facetracking/Animators/Compiled/1.6/Arkit/Parameters
+              - Pawlygon Face Tracking - ARkit.asset
+            objRef: {fileID: 11400000, guid: 0e9112b54c4afef4cb0d71bb855a6817, type: 2}
         smoothedPrms: []
         globalParams:
         - '*'
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.1230.0
+  vrcfuryVersion: 1.1248.0
   somethingIsBroken: 0
   config:
     features: []
@@ -177,7 +177,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.1230.0
+  vrcfuryVersion: 1.1248.0
   somethingIsBroken: 0
   config:
     features: []

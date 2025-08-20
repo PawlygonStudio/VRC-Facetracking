@@ -674,8 +674,3 @@ MonoBehaviour:
     saved: 0
     defaultValue: 0
     networkSynced: 1
-  - name: FT/v2/CheekPuffSuck
-    valueType: 1
-    saved: 0
-    defaultValue: 0
-    networkSynced: 0
