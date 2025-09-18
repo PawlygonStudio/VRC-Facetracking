@@ -1,87 +1,59 @@
-Here is a list of shapes used by our Unified Expressions controller
 
- - Brow Shapes
-BrowDownLeft
-BrowDownRight
-BrowInnerUpLeft
-BrowInnerUpRight
-BrowOuterUpLeft
-BrowOuterUpRight
+# Unified Expressions Controller Blendshape List
 
-- Eye Shapes
-EyeClosedLeft
-EyeClosedRight
-EyeConstrict
-EyeDilation
-EyeLookDownLeft
-EyeLookDownRight
-EyeLookInLeft
-EyeLookInRight
-EyeLookOutLeft
-EyeLookOutRight
-EyeLookUpLeft
-EyeLookUpRight
-EyeSquintLeft
-EyeSquintRight
-EyeWideLeft
-EyeWideRight
+## Brow Shapes
+| Shapes            | Shapes             | Shapes             |
+|-------------------|--------------------|--------------------|
+| `BrowDownLeft`    | `BrowDownRight`    | `BrowInnerUpLeft`  |
+| `BrowInnerUpRight`| `BrowOuterUpLeft`  | `BrowOuterUpRight` |
 
-- Cheek
-CheekPuffLeft
-CheekPuffRight
-CheekSquintLeft
-CheekSquintRight
-CheekSuckLeft
-CheekSuckRight
+## Eye Shapes
+| Shapes            | Shapes            | Shapes           | Shapes           |
+|-------------------|-------------------|------------------|------------------|
+| `EyeClosedLeft`   | `EyeClosedRight`  | `EyeConstrict`   | `EyeDilation`    |
+| `EyeLookDownLeft` | `EyeLookDownRight`| `EyeLookInLeft`  | `EyeLookInRight` |
+| `EyeLookOutLeft`  | `EyeLookOutRight` | `EyeLookUpLeft`  | `EyeLookUpRight` |
+| `EyeSquintLeft`   | `EyeSquintRight`  | `EyeWideLeft`    | `EyeWideRight`   |
 
-- Lip
-LipFunnel
-LipFunnelLower
-LipFunnelUpper
-LipPucker
-LipSuckLower
-LipSuckUpper
+## Cheek
+| Shapes            | Shapes             | Shapes            |
+|-------------------|--------------------|-------------------|
+| `CheekPuffLeft`   | `CheekPuffRight`   | `CheekSquintLeft` |
+| `CheekSquintRight`| `CheekSuckLeft`    | `CheekSuckRight`  |
 
-- Jaw
-JawForward
-JawLeft
-JawOpen
-JawRight
+## Lip
+| Shapes           | Shapes            | Shapes          |
+|------------------|-------------------|-----------------|
+| `LipFunnel`      | `LipFunnelLower`  | `LipFunnelUpper`|
+| `LipPucker`      | `LipSuckLower`    | `LipSuckUpper`  |
 
-- Mouth
-MouthClosed
-MouthFrownLeft
-MouthFrownRight
-MouthLeft
-MouthLowerDown
-MouthPress
-MouthRaiserLower
-MouthRaiserUpper
-MouthRight
-MouthSmileLeft
-MouthSmileRight
-MouthStretchLeft
-MouthStretchRight
-MouthTightenerLeft
-MouthTightenerRight
-MouthUpperUp
-MouthUpperUpLeft
-MouthUpperUpRight
+## Jaw
+| Shapes       | Shapes    | Shapes     | Shapes     |
+|--------------|-----------|------------|------------|
+| `JawForward` | `JawLeft` | `JawOpen`  | `JawRight` |
 
-- Nose
-NoseSneer
-NoseSneerLeft
-NoseSneerRight
+## Mouth
+| Shapes               | Shapes                | Shapes               |
+|----------------------|-----------------------|----------------------|
+| `MouthClosed`        | `MouthFrownLeft`      | `MouthFrownRight`    |
+| `MouthLeft`          | `MouthLowerDown`      | `MouthPress`         |
+| `MouthRaiserLower`   | `MouthRaiserUpper`    | `MouthRight`         |
+| `MouthSmileLeft`     | `MouthSmileRight`     | `MouthStretchLeft`   |
+| `MouthStretchRight`  | `MouthTightenerLeft`  | `MouthTightenerRight`|
+| `MouthUpperUp`       | `MouthUpperUpLeft`    | `MouthUpperUpRight`  |
 
-- Tongue
-TongueDown
-TongueLeft
-TongueOut
-TongueRight
-TongueUp
+## Nose
+| Shapes          | Shapes           | Shapes            |
+|-----------------|------------------|-------------------|
+| `NoseSneer`     | `NoseSneerLeft`  | `NoseSneerRight`  |
 
-- Optional Tongue Morphs
-TongueDownLeftMorph
-TongueDownRightMorph
-TongueUpLeftMorph
-TongueUpRightMorph
+## Tongue
+| Shapes        | Shapes        | Shapes        | Shapes        |
+|---------------|---------------|---------------|---------------|
+| `TongueDown`  | `TongueLeft`  | `TongueOut`   | `TongueRight` |
+| `TongueUp`    |               |               |               |
+
+## Optional Tongue Morphs
+| Shapes                  | Shapes                  | Shapes                  | Shapes                  |
+|--------------------------|-------------------------|-------------------------|-------------------------|
+| `TongueDownLeftMorph`    | `TongueDownRightMorph`  | `TongueUpLeftMorph`     | `TongueUpRightMorph`    |
