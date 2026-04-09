@@ -1,5 +1,9 @@
 # Changelog
-## [1.7.0] - 2025-08-02
+
+## [1.7.1] - 2025-04-08
+- Added Modular Avatar Prefab Vartiants (ZenithVal Contribution).
+
+## [1.7.0] - 2026-02-14
 - Complete rework on OSCmooth generation. Should have better performance and Improved smoothing for remote users over 90 fps.
 
 ## [1.6.1] - 2025-08-02
