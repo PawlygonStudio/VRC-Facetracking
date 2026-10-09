@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4128847713953716352}
   - component: {fileID: 7310599187437552845}
+  - component: {fileID: 5937106628117934110}
   m_Layer: 0
   m_Name: '!Pawlygon - Face Tracking'
   m_TagString: Untagged
@@ -53,3 +54,18 @@ MonoBehaviour:
   eyeGaze: 0
   visemeDampenMode: 0
   visemeDampenAmount: 0.5
+--- !u!114 &5937106628117934110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45db78f2a2d15144997f5048f2539b5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  autoDetect: 1
+  parameters: []

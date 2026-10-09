@@ -49,7 +49,7 @@ namespace Pawlygon.FaceTracking.Editor
                 // One finding per GameObject, e.g. a Modular Avatar prefab merging both FX and Additive
                 if (findings.Any(f => f.Component.gameObject == behaviour.gameObject)) continue;
 
-                foreach (var controller in GetReferencedControllers(behaviour))
+                foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour))
                 {
                     var isPawlygonLegacy = IsPawlygonLegacyController(controller);
                     if (!isPawlygonLegacy && !UsesOscParameters(controller)) continue;
@@ -83,25 +83,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        static List<RuntimeAnimatorController> GetReferencedControllers(MonoBehaviour behaviour)
-        {
-            var controllers = new List<RuntimeAnimatorController>();
-            using (var serialized = new SerializedObject(behaviour))
-            {
-                var property = serialized.GetIterator();
-                while (property.Next(true))
-                {
-                    if (property.propertyType == SerializedPropertyType.ObjectReference
-                        && property.objectReferenceValue is RuntimeAnimatorController controller)
-                    {
-                        controllers.Add(controller);
-                    }
-                }
-            }
-            return controllers;
-        }
-
-        static bool IsPawlygonLegacyController(RuntimeAnimatorController controller)
+        public static bool IsPawlygonLegacyController(RuntimeAnimatorController controller)
         {
             if (legacyControllerGuids == null)
             {
@@ -109,19 +91,14 @@ namespace Pawlygon.FaceTracking.Editor
                     ? new HashSet<string>(AssetDatabase.FindAssets("t:AnimatorController", new[] { LegacyAnimatorsFolder }))
                     : new HashSet<string>();
             }
-            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(BaseController(controller), out var guid, out long _)
+            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(FTAvatarUtils.BaseController(controller), out var guid, out long _)
                    && legacyControllerGuids.Contains(guid);
         }
 
         static bool UsesOscParameters(RuntimeAnimatorController controller)
         {
-            return BaseController(controller) is AnimatorController animator
+            return FTAvatarUtils.BaseController(controller) is AnimatorController animator
                    && animator.parameters.Any(p => p.name.StartsWith("FT/v2/") || p.name.StartsWith("v2/"));
-        }
-
-        static RuntimeAnimatorController BaseController(RuntimeAnimatorController controller)
-        {
-            return controller is AnimatorOverrideController overrideController ? overrideController.runtimeAnimatorController : controller;
         }
     }
 }

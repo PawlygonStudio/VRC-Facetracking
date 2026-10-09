@@ -49,6 +49,12 @@ namespace Pawlygon.FaceTracking.Editor
 
             context.Commit();
             RemoveComponents(components, avatarRoot.transform);
+
+            // The SDK's own check of custom expressions, e.g. typos in manually entered ones
+            foreach (var warning in FaceTrackingExpressionValidator.CollectWarnings(descriptor))
+            {
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] {warning}", descriptor);
+            }
         }
 
         /// <summary>

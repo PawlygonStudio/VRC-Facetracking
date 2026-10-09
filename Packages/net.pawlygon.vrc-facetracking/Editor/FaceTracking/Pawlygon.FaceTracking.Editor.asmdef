@@ -3,7 +3,8 @@
     "rootNamespace": "Pawlygon.FaceTracking.Editor",
     "references": [
         "Pawlygon.FaceTracking",
-        "VRC.SDKBase.Editor.BuildPipeline"
+        "VRC.SDKBase.Editor.BuildPipeline",
+        "VRC.SDK3A.Editor"
     ],
     "includePlatforms": [
         "Editor"

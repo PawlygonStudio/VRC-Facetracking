@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -41,6 +42,33 @@ namespace Pawlygon.FaceTracking.Editor
         public static bool IsPartOfAvatar(Component component, Transform avatarRoot)
         {
             return component != null && (component.transform == avatarRoot || component.transform.IsChildOf(avatarRoot));
+        }
+
+        /// <summary>
+        /// Animator controllers referenced anywhere in a component's serialized data, such as the
+        /// controllers a VRCFury Full Controller or a Modular Avatar Merge Animator will merge.
+        /// </summary>
+        public static List<RuntimeAnimatorController> GetReferencedControllers(MonoBehaviour behaviour)
+        {
+            var controllers = new List<RuntimeAnimatorController>();
+            using (var serialized = new SerializedObject(behaviour))
+            {
+                var property = serialized.GetIterator();
+                while (property.Next(true))
+                {
+                    if (property.propertyType == SerializedPropertyType.ObjectReference
+                        && property.objectReferenceValue is RuntimeAnimatorController controller)
+                    {
+                        controllers.Add(controller);
+                    }
+                }
+            }
+            return controllers;
+        }
+
+        public static RuntimeAnimatorController BaseController(RuntimeAnimatorController controller)
+        {
+            return controller is AnimatorOverrideController overrideController ? overrideController.runtimeAnimatorController : controller;
         }
 
         public static string GetPath(Transform transform, Transform avatarRoot)
