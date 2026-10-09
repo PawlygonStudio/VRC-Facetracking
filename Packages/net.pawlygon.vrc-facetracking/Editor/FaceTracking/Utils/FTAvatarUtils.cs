@@ -66,6 +66,48 @@ namespace Pawlygon.FaceTracking.Editor
             return controllers;
         }
 
+        /// <summary>
+        /// Like <see cref="GetReferencedControllers"/>, but only controllers merged into the given playable layer.
+        /// The target is read from a "type" or "layerType" field next to the reference (VRCFury Full Controller,
+        /// Modular Avatar Merge Animator). References without one are kept.
+        /// </summary>
+        public static List<RuntimeAnimatorController> GetReferencedControllers(MonoBehaviour behaviour, int playableLayerType)
+        {
+            var controllers = new List<RuntimeAnimatorController>();
+            using (var serialized = new SerializedObject(behaviour))
+            {
+                var property = serialized.GetIterator();
+                while (property.Next(true))
+                {
+                    if (property.propertyType != SerializedPropertyType.ObjectReference
+                        || !(property.objectReferenceValue is RuntimeAnimatorController controller)) continue;
+
+                    var layerType = FindSiblingLayerType(serialized, property.propertyPath);
+                    if (layerType == null || layerType == playableLayerType) controllers.Add(controller);
+                }
+            }
+            return controllers;
+        }
+
+        static int? FindSiblingLayerType(SerializedObject serialized, string path)
+        {
+            // Walk up from the reference, e.g. content.controllers.Array.data[0].controller.objRef
+            for (var cut = path.LastIndexOf('.'); cut > 0; cut = path.LastIndexOf('.', cut - 1))
+            {
+                var parent = path.Substring(0, cut);
+                foreach (var name in new[] { "type", "layerType" })
+                {
+                    var sibling = serialized.FindProperty(parent + "." + name);
+                    if (sibling != null && (sibling.propertyType == SerializedPropertyType.Enum || sibling.propertyType == SerializedPropertyType.Integer))
+                    {
+                        return sibling.intValue;
+                    }
+                }
+            }
+            var top = serialized.FindProperty("layerType");
+            return top != null && (top.propertyType == SerializedPropertyType.Enum || top.propertyType == SerializedPropertyType.Integer) ? top.intValue : (int?)null;
+        }
+
         public static RuntimeAnimatorController BaseController(RuntimeAnimatorController controller)
         {
             return controller is AnimatorOverrideController overrideController ? overrideController.runtimeAnimatorController : controller;

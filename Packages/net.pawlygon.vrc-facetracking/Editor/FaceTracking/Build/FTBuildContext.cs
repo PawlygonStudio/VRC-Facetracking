@@ -31,6 +31,11 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<BlendshapesSet> Sets = new List<BlendshapesSet>();
         public readonly List<ParameterBehavior> Behaviors = new List<ParameterBehavior>();
 
+        string buildFolder;
+
+        /// <summary>Folder for assets generated during this build, emptied the first time it's used.</summary>
+        public string BuildFolder => buildFolder ?? (buildFolder = FTTempAssets.PrepareBuildFolder(AvatarRoot));
+
         FTBuildContext(VRCAvatarDescriptor descriptor)
         {
             Descriptor = descriptor;

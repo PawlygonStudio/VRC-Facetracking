@@ -413,6 +413,34 @@
     margin: 0 4px 0 0;
 }
 
+/* Checklist rows */
+
+.ft-card__note {
+    font-size: 11px;
+    margin: 0 0 4px 2px;
+}
+
+.ft-check {
+    flex-direction: row;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.ft-check:hover {
+    background-color: var(--ft-surface-alt);
+}
+
+.ft-check__toggle {
+    margin: 0 6px 0 0;
+    flex-shrink: 0;
+}
+
+.ft-check__text {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
 /* Manual parameters */
 
 .ft-manual {
