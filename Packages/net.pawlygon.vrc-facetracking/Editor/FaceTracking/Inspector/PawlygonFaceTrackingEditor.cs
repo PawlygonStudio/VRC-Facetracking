@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -10,94 +11,198 @@ namespace Pawlygon.FaceTracking.Editor
     [CustomEditor(typeof(PawlygonFaceTracking))]
     internal sealed class PawlygonFaceTrackingEditor : FTComponentEditor<PawlygonFaceTracking>
     {
-        protected override string Title => "Pawlygon Face Tracking";
+        // Scanning every component on the avatar is slow on big avatars, so these are cached briefly
+        const double SlowScanSeconds = 4;
 
-        protected override string Description =>
-            "Sets up VRChat native face tracking when the avatar is built or uploaded. " +
-            "Your avatar and its descriptor aren't changed in the scene.";
+        readonly FTDynamic meshBadge = new FTDynamic();
+        readonly FTDynamic meshList = new FTDynamic();
+        readonly FTDynamic keysBadge = new FTDynamic();
+        readonly FTDynamic keysDetails = new FTDynamic();
+        PropertyField manualMeshes;
+        Label lipSyncResult, eyelidsResult, gazeResult;
 
-        protected override void BuildFields(VisualElement root)
+        double nextSlowScan;
+        List<LegacyOscDetector.Finding> legacyFindings = new List<LegacyOscDetector.Finding>();
+        Object blendshapeOptimizer;
+
+        protected override string Title => "Face Tracking";
+        protected override string Subtitle => "Native face tracking, applied when the avatar is built.";
+
+        protected override string Details =>
+            "Sets up VRChat's native face tracking on the avatar descriptor when the avatar is built or uploaded: " +
+            "meshes, blendshape mapping, visemes, eyelids and eye gaze. The avatar in your scene isn't changed. " +
+            "To inspect the result, right-click the avatar > !Pawlygon > Face Tracking > Build Test Copy.";
+
+        protected override void BuildBody(VisualElement body)
         {
-            var meshMode = serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshMode));
-            var meshes = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshes)));
+            var meshes = FTUI.Card(body, "Meshes", out var meshExtras);
+            meshExtras.Add(meshBadge.Element);
+            meshes.Add(FTUI.Segmented(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshMode)),
+                "Auto picks every mesh with face tracking blendshapes."));
+            manualMeshes = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshes)), "Meshes");
+            meshes.Add(manualMeshes);
+            meshes.Add(meshList.Element);
 
-            root.Add(new PropertyField(meshMode));
-            root.Add(meshes);
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys))));
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.lipSync))));
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.eyelids))));
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.eyeGaze))));
+            var keys = FTUI.Card(body, "Tracking Keys", out var keysExtras);
+            keysExtras.Add(keysBadge.Element);
+            keys.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
+            keys.Add(keysDetails.Element);
 
+            var face = FTUI.Card(body, "Lip Sync & Eyes", out _);
+            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Lip Sync", out lipSyncResult));
+            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
+            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Eye Gaze", out gazeResult));
+
+            var advanced = new Foldout { text = "Advanced", value = false };
+            advanced.AddToClassList("ft-advanced");
             var dampenMode = serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenMode));
-            var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)));
-            root.Add(new PropertyField(dampenMode));
-            root.Add(dampenAmount);
+            var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Dampen Amount");
+            advanced.Add(new PropertyField(dampenMode, "Viseme Dampening"));
+            advanced.Add(dampenAmount);
+            face.Add(advanced);
 
             void UpdateVisibility()
             {
-                meshes.style.display = meshMode.enumValueIndex == (int)FTMeshMode.Manual ? DisplayStyle.Flex : DisplayStyle.None;
-                dampenAmount.style.display = dampenMode.enumValueIndex != (int)FTVisemeDampenMode.None ? DisplayStyle.Flex : DisplayStyle.None;
+                manualMeshes.style.display = Component.meshMode == FTMeshMode.Manual ? DisplayStyle.Flex : DisplayStyle.None;
+                dampenAmount.style.display = Component.visemeDampenMode != FTVisemeDampenMode.None ? DisplayStyle.Flex : DisplayStyle.None;
             }
             UpdateVisibility();
-            root.TrackSerializedObjectValue(serializedObject, _ =>
-            {
-                UpdateVisibility();
-                RefreshStatus();
-            });
+            body.TrackSerializedObjectValue(serializedObject, _ => UpdateVisibility());
         }
 
-        protected override void BuildStatus(FTStatus status, VRCAvatarDescriptor avatar)
+        VisualElement FieldWithResult(string property, string label, out Label result)
         {
-            var otherSetups = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).Where(c => c != Component).ToList();
-            if (otherSetups.Count > 0)
-            {
-                status.Box("Only one Pawlygon Face Tracking component is allowed per avatar. Another one is on " +
-                           $"'{FTAvatarUtils.GetPath(otherSetups[0].transform, avatar.transform)}'.",
-                    HelpBoxMessageType.Error, ("Select", () => Selection.activeGameObject = otherSetups[0].gameObject));
-            }
-
-            AddLegacyStatus(status, avatar);
-
-            if (avatar.enableFaceTracking || avatar.faceTrackingBlendshapesSetList?.Count > 0 || avatar.faceTrackingParameterBehaviors?.Count > 0)
-            {
-                status.Warning("The avatar descriptor already has a face tracking setup. It will be replaced by this component when the avatar is built.");
-            }
-
-            if (HasVrcFuryBlendshapeOptimizer(avatar))
-            {
-                status.Warning("VRCFury's Blendshape Optimizer doesn't know about native face tracking and will remove the face tracking blendshapes. Remove it or keep it disabled.");
-            }
-
-            AddPlanStatus(status, avatar);
-
-            status.Add("testcopy", () => new Button(() => FTTestCopy.Build(avatar))
-            {
-                text = "Build Test Copy",
-                tooltip = "Builds a copy of the avatar in the scene with face tracking applied, so you can inspect the result on its descriptor.",
-                style = { marginTop = 6, height = 24 },
-            });
+            var row = new VisualElement();
+            row.AddToClassList("ft-field-row");
+            row.Add(new PropertyField(serializedObject.FindProperty(property), label));
+            result = FTUI.Text("", "ft-result");
+            row.Add(result);
+            return row;
         }
 
-        static void AddLegacyStatus(FTStatus status, VRCAvatarDescriptor avatar)
+        protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
         {
-            foreach (var finding in LegacyOscDetector.Find(avatar.gameObject))
+            AddAvatarIssues(avatar, issues);
+
+            var plan = FaceTrackingSetupPlan.Resolve(Component, avatar);
+            foreach (var error in plan.Errors) issues.Error(error);
+            foreach (var warning in plan.Warnings) issues.Warning(warning);
+
+            UpdateMeshes(plan);
+            UpdateKeys(plan);
+            UpdateResults(plan);
+        }
+
+        void AddAvatarIssues(VRCAvatarDescriptor avatar, FTIssues issues)
+        {
+            var other = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault(c => c != Component);
+            if (other != null)
+            {
+                issues.Error("Another Pawlygon Face Tracking is on this avatar.",
+                    $"Only one is allowed per avatar. The other one is on '{FTAvatarUtils.GetPath(other.transform, avatar.transform)}'.",
+                    ("Select", () => Select(other.gameObject)));
+            }
+
+            if (EditorApplication.timeSinceStartup >= nextSlowScan)
+            {
+                nextSlowScan = EditorApplication.timeSinceStartup + SlowScanSeconds;
+                legacyFindings = LegacyOscDetector.Find(avatar.gameObject);
+                blendshapeOptimizer = FindBlendshapeOptimizer(avatar);
+            }
+
+            foreach (var finding in legacyFindings.Where(f => f.Holder != null))
             {
                 var holder = finding.Holder;
-                var select = ("Select", (System.Action)(() => Selection.activeGameObject = holder));
-
+                var actions = new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => DisableLegacy(holder)) };
                 if (finding.IsPawlygonLegacy)
                 {
-                    status.Box($"Legacy OSC face tracking found on '{finding.Path}'. You can't use it together with native face tracking: " +
-                               "both would drive the same blendshapes. If you keep it, you'll be asked to remove it from each build.",
-                        HelpBoxMessageType.Error, select, ("Disable", () => DisableLegacy(holder)));
+                    issues.Error($"Legacy OSC face tracking on '{finding.Path}'.",
+                        "It can't run together with native face tracking: both drive the same blendshapes. " +
+                        "Disable tags it EditorOnly (undoable). If you keep it, every build asks to remove it.", actions);
                 }
                 else
                 {
-                    status.Box($"'{finding.Path}' merges '{finding.Controller.name}', which looks like an OSC face tracking setup. " +
-                               "You can't use it together with native face tracking. Remove or disable it.",
-                        HelpBoxMessageType.Warning, select, ("Disable", () => DisableLegacy(holder)));
+                    issues.Warning($"'{finding.Path}' looks like OSC face tracking.",
+                        $"It merges '{finding.Controller.name}', which uses FT/v2 parameters. It can't run together with native face tracking.", actions);
                 }
             }
+
+            if (avatar.enableFaceTracking || avatar.faceTrackingBlendshapesSetList?.Count > 0 || avatar.faceTrackingParameterBehaviors?.Count > 0)
+            {
+                issues.Warning("Replaces the descriptor's face tracking setup.",
+                    "The avatar descriptor already has native face tracking configured. This component replaces it at build; the scene isn't changed.");
+            }
+
+            if (blendshapeOptimizer != null)
+            {
+                var optimizer = blendshapeOptimizer;
+                issues.Warning("VRCFury Blendshape Optimizer will strip face tracking blendshapes.",
+                    "It doesn't know about native face tracking and removes blendshapes it thinks are unused. Remove it from this avatar.",
+                    ("Select", () => Select(optimizer)));
+            }
+        }
+
+        void UpdateMeshes(FaceTrackingSetupPlan plan)
+        {
+            var names = plan.Meshes.Select(m => m.name).ToList();
+            meshBadge.Update($"{names.Count}", e => e.Add(FTUI.Badge(names.Count == 1 ? "1 mesh" : $"{names.Count} meshes",
+                names.Count == 0 ? FTKind.Error : FTKind.Muted)));
+
+            var key = Component.meshMode + string.Join("|", names);
+            meshList.Update(key, e =>
+            {
+                if (Component.meshMode == FTMeshMode.Manual) return;
+                if (plan.Meshes.Count == 0)
+                {
+                    e.Add(FTUI.Text("No mesh with face tracking blendshapes found.", "ft-muted"));
+                    return;
+                }
+                var meshes = plan.Meshes.ToList();
+                e.Add(FTUI.Chips(names, name => Select(meshes.FirstOrDefault(m => m != null && m.name == name)), "Click to select"));
+            });
+        }
+
+        void UpdateKeys(FaceTrackingSetupPlan plan)
+        {
+            if (plan.Set == null)
+            {
+                keysBadge.Hide();
+                keysDetails.Hide();
+                return;
+            }
+
+            var mapped = plan.MappedKeys.Count;
+            var total = mapped + plan.UnmappedKeys.Count;
+            var fraction = total == 0 ? 0f : (float)mapped / total;
+            var kind = fraction >= 0.9f ? FTKind.Ok : fraction >= 0.5f ? FTKind.Info : FTKind.Warning;
+
+            keysBadge.Update($"{mapped}/{total}", e => e.Add(FTUI.Badge($"{mapped}/{total} mapped", kind)));
+
+            var unmapped = plan.UnmappedKeys.Select(FTKeys.KeyName).ToList();
+            keysDetails.Update(string.Join("|", unmapped) + total, e =>
+            {
+                e.Add(FTUI.Progress(fraction, fraction >= 0.5f ? FTKind.Ok : FTKind.Warning));
+                if (unmapped.Count == 0) return;
+
+                var foldout = new Foldout { text = $"Unmapped ({unmapped.Count})", value = false };
+                foldout.Add(FTUI.Chips(unmapped, null, "No blendshape matches this tracking key"));
+                e.Add(foldout);
+            });
+        }
+
+        void UpdateResults(FaceTrackingSetupPlan plan)
+        {
+            const string unchanged = "unchanged";
+            if (plan.Set == null)
+            {
+                lipSyncResult.text = eyelidsResult.text = gazeResult.text = "";
+                return;
+            }
+
+            lipSyncResult.text = plan.UseFaceTrackingLipSync ? $"→ {plan.MappedVisemes}/{FTKeys.VisemeCount} visemes" : unchanged;
+            lipSyncResult.tooltip = plan.VisemesFromDescriptor ? "Taken from the avatar's existing viseme setup." : "Matched by blendshape name.";
+            eyelidsResult.text = plan.UseFaceTrackingEyelids ? "→ EyeClosed" : unchanged;
+            gazeResult.text = plan.GazeMode.HasValue ? "→ " + ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : unchanged;
         }
 
         /// <summary>
@@ -113,52 +218,7 @@ namespace Pawlygon.FaceTracking.Editor
             PrefabUtility.RecordPrefabInstancePropertyModifications(holder);
         }
 
-        void AddPlanStatus(FTStatus status, VRCAvatarDescriptor avatar)
-        {
-            var plan = FaceTrackingSetupPlan.Resolve(Component, avatar);
-            foreach (var error in plan.Errors) status.Error(error);
-            foreach (var warning in plan.Warnings) status.Warning(warning);
-            if (plan.Set == null) return;
-
-            var keyTotal = plan.MappedKeys.Count + plan.UnmappedKeys.Count;
-            var meshes = string.Join(", ", plan.Meshes.Select(m => m.name));
-            var visemes = plan.UseFaceTrackingLipSync
-                ? $"{plan.MappedVisemes} of {FTKeys.VisemeCount}" + (plan.VisemesFromDescriptor ? " (from the avatar's viseme setup)" : "")
-                : "Unchanged";
-            var eyelids = plan.UseFaceTrackingEyelids ? "Face tracking" : "Unchanged";
-            var gaze = plan.GazeMode.HasValue ? ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : "Unchanged";
-            var unmapped = string.Join(", ", plan.UnmappedKeys.Select(FTKeys.KeyName));
-
-            status.Add($"plan:{meshes}|{plan.MappedKeys.Count}/{keyTotal}|{visemes}|{eyelids}|{gaze}|{unmapped}", () =>
-            {
-                var box = new VisualElement
-                {
-                    style =
-                    {
-                        marginTop = 4, paddingTop = 4, paddingBottom = 4, paddingLeft = 4, paddingRight = 4,
-                        borderTopWidth = 1, borderBottomWidth = 1, borderLeftWidth = 1, borderRightWidth = 1,
-                        borderTopColor = Color.gray, borderBottomColor = Color.gray, borderLeftColor = Color.gray, borderRightColor = Color.gray,
-                        borderTopLeftRadius = 3, borderTopRightRadius = 3, borderBottomLeftRadius = 3, borderBottomRightRadius = 3,
-                    },
-                };
-                box.Add(new Label("Applied at build") { style = { unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 3 } });
-                box.Add(FTInspectorUI.Row("Meshes", meshes));
-                box.Add(FTInspectorUI.Row("Tracking keys", $"{plan.MappedKeys.Count} of {keyTotal} mapped"));
-                box.Add(FTInspectorUI.Row("Visemes", visemes));
-                box.Add(FTInspectorUI.Row("Eyelids", eyelids));
-                box.Add(FTInspectorUI.Row("Eye gaze", gaze));
-
-                if (plan.UnmappedKeys.Count > 0)
-                {
-                    var foldout = new Foldout { text = $"Unmapped keys ({plan.UnmappedKeys.Count})", value = false };
-                    foldout.Add(new Label(unmapped) { style = { whiteSpace = WhiteSpace.Normal } });
-                    box.Add(foldout);
-                }
-                return box;
-            });
-        }
-
-        static bool HasVrcFuryBlendshapeOptimizer(VRCAvatarDescriptor avatar)
+        static Object FindBlendshapeOptimizer(VRCAvatarDescriptor avatar)
         {
             foreach (var behaviour in avatar.GetComponentsInChildren<MonoBehaviour>(true))
             {
@@ -168,10 +228,10 @@ namespace Pawlygon.FaceTracking.Editor
                 using (var serialized = new SerializedObject(behaviour))
                 {
                     var content = serialized.FindProperty("content");
-                    if (content != null && content.managedReferenceFullTypename.EndsWith("BlendshapeOptimizer")) return true;
+                    if (content != null && content.managedReferenceFullTypename.EndsWith("BlendshapeOptimizer")) return behaviour.gameObject;
                 }
             }
-            return false;
+            return null;
         }
     }
 }

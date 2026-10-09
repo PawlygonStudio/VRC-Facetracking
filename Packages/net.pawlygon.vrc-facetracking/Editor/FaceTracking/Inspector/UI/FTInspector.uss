@@ -1,0 +1,462 @@
+/* Pawlygon face tracking inspectors. Colors match Pawlygon Unity Tools (PawlygonEditorUI). */
+
+.ft-dark {
+    --ft-ok: rgb(107, 204, 120);
+    --ft-ok-bg: rgba(107, 204, 120, 0.16);
+    --ft-warning: rgb(255, 184, 77);
+    --ft-warning-bg: rgba(255, 184, 77, 0.13);
+    --ft-error: rgb(255, 115, 107);
+    --ft-error-bg: rgba(255, 115, 107, 0.14);
+    --ft-info: rgb(115, 179, 255);
+    --ft-info-bg: rgba(115, 179, 255, 0.13);
+    --ft-muted: rgb(153, 153, 153);
+    --ft-muted-bg: rgba(255, 255, 255, 0.06);
+    --ft-primary: rgb(0, 78, 149);
+    --ft-primary-hover: rgb(0, 96, 176);
+    --ft-titlebar-bg: rgb(62, 62, 62);
+    --ft-titlebar-hover: rgb(71, 71, 71);
+    --ft-surface: rgba(0, 0, 0, 0.14);
+    --ft-surface-alt: rgba(255, 255, 255, 0.03);
+    --ft-border: rgba(255, 255, 255, 0.08);
+}
+
+.ft-light {
+    --ft-ok: rgb(41, 140, 56);
+    --ft-ok-bg: rgba(41, 140, 56, 0.13);
+    --ft-warning: rgb(191, 115, 0);
+    --ft-warning-bg: rgba(191, 115, 0, 0.12);
+    --ft-error: rgb(191, 38, 31);
+    --ft-error-bg: rgba(191, 38, 31, 0.11);
+    --ft-info: rgb(31, 102, 191);
+    --ft-info-bg: rgba(31, 102, 191, 0.11);
+    --ft-muted: rgb(102, 102, 102);
+    --ft-muted-bg: rgba(0, 0, 0, 0.06);
+    --ft-primary: rgb(0, 78, 149);
+    --ft-primary-hover: rgb(0, 96, 176);
+    --ft-titlebar-bg: rgb(203, 203, 203);
+    --ft-titlebar-hover: rgb(214, 214, 214);
+    --ft-surface: rgba(255, 255, 255, 0.45);
+    --ft-surface-alt: rgba(0, 0, 0, 0.03);
+    --ft-border: rgba(0, 0, 0, 0.12);
+}
+
+.ft-muted {
+    color: var(--ft-muted);
+}
+
+/* Title bar overlay. Pawlygon Cyan rgb(0, 187, 213) and Blue rgb(0, 78, 149) come from the Pawlygon.net design tokens. */
+
+.ft-titlebar {
+    height: 0;
+}
+
+.ft-titlebar__area {
+    position: absolute;
+    top: -21px;
+    left: 0;
+    right: 0;
+    height: 20px;
+}
+
+.ft-titlebar__row {
+    flex-direction: row;
+    align-items: center;
+    height: 20px;
+    margin-left: 18px;
+    margin-right: 60px;
+    background-color: var(--ft-titlebar-bg);
+}
+
+.ft-titlebar__row--hover {
+    background-color: var(--ft-titlebar-hover);
+}
+
+.ft-tag {
+    flex-direction: row;
+    align-items: center;
+    height: 20px;
+    padding: 0 3px;
+    flex-shrink: 0;
+    background-color: rgb(13, 13, 13);
+}
+
+/* Slanted ends drawn with the border triangle trick */
+.ft-tag__start {
+    flex-shrink: 0;
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-right-color: rgb(13, 13, 13);
+    border-bottom-color: rgb(13, 13, 13);
+}
+
+.ft-tag__end {
+    flex-shrink: 0;
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-left-color: rgb(13, 13, 13);
+    border-top-color: rgb(13, 13, 13);
+}
+
+.ft-tag__logo {
+    width: 14px;
+    height: 14px;
+    margin-right: 3px;
+}
+
+.ft-tag__text {
+    -unity-font-style: bold;
+    color: rgb(0, 187, 213);
+}
+
+.ft-titlebar__title {
+    flex-grow: 1;
+    padding-left: 3px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+}
+
+.ft-titlebar__fallback {
+    -unity-font-style: bold;
+    margin: 8px 0 4px 3px;
+}
+
+/* Intro */
+
+.ft-intro {
+    flex-direction: row;
+    align-items: center;
+    padding: 2px 3px 2px 3px;
+    margin-bottom: 4px;
+}
+
+.ft-intro__text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.ft-intro__help {
+    width: 18px;
+    height: 18px;
+    margin: 0 0 0 4px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 9px;
+    -unity-font-style: bold;
+}
+
+.ft-details {
+    font-size: 11px;
+    white-space: normal;
+    padding: 4px 6px 6px 6px;
+    border-radius: 4px;
+    background-color: var(--ft-surface);
+    margin-top: 0;
+    margin-bottom: 6px;
+    color: var(--ft-muted);
+}
+
+/* Issues */
+
+.ft-issue {
+    flex-direction: row;
+    align-items: center;
+    padding: 3px 6px;
+    margin-bottom: 3px;
+    border-radius: 3px;
+    border-left-width: 3px;
+}
+
+.ft-issue--error {
+    border-left-color: var(--ft-error);
+    background-color: var(--ft-error-bg);
+}
+
+.ft-issue--warning {
+    border-left-color: var(--ft-warning);
+    background-color: var(--ft-warning-bg);
+}
+
+.ft-issue--info {
+    border-left-color: var(--ft-info);
+    background-color: var(--ft-info-bg);
+}
+
+.ft-issue__icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.ft-issue__text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.ft-issue__button {
+    height: 18px;
+    margin: 0 0 0 4px;
+    padding: 0 6px;
+    flex-shrink: 0;
+}
+
+/* Cards */
+
+.ft-card {
+    padding: 5px 8px 7px 8px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: var(--ft-border);
+    background-color: var(--ft-surface);
+}
+
+.ft-card__header {
+    flex-direction: row;
+    align-items: center;
+    min-height: 20px;
+    margin-bottom: 3px;
+}
+
+.ft-card__title {
+    -unity-font-style: bold;
+    flex-grow: 1;
+}
+
+.ft-card__extras {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Badges, chips and rows */
+
+.ft-badge {
+    padding: 1px 6px;
+    margin-left: 4px;
+    border-radius: 8px;
+    font-size: 10px;
+    -unity-font-style: bold;
+}
+
+.ft-badge--ok { color: var(--ft-ok); background-color: var(--ft-ok-bg); }
+.ft-badge--warning { color: var(--ft-warning); background-color: var(--ft-warning-bg); }
+.ft-badge--error { color: var(--ft-error); background-color: var(--ft-error-bg); }
+.ft-badge--info { color: var(--ft-info); background-color: var(--ft-info-bg); }
+.ft-badge--muted { color: var(--ft-muted); background-color: var(--ft-muted-bg); }
+
+.ft-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.ft-chip {
+    padding: 1px 6px;
+    margin: 0 4px 4px 0;
+    border-radius: 3px;
+    font-size: 11px;
+    background-color: var(--ft-muted-bg);
+}
+
+.ft-chip--clickable:hover {
+    background-color: var(--ft-info-bg);
+    color: var(--ft-info);
+}
+
+.ft-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 18px;
+}
+
+.ft-row__label {
+    width: 120px;
+    flex-shrink: 0;
+    color: var(--ft-muted);
+}
+
+.ft-row__value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.ft-field-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.ft-field-row > .unity-property-field {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ft-result {
+    min-width: 110px;
+    margin-left: 6px;
+    font-size: 11px;
+    -unity-text-align: middle-right;
+    color: var(--ft-muted);
+}
+
+.ft-progress {
+    height: 4px;
+    margin: 2px 0 4px 0;
+    border-radius: 2px;
+    background-color: var(--ft-muted-bg);
+}
+
+.ft-progress__fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+.ft-progress__fill--ok { background-color: var(--ft-ok); }
+.ft-progress__fill--warning { background-color: var(--ft-warning); }
+
+/* Segmented control */
+
+.ft-segmented {
+    flex-direction: row;
+    margin: 1px 3px 3px 3px;
+}
+
+.ft-segmented__button {
+    flex-grow: 1;
+    height: 20px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.ft-segmented__button--first {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.ft-segmented__button--last {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.ft-segmented__button--selected {
+    background-color: var(--ft-primary);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
+
+/* Parameter table */
+
+.ft-search {
+    margin: 0 0 4px 0;
+}
+
+.ft-group-title {
+    font-size: 11px;
+    -unity-font-style: bold;
+    margin: 4px 0 2px 2px;
+    color: var(--ft-muted);
+}
+
+.ft-param {
+    flex-direction: row;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.ft-param--alt {
+    background-color: var(--ft-surface-alt);
+}
+
+.ft-param__text {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ft-param__name {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.ft-param__prefix {
+    color: var(--ft-muted);
+}
+
+.ft-param__base {
+    -unity-font-style: bold;
+}
+
+.ft-param__expression {
+    font-size: 11px;
+    white-space: normal;
+    color: var(--ft-muted);
+}
+
+.ft-param__action {
+    opacity: 0;
+    height: 18px;
+    margin: 0 0 0 4px;
+    padding: 0 6px;
+    flex-shrink: 0;
+}
+
+.ft-param:hover > .ft-param__action {
+    opacity: 1;
+}
+
+.ft-toggle {
+    margin: 0 4px 0 0;
+}
+
+/* Manual parameters */
+
+.ft-manual {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.ft-manual__name {
+    width: 38%;
+    margin: 0;
+}
+
+.ft-manual__equals {
+    margin: 0 4px;
+    color: var(--ft-muted);
+}
+
+.ft-manual__expression {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+}
+
+.ft-manual__state {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.ft-manual__button {
+    width: 20px;
+    height: 18px;
+    margin: 0 0 0 2px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.ft-add-button {
+    height: 20px;
+    margin: 4px 0 0 0;
+}
+
+.ft-advanced {
+    margin-top: 2px;
+}

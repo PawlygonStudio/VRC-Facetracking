@@ -13,12 +13,13 @@ namespace Pawlygon.FaceTracking.Editor
     /// </summary>
     internal static class FTTestCopy
     {
-        const string MenuPath = "Tools/!Pawlygon/Face Tracking/Build Test Copy";
+        // Right-click in the Hierarchy. GameObject/ items with a priority under 50 show in its context menu.
+        const string MenuPath = "GameObject/!Pawlygon/Face Tracking/Build Test Copy";
 
-        [MenuItem(MenuPath, false, 100)]
+        [MenuItem(MenuPath, false, 40)]
         static void BuildSelected() => Build(SelectedAvatar());
 
-        [MenuItem(MenuPath, true)]
+        [MenuItem(MenuPath, true, 40)]
         static bool CanBuildSelected() => !Application.isPlaying && SelectedAvatar() != null;
 
         static VRCAvatarDescriptor SelectedAvatar()

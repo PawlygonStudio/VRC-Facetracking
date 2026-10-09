@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -10,76 +12,272 @@ namespace Pawlygon.FaceTracking.Editor
     [CustomEditor(typeof(PawlygonFTParameters))]
     internal sealed class PawlygonFTParametersEditor : FTComponentEditor<PawlygonFTParameters>
     {
-        protected override string Title => "Pawlygon Face Tracking Parameters";
+        const int SearchThreshold = 6;
 
-        protected override string Description =>
-            "Forwards face tracking values to animator parameters when the avatar is built, so animators made for " +
-            "OSC face tracking (FT/v2/..., OSCm/Proxy/FT/v2/...) keep working with native face tracking.";
+        readonly FTDynamic detectedBadge = new FTDynamic();
+        readonly FTDynamic detectedList = new FTDynamic();
+        readonly FTDynamic manualBadge = new FTDynamic();
+        readonly FTDynamic summary = new FTDynamic();
+        readonly List<Image> manualStates = new List<Image>();
+        VisualElement manualRows;
+        ToolbarSearchField search;
+        int renderedManualCount = -1;
+        bool useAllTrackingKeys = true;
 
-        protected override void BuildFields(VisualElement root)
+        SerializedProperty ParametersProperty => serializedObject.FindProperty(nameof(PawlygonFTParameters.parameters));
+
+        protected override string Title => "Face Tracking Parameters";
+        protected override string Subtitle => "Forwards face tracking to animator parameters.";
+
+        protected override string Details =>
+            "When the avatar is built, forwards native face tracking values to animator parameters, so animators made for " +
+            "OSC face tracking (FT/v2/..., OSCm/Proxy/FT/v2/...) keep working. Detected parameters come from the avatar's " +
+            "animators, including the ones VRCFury and Modular Avatar merge. Manual entries replace detected ones with the same name.";
+
+        protected override void BuildBody(VisualElement body)
         {
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTParameters.autoDetect))));
-            root.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTParameters.parameters)), "Manual Parameters"));
-            root.TrackSerializedObjectValue(serializedObject, _ => RefreshStatus());
+            var detected = FTUI.Card(body, "Detected", out var detectedExtras);
+            var autoDetect = new Toggle { text = "Auto-detect", tooltip = "Forward every known face tracking parameter used by the avatar's animators." };
+            autoDetect.AddToClassList("ft-toggle");
+            autoDetect.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTParameters.autoDetect)));
+            detectedExtras.Add(autoDetect);
+            detectedExtras.Add(detectedBadge.Element);
+
+            search = new ToolbarSearchField();
+            search.AddToClassList("ft-search");
+            search.style.width = StyleKeyword.Auto;
+            search.RegisterValueChangedCallback(_ => RefreshNow());
+            detected.Add(search);
+            detected.Add(detectedList.Element);
+
+            var manual = FTUI.Card(body, "Manual", out var manualExtras);
+            manualExtras.Add(manualBadge.Element);
+            manualRows = new VisualElement();
+            manual.Add(manualRows);
+            var add = new Button(() => AddManual("", "")) { text = "Add Parameter" };
+            add.AddToClassList("ft-add-button");
+            manual.Add(add);
+
+            body.Add(summary.Element);
         }
 
-        protected override void BuildStatus(FTStatus status, VRCAvatarDescriptor avatar)
+        protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
         {
             var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
             if (setup == null && !avatar.enableFaceTracking)
             {
-                status.Error("Face tracking isn't enabled on this avatar. Add a Pawlygon Face Tracking component, " +
-                             "or enable face tracking on the avatar descriptor.");
-                return;
+                issues.Error("Face tracking isn't enabled on this avatar.",
+                    "Add a Pawlygon Face Tracking component, or enable face tracking on the avatar descriptor.");
             }
+            useAllTrackingKeys = setup != null ? setup.useAllTrackingKeys : avatar.useAllTrackingKeys;
 
-            var useAllTrackingKeys = setup != null ? setup.useAllTrackingKeys : avatar.useAllTrackingKeys;
             var plan = FTForwardingPlan.ForPreview(Component, avatar, useAllTrackingKeys);
-            foreach (var warning in plan.Warnings) status.Warning(warning);
+            foreach (var warning in plan.Warnings) issues.Warning(warning);
+
+            var duplicate = Component.parameters.Where(p => !string.IsNullOrWhiteSpace(p.parameter))
+                .GroupBy(p => p.parameter.Trim()).FirstOrDefault(g => g.Count() > 1);
+            if (duplicate != null) issues.Warning($"'{duplicate.Key}' is in the manual list twice, the last one wins.");
 
             // Without a setup component, forwards already on the descriptor are kept
-            var existing = setup != null ? 0 : (avatar.faceTrackingParameterBehaviors ?? new System.Collections.Generic.List<VRCAvatarDescriptor.FaceTrackingParameterBehavior>())
+            var existing = setup != null ? 0 : (avatar.faceTrackingParameterBehaviors ?? new List<VRCAvatarDescriptor.FaceTrackingParameterBehavior>())
                 .Count(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
                             && plan.Entries.All(e => e.Parameter != b.outputParameterName));
-            var total = plan.Entries.Count + existing;
 
-            if (plan.Entries.Count == 0)
+            UpdateDetected(plan);
+            UpdateManual();
+            UpdateSummary(plan.Entries.Count + existing, existing);
+        }
+
+        void UpdateDetected(FTForwardingPlan plan)
+        {
+            var detected = plan.Entries.Where(e => !e.IsManual).ToList();
+            detectedBadge.Update(detected.Count.ToString(), e => e.Add(FTUI.Badge(detected.Count.ToString(), FTKind.Muted)));
+            search.style.display = detected.Count > SearchThreshold ? DisplayStyle.Flex : DisplayStyle.None;
+
+            var filter = search.value?.Trim() ?? "";
+            var shown = detected.Where(e => filter.Length == 0
+                                            || e.Parameter.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                            || e.Expression.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+
+            var key = $"{Component.autoDetect}|{filter}|" + string.Join("|", shown.Select(e => e.Parameter + e.Expression + e.Source));
+            detectedList.Update(key, container =>
             {
-                status.Info(Component.autoDetect
-                    ? "No known face tracking parameters are used by this avatar's animators."
-                    : "No parameters to forward.");
+                if (!Component.autoDetect)
+                {
+                    container.Add(FTUI.Text("Auto-detect is off.", "ft-muted"));
+                    return;
+                }
+                if (detected.Count == 0)
+                {
+                    container.Add(FTUI.Text("No known face tracking parameters in this avatar's animators.", "ft-muted"));
+                    return;
+                }
+                if (shown.Count == 0)
+                {
+                    container.Add(FTUI.Text("No match.", "ft-muted"));
+                    return;
+                }
+
+                foreach (var group in shown.GroupBy(e => e.Source))
+                {
+                    container.Add(FTUI.Text(group.Key, "ft-group-title"));
+                    var index = 0;
+                    foreach (var entry in group) container.Add(ParameterRow(entry, index++ % 2 == 1));
+                }
+            });
+        }
+
+        VisualElement ParameterRow(FTForwardingPlan.Entry entry, bool alternate)
+        {
+            var row = new VisualElement { tooltip = entry.Parameter };
+            row.AddToClassList("ft-param");
+            if (alternate) row.AddToClassList("ft-param--alt");
+
+            var text = new VisualElement();
+            text.AddToClassList("ft-param__text");
+
+            var split = entry.Parameter.LastIndexOf('/') + 1;
+            var name = new VisualElement();
+            name.AddToClassList("ft-param__name");
+            if (split > 0) name.Add(FTUI.Text(entry.Parameter.Substring(0, split), "ft-param__prefix"));
+            name.Add(FTUI.Text(entry.Parameter.Substring(split), "ft-param__base"));
+            text.Add(name);
+            text.Add(FTUI.Text("= " + entry.Expression, "ft-param__expression"));
+            row.Add(text);
+
+            var parameter = entry.Parameter;
+            var expression = entry.Expression;
+            var customize = new Button(() => AddManual(parameter, expression))
+            {
+                text = "Override",
+                tooltip = "Copy to the manual list to change its expression.",
+            };
+            customize.AddToClassList("ft-param__action");
+            row.Add(customize);
+            return row;
+        }
+
+        void UpdateManual()
+        {
+            var property = ParametersProperty;
+            manualBadge.Update(property.arraySize.ToString(), e => e.Add(FTUI.Badge(property.arraySize.ToString(), FTKind.Muted)));
+
+            // Rows are only rebuilt when entries are added or removed, so typing keeps focus
+            if (property.arraySize != renderedManualCount) RebuildManualRows();
+
+            for (var i = 0; i < manualStates.Count && i < Component.parameters.Count; i++)
+            {
+                var entry = Component.parameters[i];
+                string problem;
+                var kind = FTKind.Ok;
+                if (string.IsNullOrWhiteSpace(entry.parameter))
+                {
+                    problem = "Enter a parameter name.";
+                    kind = FTKind.Error;
+                }
+                else
+                {
+                    problem = FTExpressionCheck.Validate(entry.expression, useAllTrackingKeys, out var isWarning);
+                    if (problem != null) kind = isWarning ? FTKind.Warning : FTKind.Error;
+                }
+                manualStates[i].image = FTUI.Icon(kind);
+                manualStates[i].tooltip = problem ?? "Looks good.";
+            }
+        }
+
+        void RebuildManualRows()
+        {
+            var property = ParametersProperty;
+            renderedManualCount = property.arraySize;
+            manualRows.Clear();
+            manualStates.Clear();
+
+            if (property.arraySize == 0)
+            {
+                manualRows.Add(FTUI.Text("No manual parameters.", "ft-muted"));
                 return;
             }
 
-            var rows = plan.Entries.Select(e => (e.Parameter, e.Expression, e.Source)).ToList();
-            var key = "forward:" + string.Join("|", rows) + existing;
-            status.Add(key, () =>
+            for (var i = 0; i < property.arraySize; i++)
             {
-                var box = new VisualElement
-                {
-                    style =
-                    {
-                        marginTop = 4, paddingTop = 4, paddingBottom = 4, paddingLeft = 4, paddingRight = 4,
-                        borderTopWidth = 1, borderBottomWidth = 1, borderLeftWidth = 1, borderRightWidth = 1,
-                        borderTopColor = Color.gray, borderBottomColor = Color.gray, borderLeftColor = Color.gray, borderRightColor = Color.gray,
-                        borderTopLeftRadius = 3, borderTopRightRadius = 3, borderBottomLeftRadius = 3, borderBottomRightRadius = 3,
-                    },
-                };
-                box.Add(new Label("Applied at build") { style = { unityFontStyleAndWeight = FontStyle.Bold, marginBottom = 3 } });
-                var countText = $"{total} ({FTForwardingPlan.RankFor(total)})" + (existing > 0 ? $", including {existing} already on the descriptor" : "");
-                box.Add(FTInspectorUI.Row("Forwarded", countText));
+                var element = property.GetArrayElementAtIndex(i);
+                var index = i;
+                var row = new VisualElement();
+                row.AddToClassList("ft-manual");
 
-                var foldout = new Foldout { text = $"Parameters ({plan.Entries.Count})", value = true };
-                foreach (var (parameter, expression, source) in rows)
-                {
-                    var row = new VisualElement { style = { marginBottom = 3 } };
-                    row.Add(new Label(parameter) { style = { unityFontStyleAndWeight = FontStyle.Bold } });
-                    row.Add(new Label($"= {expression}") { style = { whiteSpace = WhiteSpace.Normal, marginLeft = 8 } });
-                    row.Add(new Label(source) { style = { marginLeft = 8, color = Color.gray, fontSize = 10 } });
-                    foldout.Add(row);
-                }
-                box.Add(foldout);
-                return box;
+                var name = new TextField { tooltip = "Animator parameter that receives the value." };
+                name.AddToClassList("ft-manual__name");
+                name.BindProperty(element.FindPropertyRelative(nameof(FTForwardedParameter.parameter)));
+                row.Add(name);
+                row.Add(FTUI.Text("=", "ft-manual__equals"));
+
+                var expressionProperty = element.FindPropertyRelative(nameof(FTForwardedParameter.expression));
+                var expression = new TextField { tooltip = "Tracking keys combined with + - * / abs() min() max() clamp(). The result is clamped to -1..1." };
+                expression.AddToClassList("ft-manual__expression");
+                expression.BindProperty(expressionProperty);
+                row.Add(expression);
+
+                var state = new Image();
+                state.AddToClassList("ft-manual__state");
+                manualStates.Add(state);
+                row.Add(state);
+
+                var pick = new Button() { text = "+", tooltip = "Insert a tracking key" };
+                pick.clicked += () => FTExpressionCheck.InputMenu(input => AppendInput(index, input)).DropDown(pick.worldBound);
+                pick.AddToClassList("ft-manual__button");
+                row.Add(pick);
+
+                var remove = new Button(() => RemoveManual(index)) { text = "✕", tooltip = "Remove" };
+                remove.AddToClassList("ft-manual__button");
+                row.Add(remove);
+
+                manualRows.Add(row);
+            }
+        }
+
+        void AddManual(string parameter, string expression)
+        {
+            var property = ParametersProperty;
+            property.arraySize++;
+            var element = property.GetArrayElementAtIndex(property.arraySize - 1);
+            element.FindPropertyRelative(nameof(FTForwardedParameter.parameter)).stringValue = parameter;
+            element.FindPropertyRelative(nameof(FTForwardedParameter.expression)).stringValue = expression;
+            serializedObject.ApplyModifiedProperties();
+            RefreshNow();
+        }
+
+        void RemoveManual(int index)
+        {
+            var property = ParametersProperty;
+            if (index >= property.arraySize) return;
+            property.DeleteArrayElementAtIndex(index);
+            serializedObject.ApplyModifiedProperties();
+            RefreshNow();
+        }
+
+        void AppendInput(int index, string input)
+        {
+            var property = ParametersProperty;
+            if (index >= property.arraySize) return;
+            var expression = property.GetArrayElementAtIndex(index).FindPropertyRelative(nameof(FTForwardedParameter.expression));
+            var current = expression.stringValue?.TrimEnd() ?? "";
+            var needsOperator = current.Length > 0 && "+-*/(,".IndexOf(current[current.Length - 1]) < 0;
+            expression.stringValue = current.Length == 0 ? input : current + (needsOperator ? " + " : " ") + input;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        void UpdateSummary(int total, int existing)
+        {
+            var rank = FTForwardingPlan.RankFor(total);
+            var kind = total <= 10 ? FTKind.Ok : total <= 20 ? FTKind.Info : total <= 30 ? FTKind.Warning : FTKind.Error;
+            summary.Update($"{total}|{existing}", e =>
+            {
+                var tooltip = "Forwarded parameters count towards the avatar's performance rank: Excellent up to 10, Good 20, Medium 30, Poor 40." +
+                              (existing > 0 ? $" Includes {existing} already on the descriptor." : "");
+                var row = FTUI.Row("Forwarded", $"{total} parameter{(total == 1 ? "" : "s")}", tooltip);
+                row.Add(FTUI.Badge(rank, kind, tooltip));
+                row.style.marginBottom = 4;
+                e.Add(row);
             });
         }
     }
