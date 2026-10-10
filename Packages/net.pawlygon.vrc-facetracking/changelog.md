@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0] - Unreleased
+## [2.0.0-beta.1] - 2026-10-10
 Native face tracking for the VRChat Avatars SDK face tracking beta. Everything is applied at build time, without changing the avatar in the scene.
 - New `!Pawlygon - Face Tracking` prefab with four components:
   - Face Tracking: sets up native face tracking on the avatar descriptor (meshes, blendshape mapping, visemes, eyelids, eye gaze).
@@ -10,7 +10,8 @@ Native face tracking for the VRChat Avatars SDK face tracking beta. Everything i
 - Detects the 1.x OSC prefab and offers to remove it from the build.
 - Build Test Copy in the Hierarchy context menu (!Pawlygon > Face Tracking).
 - Fixed compiler warnings in the Threshold Editor and Clean OSC tools.
-- The 1.x OSC prefabs are still included for avatars using VRCFaceTracking.
+- Requires a VRChat Avatars SDK with native face tracking (3.11.0 beta or newer).
+- The 1.x OSC prefabs, animators and animations moved to `Deprecated/` and are still included for avatars using VRCFaceTracking. Existing references keep working.
 
 ## [1.7.1] - 2025-04-08
 - Added Modular Avatar Prefab Vartiants (ZenithVal Contribution).

@@ -13,7 +13,7 @@ namespace Pawlygon.FaceTracking.Editor
     /// </summary>
     internal static class LegacyOscDetector
     {
-        const string LegacyAnimatorsFolder = "Packages/net.pawlygon.vrc-facetracking/Animators";
+        const string LegacyAnimatorsFolder = "Packages/net.pawlygon.vrc-facetracking/Deprecated/Animators";
 
         static HashSet<string> legacyControllerGuids;
 
