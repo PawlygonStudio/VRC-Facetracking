@@ -53,7 +53,7 @@ namespace Pawlygon.FaceTracking.Editor
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Eye Gaze", out gazeResult));
 
-            var advanced = new Foldout { text = "Advanced", value = false };
+            var advanced = FTUI.Collapsible("Advanced");
             advanced.AddToClassList("ft-advanced");
             var dampenMode = serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenMode));
             var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Dampen Amount");
@@ -184,7 +184,7 @@ namespace Pawlygon.FaceTracking.Editor
                 e.Add(FTUI.Progress(fraction, fraction >= 0.5f ? FTKind.Ok : FTKind.Warning));
                 if (unmapped.Count == 0) return;
 
-                var foldout = new Foldout { text = $"Unmapped ({unmapped.Count})", value = false };
+                var foldout = FTUI.Collapsible($"Unmapped ({unmapped.Count})");
                 foldout.Add(FTUI.Chips(unmapped, null, "No blendshape matches this tracking key"));
                 e.Add(foldout);
             });

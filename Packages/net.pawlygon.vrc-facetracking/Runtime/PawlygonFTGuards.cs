@@ -16,11 +16,14 @@ namespace Pawlygon.FaceTracking
     {
         public override int LatestVersion => 1;
 
-        [Tooltip("Disable gesture-driven facial expressions while face tracking is active.")]
+        [Tooltip("Pause gesture-driven facial expressions.")]
         public bool guardGestures = true;
 
-        [Tooltip("Add a menu toggle that lets gestures play even while face tracking is active.")]
-        public bool allowGesturesToggle = true;
+        [Tooltip("Pause gestures automatically while face tracking is active.")]
+        public bool disableWithFaceTracking = true;
+
+        [Tooltip("Add a Disable Gestures menu toggle that pauses gestures whenever it's on, with or without face tracking.")]
+        public bool disableGesturesToggle = true;
 
         [Tooltip("Submenu of the avatar's main menu that gets the toggle. Created if missing.")]
         public string menuName = "Face Tracking";

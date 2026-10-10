@@ -14,10 +14,13 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void Build(PawlygonFTGuards component, FTBuildContext context)
         {
-            if (!component.guardGestures && !component.guardBlinking) return;
-
             var descriptor = context.Descriptor;
-            var fx = FTAvatarAssets.CopyFX(FTAvatarAssets.GetFX(descriptor), context.BuildFolder, out var assign);
+            var sourceFX = FTAvatarAssets.GetFX(descriptor);
+            var drivesLipTracking = UsesLipTracking(sourceFX);
+            var guardsGestures = GuardsGestures(component);
+            if (!guardsGestures && !component.guardBlinking && !drivesLipTracking) return;
+
+            var fx = FTAvatarAssets.CopyFX(sourceFX, context.BuildFolder, out var assign);
             var analysis = FXGuardAnalysis.Analyze(fx, new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
 
             // Blink guards first: the gesture guard then gates their Any State transitions, so it wins
@@ -33,7 +36,7 @@ namespace Pawlygon.FaceTracking.Editor
                 FTGuardDriver.AddBlinkDriver(fx);
             }
 
-            if (component.guardGestures)
+            if (guardsGestures)
             {
                 var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
                     AnimatorControllerParameterType.Bool, new Vector3(30, -80));
@@ -41,12 +44,30 @@ namespace Pawlygon.FaceTracking.Editor
                 {
                     FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
                 }
-                FTGuardDriver.AddGestureDriver(fx, component.allowGesturesToggle);
+                FTGuardDriver.AddGestureDriver(fx, component.disableWithFaceTracking, component.disableGesturesToggle);
             }
 
+            if (drivesLipTracking) FTGuardDriver.AddLipDriver(fx);
+
             FTAvatarAssets.SetFX(descriptor, assign);
-            AddParameters(component, context);
+            AddParameters(component, context, drivesLipTracking);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// LipTrackingActive is only driven when an animator reads it, e.g. Custom Animations made for
+        /// Pawlygon VRCFT 1.x, so avatars that don't use it don't pay for a synced parameter.
+        /// </summary>
+        /// <summary>Gestures need something to pause them: face tracking, the menu toggle, or both.</summary>
+        public static bool GuardsGestures(PawlygonFTGuards component)
+        {
+            return component.guardGestures && (component.disableWithFaceTracking || component.disableGesturesToggle);
+        }
+
+        public static bool UsesLipTracking(RuntimeAnimatorController controller)
+        {
+            return FTAvatarUtils.BaseController(controller) is AnimatorController animator
+                   && animator.parameters.Any(p => p.name == FTGuardDriver.LipTrackingParameter);
         }
 
         /// <summary>
@@ -73,12 +94,12 @@ namespace Pawlygon.FaceTracking.Editor
         /// The guard parameters are set on the owner only, so they're synced. VRChat converts the synced
         /// Bool to the Float EyeTrackingActive is in the animator.
         /// </summary>
-        static void AddParameters(PawlygonFTGuards component, FTBuildContext context)
+        static void AddParameters(PawlygonFTGuards component, FTBuildContext context, bool drivesLipTracking)
         {
             var descriptor = context.Descriptor;
             var parameters = FTAvatarAssets.CopyParameters(descriptor, context.BuildFolder);
 
-            if (component.guardGestures)
+            if (GuardsGestures(component))
             {
                 FTAvatarAssets.AddParameter(parameters, FXGuardWriter.GestureGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             }
@@ -86,10 +107,14 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 FTAvatarAssets.AddParameter(parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             }
-            if (component.guardGestures && component.allowGesturesToggle)
+            if (drivesLipTracking)
+            {
+                FTAvatarAssets.AddParameter(parameters, FTGuardDriver.LipTrackingParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+            }
+            if (GuardsGestures(component) && component.disableGesturesToggle)
             {
                 // Read by the owner's driver only, so it doesn't need syncing
-                FTAvatarAssets.AddParameter(parameters, FTGuardDriver.AllowGesturesParameter, VRCExpressionParameters.ValueType.Bool, 0, true, false);
+                FTAvatarAssets.AddParameter(parameters, FTGuardDriver.DisableGesturesParameter, VRCExpressionParameters.ValueType.Bool, 0, true, false);
                 AddMenuToggle(component, context);
             }
 
@@ -108,22 +133,22 @@ namespace Pawlygon.FaceTracking.Editor
             var submenu = FTAvatarAssets.GetEditableSubmenu(context.Descriptor, context.BuildFolder, menuName, icon);
             if (submenu == null)
             {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's main menu is full, so the Allow Gestures toggle wasn't added. " +
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's main menu is full, so the Disable Gestures toggle wasn't added. " +
                                  "Free a slot or set an existing submenu name on the Face Tracking Guards component.", component);
                 return;
             }
             if (submenu.controls.Count >= VRCExpressionsMenu.MAX_CONTROLS)
             {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] The '{menuName}' menu is full, so the Allow Gestures toggle wasn't added.", component);
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The '{menuName}' menu is full, so the Disable Gestures toggle wasn't added.", component);
                 return;
             }
-            if (submenu.controls.Any(c => c.parameter?.name == FTGuardDriver.AllowGesturesParameter)) return;
+            if (submenu.controls.Any(c => c.parameter?.name == FTGuardDriver.DisableGesturesParameter)) return;
 
             submenu.controls.Add(new VRCExpressionsMenu.Control
             {
-                name = "Allow Gestures",
+                name = "Disable Gestures",
                 type = VRCExpressionsMenu.Control.ControlType.Toggle,
-                parameter = new VRCExpressionsMenu.Control.Parameter { name = FTGuardDriver.AllowGesturesParameter },
+                parameter = new VRCExpressionsMenu.Control.Parameter { name = FTGuardDriver.DisableGesturesParameter },
                 value = 1,
                 icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Gestures_Disable_Icon.png"),
             });

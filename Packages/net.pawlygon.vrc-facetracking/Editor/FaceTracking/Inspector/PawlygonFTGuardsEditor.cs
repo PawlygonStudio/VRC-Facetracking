@@ -18,7 +18,9 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic gestureList = new FTDynamic();
         readonly FTDynamic blinkBadge = new FTDynamic();
         readonly FTDynamic blinkList = new FTDynamic();
+        readonly FTDynamic drivenList = new FTDynamic();
         VisualElement gestureBody, blinkBody, menuField;
+        Label gestureNote;
 
         double nextAnalysis;
         List<(string source, AnimatorController controller, FXGuardAnalysis analysis)> analyses =
@@ -38,9 +40,11 @@ namespace Pawlygon.FaceTracking.Editor
             gestureExtras.Add(gestureBadge.Element);
             gestureExtras.Add(EnabledToggle(nameof(PawlygonFTGuards.guardGestures)));
             gestureBody = new VisualElement();
-            gestureBody.Add(FTUI.Text("Paused while UserFaceTracking is on.", "ft-muted", "ft-card__note"));
+            gestureNote = FTUI.Text("", "ft-muted", "ft-card__note");
+            gestureBody.Add(gestureNote);
             gestureBody.Add(gestureList.Element);
-            gestureBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTGuards.allowGesturesToggle)), "Allow Gestures Toggle"));
+            gestureBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTGuards.disableWithFaceTracking)), "Disable With Face Tracking"));
+            gestureBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTGuards.disableGesturesToggle)), "Disable Gestures Toggle"));
             menuField = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTGuards.menuName)), "In Menu");
             gestureBody.Add(menuField);
             gestures.Add(gestureBody);
@@ -52,6 +56,9 @@ namespace Pawlygon.FaceTracking.Editor
             blinkBody.Add(FTUI.Text("Paused while UserEyeTracking is on.", "ft-muted", "ft-card__note"));
             blinkBody.Add(blinkList.Element);
             blinking.Add(blinkBody);
+
+            var driven = FTUI.Card(body, "Driven Parameters", out _);
+            driven.Add(drivenList.Element);
         }
 
         Toggle EnabledToggle(string property)
@@ -72,7 +79,13 @@ namespace Pawlygon.FaceTracking.Editor
 
             gestureBody.SetEnabled(Component.guardGestures);
             blinkBody.SetEnabled(Component.guardBlinking);
-            menuField.style.display = Component.allowGesturesToggle ? DisplayStyle.Flex : DisplayStyle.None;
+            menuField.style.display = Component.disableGesturesToggle ? DisplayStyle.Flex : DisplayStyle.None;
+            gestureNote.text = "Paused " + GestureSources() + ".";
+
+            if (Component.guardGestures && !FaceTrackingGuardsBuilder.GuardsGestures(Component))
+            {
+                issues.Warning("Gestures are never paused.", "Turn on Disable With Face Tracking, the Disable Gestures toggle, or both.");
+            }
 
             foreach (var (_, controller, _) in analyses)
             {
@@ -92,6 +105,60 @@ namespace Pawlygon.FaceTracking.Editor
 
             UpdateGestures();
             UpdateBlinks();
+            UpdateDriven();
+        }
+
+        string GestureSources()
+        {
+            if (Component.disableWithFaceTracking && Component.disableGesturesToggle) return "while UserFaceTracking is on or Disable Gestures is toggled";
+            if (Component.disableWithFaceTracking) return "while UserFaceTracking is on";
+            if (Component.disableGesturesToggle) return "while Disable Gestures is toggled";
+            return "never";
+        }
+
+        /// <summary>The Pawlygon VRCFT 1.x parameters this component sets, and from what.</summary>
+        void UpdateDriven()
+        {
+            var lipSources = analyses
+                .Where(a => a.controller.parameters.Any(p => p.name == FTGuardDriver.LipTrackingParameter))
+                .Select(a => a.source)
+                .ToList();
+
+            var rows = new List<(string parameter, string source, string tooltip)>();
+            if (FaceTrackingGuardsBuilder.GuardsGestures(Component))
+            {
+                rows.Add((FXGuardWriter.GestureGuardParameter, GestureSources(), "Pauses the guarded gesture layers."));
+            }
+            if (Component.guardBlinking)
+            {
+                rows.Add((FXGuardWriter.BlinkGuardParameter, "UserEyeTracking", "Pauses the guarded blink layers."));
+            }
+            if (lipSources.Count > 0)
+            {
+                rows.Add((FTGuardDriver.LipTrackingParameter, "UserFaceTracking", "Used by: " + string.Join(", ", lipSources)));
+            }
+
+            drivenList.Update(string.Join("|", rows), container =>
+            {
+                if (rows.Count == 0)
+                {
+                    container.Add(FTUI.Text("Nothing to drive.", "ft-muted"));
+                    return;
+                }
+
+                foreach (var (parameter, source, tooltip) in rows)
+                {
+                    var row = new VisualElement { tooltip = tooltip };
+                    row.AddToClassList("ft-param");
+                    var text = new VisualElement();
+                    text.AddToClassList("ft-param__text");
+                    text.Add(FTUI.Text(parameter, "ft-param__base"));
+                    text.Add(FTUI.Text(source.StartsWith("while") ? "on " + source : "follows " + source, "ft-param__expression"));
+                    row.Add(text);
+                    container.Add(row);
+                }
+                container.Add(FTUI.Text("Set by the avatar's owner and synced, 1 bit each.", "ft-muted", "ft-card__note"));
+            });
         }
 
         void UpdateGestures()
@@ -118,7 +185,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (main.Count == 0) container.Add(FTUI.Text("No gesture layers animate the face.", "ft-muted"));
                 if (others.Count > 0)
                 {
-                    var foldout = new Foldout { text = $"Other gesture layers ({others.Count})", value = false, tooltip = "These use gestures but don't animate face tracking blendshapes." };
+                    var foldout = FTUI.Collapsible($"Other gesture layers ({others.Count})", false, "These use gestures but don't animate face tracking blendshapes.");
                     AddGestureRows(foldout, others);
                     container.Add(foldout);
                 }
@@ -177,7 +244,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (main.Count == 0) container.Add(FTUI.Text("No likely blink layers.", "ft-muted"));
                 if (others.Count > 0)
                 {
-                    var foldout = new Foldout { text = $"Other candidates ({others.Count})", value = false };
+                    var foldout = FTUI.Collapsible($"Other candidates ({others.Count})");
                     AddBlinkRows(foldout, others);
                     container.Add(foldout);
                 }

@@ -124,10 +124,24 @@ namespace Pawlygon.FaceTracking.Editor
             Instant(exit);
 
             // Nothing else may pull the layer out of the guard state while it's on
-            foreach (var transition in machine.anyStateTransitions)
+            foreach (var transition in machine.anyStateTransitions.Where(t => t != guardTransition).ToList())
             {
-                if (transition == guardTransition) continue;
                 if (spec.ExemptState != null && transition.destinationState != null && transition.destinationState.name == spec.ExemptState) continue;
+
+                var onParameter = transition.conditions.Where(c => c.parameter == spec.Parameter).ToList();
+
+                // The controller's own version of this guard (e.g. Any State -> Idle while
+                // FacialExpressionsDisabled is on). Ours replaces it; keeping it would bounce the
+                // layer between both states while the guard is on.
+                if (onParameter.Any(c => Holds(c, 1) && !Holds(c, 0)))
+                {
+                    machine.RemoveAnyStateTransition(transition);
+                    continue;
+                }
+
+                // Already only taken while the guard is off
+                if (onParameter.Any(c => Holds(c, 0) && !Holds(c, 1))) continue;
+
                 transition.conditions = transition.conditions.Where(c => c.parameter != spec.Parameter).Append(spec.Clear).ToArray();
             }
 
@@ -143,6 +157,21 @@ namespace Pawlygon.FaceTracking.Editor
             transition.duration = 0;
             transition.offset = 0;
             transition.interruptionSource = TransitionInterruptionSource.None;
+        }
+
+        /// <summary>Whether the condition passes when its parameter has this value (0 = off, 1 = on).</summary>
+        static bool Holds(AnimatorCondition condition, float value)
+        {
+            switch (condition.mode)
+            {
+                case AnimatorConditionMode.If: return value != 0;
+                case AnimatorConditionMode.IfNot: return value == 0;
+                case AnimatorConditionMode.Greater: return value > condition.threshold;
+                case AnimatorConditionMode.Less: return value < condition.threshold;
+                case AnimatorConditionMode.Equals: return Mathf.Approximately(value, condition.threshold);
+                case AnimatorConditionMode.NotEqual: return !Mathf.Approximately(value, condition.threshold);
+                default: return false;
+            }
         }
 
         static AnimatorCondition Condition(AnimatorConditionMode mode, float threshold, string parameter)

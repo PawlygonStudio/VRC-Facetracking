@@ -75,13 +75,6 @@ namespace Pawlygon.FaceTracking.Editor
             row.Add(Piece("ft-tag__start"));
             var tag = new VisualElement { pickingMode = PickingMode.Ignore };
             tag.AddToClassList("ft-tag");
-            var logo = FTUI.Logo();
-            if (logo != null)
-            {
-                var image = new Image { image = logo, pickingMode = PickingMode.Ignore };
-                image.AddToClassList("ft-tag__logo");
-                tag.Add(image);
-            }
             var brand = FTUI.Text("Pawlygon", "ft-tag__text");
             brand.pickingMode = PickingMode.Ignore;
             tag.Add(brand);

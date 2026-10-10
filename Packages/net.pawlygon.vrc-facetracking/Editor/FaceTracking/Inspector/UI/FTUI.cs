@@ -25,7 +25,6 @@ namespace Pawlygon.FaceTracking.Editor
         const string UiFolder = "Packages/net.pawlygon.vrc-facetracking/Editor/FaceTracking/Inspector/UI/";
 
         static StyleSheet styleSheet;
-        static Texture2D logo;
 
         public static VisualElement Root()
         {
@@ -34,12 +33,6 @@ namespace Pawlygon.FaceTracking.Editor
             if (styleSheet != null) root.styleSheets.Add(styleSheet);
             root.AddToClassList(EditorGUIUtility.isProSkin ? "ft-dark" : "ft-light");
             return root;
-        }
-
-        public static Texture2D Logo()
-        {
-            if (logo == null) logo = AssetDatabase.LoadAssetAtPath<Texture2D>(UiFolder + "pawlygon_logo.png");
-            return logo;
         }
 
         /// <summary>
@@ -119,6 +112,19 @@ namespace Pawlygon.FaceTracking.Editor
                 }
             }
             return issue;
+        }
+
+        /// <summary>
+        /// A foldout whose arrow lines up with the card content. The inspector's default style pulls
+        /// foldout arrows left into the gutter, which puts them outside our cards.
+        /// </summary>
+        public static Foldout Collapsible(string text, bool open = false, string tooltip = null)
+        {
+            var foldout = new Foldout { text = text, value = open, tooltip = tooltip };
+            foldout.AddToClassList("ft-foldout");
+            var toggle = foldout.Q<Toggle>(className: UnityEngine.UIElements.Foldout.toggleUssClassName);
+            if (toggle != null) toggle.style.marginLeft = 0;
+            return foldout;
         }
 
         public static VisualElement Row(string label, string value, string tooltip = null)

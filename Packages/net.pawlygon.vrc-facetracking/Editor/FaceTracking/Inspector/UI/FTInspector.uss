@@ -101,12 +101,6 @@
     border-top-color: rgb(13, 13, 13);
 }
 
-.ft-tag__logo {
-    width: 14px;
-    height: 14px;
-    margin-right: 3px;
-}
-
 .ft-tag__text {
     -unity-font-style: bold;
     color: rgb(0, 187, 213);

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7310599187437552845}
   - component: {fileID: 5937106628117934110}
   - component: {fileID: 8812934403761245217}
+  - component: {fileID: 3145729847366120597}
   m_Layer: 0
   m_Name: '!Pawlygon - Face Tracking'
   m_TagString: Untagged
@@ -84,10 +85,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   guardGestures: 1
-  allowGesturesToggle: 1
+  disableWithFaceTracking: 1
+  disableGesturesToggle: 1
   menuName: Face Tracking
   guardBlinking: 1
   excludedGestureLayers: []
   includedGestureLayers: []
   excludedBlinkLayers: []
   includedBlinkLayers: []
+--- !u!114 &3145729847366120597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18baa4badc049c4b20c6d0455c60333, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  version: 1
+  autoDetect: 1
+  combine: 0
+  excludedFixes: []
+  fixes: []

@@ -14,16 +14,24 @@ namespace Pawlygon.FaceTracking.Editor
     {
         public const string UserFaceTracking = "UserFaceTracking";
         public const string UserEyeTracking = "UserEyeTracking";
-        public const string AllowGesturesParameter = "PawlygonFT/AllowGestures";
+        public const string DisableGesturesParameter = "PawlygonFT/DisableGestures";
+        // Pawlygon VRCFT 1.x lip tracking toggle, still read by animators like Custom Animations
+        public const string LipTrackingParameter = "LipTrackingActive";
 
-        /// <summary>FacialExpressionsDisabled is on while face tracking is on, unless gestures are allowed from the menu.</summary>
-        public static void AddGestureDriver(AnimatorController controller, bool withAllowToggle)
+        /// <summary>
+        /// FacialExpressionsDisabled is on while the Disable Gestures toggle is on, or while face tracking
+        /// is on when <paramref name="withFaceTracking"/> is set.
+        /// </summary>
+        public static void AddGestureDriver(AnimatorController controller, bool withFaceTracking, bool withToggle)
         {
-            FXGuardWriter.OnOffConditions(controller, UserFaceTracking, AnimatorControllerParameterType.Bool, out var tracking, out var notTracking);
-            AnimatorCondition allowed = default, notAllowed = default;
-            if (withAllowToggle)
+            AnimatorCondition tracking = default, notTracking = default, toggled = default, notToggled = default;
+            if (withFaceTracking)
             {
-                FXGuardWriter.OnOffConditions(controller, AllowGesturesParameter, AnimatorControllerParameterType.Bool, out allowed, out notAllowed);
+                FXGuardWriter.OnOffConditions(controller, UserFaceTracking, AnimatorControllerParameterType.Bool, out tracking, out notTracking);
+            }
+            if (withToggle)
+            {
+                FXGuardWriter.OnOffConditions(controller, DisableGesturesParameter, AnimatorControllerParameterType.Bool, out toggled, out notToggled);
             }
 
             var machine = AddLayer(controller, "Pawlygon FT - Gesture Guard");
@@ -31,9 +39,12 @@ namespace Pawlygon.FaceTracking.Editor
             var disabled = DriverState(machine, "Gestures Disabled", new Vector3(300, 100), FXGuardWriter.GestureGuardParameter, 1);
             machine.defaultState = enabled;
 
-            Transition(enabled, disabled, withAllowToggle ? new[] { tracking, notAllowed } : new[] { tracking });
-            Transition(disabled, enabled, notTracking);
-            if (withAllowToggle) Transition(disabled, enabled, allowed);
+            // Disabled when any source is on, enabled again once all of them are off
+            if (withFaceTracking) Transition(enabled, disabled, tracking);
+            if (withToggle) Transition(enabled, disabled, toggled);
+            if (withFaceTracking && withToggle) Transition(disabled, enabled, notTracking, notToggled);
+            else if (withFaceTracking) Transition(disabled, enabled, notTracking);
+            else Transition(disabled, enabled, notToggled);
         }
 
         /// <summary>EyeTrackingActive follows UserEyeTracking.</summary>
@@ -44,6 +55,21 @@ namespace Pawlygon.FaceTracking.Editor
             var machine = AddLayer(controller, "Pawlygon FT - Blink Guard");
             var off = DriverState(machine, "Eye Tracking Off", new Vector3(300, 0), FXGuardWriter.BlinkGuardParameter, 0);
             var on = DriverState(machine, "Eye Tracking On", new Vector3(300, 100), FXGuardWriter.BlinkGuardParameter, 1);
+            machine.defaultState = off;
+
+            Transition(off, on, tracking);
+            Transition(on, off, notTracking);
+        }
+
+        /// <summary>LipTrackingActive follows UserFaceTracking.</summary>
+        public static void AddLipDriver(AnimatorController controller)
+        {
+            FXGuardWriter.OnOffConditions(controller, UserFaceTracking, AnimatorControllerParameterType.Bool, out var tracking, out var notTracking);
+            FXGuardWriter.EnsureParameter(controller, LipTrackingParameter, AnimatorControllerParameterType.Float);
+
+            var machine = AddLayer(controller, "Pawlygon FT - Lip Tracking");
+            var off = DriverState(machine, "Face Tracking Off", new Vector3(300, 0), LipTrackingParameter, 0);
+            var on = DriverState(machine, "Face Tracking On", new Vector3(300, 100), LipTrackingParameter, 1);
             machine.defaultState = off;
 
             Transition(off, on, tracking);
