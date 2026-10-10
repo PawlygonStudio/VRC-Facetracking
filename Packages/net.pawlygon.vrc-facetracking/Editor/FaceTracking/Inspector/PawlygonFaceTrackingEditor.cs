@@ -19,7 +19,7 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic keysBadge = new FTDynamic();
         readonly FTDynamic keysDetails = new FTDynamic();
         PropertyField manualMeshes;
-        Label lipSyncResult, eyelidsResult, gazeResult;
+        Label lipSyncResult, eyelidsResult, pupilsResult, gazeResult;
 
         double nextSlowScan;
         List<LegacyOscDetector.Finding> legacyFindings = new List<LegacyOscDetector.Finding>();
@@ -51,6 +51,7 @@ namespace Pawlygon.FaceTracking.Editor
             var face = FTUI.Card(body, "Lip Sync & Eyes", out _);
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Lip Sync", out lipSyncResult));
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
+            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.pupils), "Pupils", out pupilsResult));
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Eye Gaze", out gazeResult));
 
             var advanced = FTUI.Collapsible("Advanced");
@@ -199,13 +200,19 @@ namespace Pawlygon.FaceTracking.Editor
             const string unchanged = "unchanged";
             if (plan.Set == null)
             {
-                lipSyncResult.text = eyelidsResult.text = gazeResult.text = "";
+                lipSyncResult.text = eyelidsResult.text = pupilsResult.text = gazeResult.text = "";
                 return;
             }
 
             lipSyncResult.text = plan.UseFaceTrackingLipSync ? $"→ {plan.MappedVisemes}/{FTKeys.VisemeCount} visemes" : unchanged;
             lipSyncResult.tooltip = plan.VisemesFromDescriptor ? "Taken from the avatar's existing viseme setup." : "Matched by blendshape name.";
             eyelidsResult.text = plan.UseFaceTrackingEyelids ? "→ EyeClosed" : unchanged;
+            pupilsResult.text = plan.AnimatorKeys.Count > 0 ? "→ animators"
+                : plan.MappedKeys.Any(FTKeys.IsPupilKey) ? "→ EyeDilation/EyeConstrict"
+                : unchanged;
+            pupilsResult.tooltip = plan.AnimatorKeys.Count > 0
+                ? "The pupil blendshapes are left to the avatar's animators, e.g. Face Tracking Extras' fake pupil dilation, which also plays real pupil tracking."
+                : "";
             gazeResult.text = plan.GazeMode.HasValue ? "→ " + ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : unchanged;
         }
 

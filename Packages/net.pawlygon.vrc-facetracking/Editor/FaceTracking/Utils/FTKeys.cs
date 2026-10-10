@@ -42,6 +42,13 @@ namespace Pawlygon.FaceTracking.Editor
 
         public static bool IsBasic(int key) => VRCAvatarDescriptor.IsBasicFaceTrackingKey(key);
 
+        /// <summary>The pupil keys: EyeDilation and EyeConstrict, left and right.</summary>
+        public static bool IsPupilKey(int key)
+        {
+            var name = KeyName(key);
+            return name.StartsWith("EyeDilation", StringComparison.Ordinal) || name.StartsWith("EyeConstrict", StringComparison.Ordinal);
+        }
+
         /// <summary>Index into <paramref name="blendshapes"/> of the best match for a tracking key, or -1.</summary>
         public static int FindKey(string[] blendshapes, int key)
         {
