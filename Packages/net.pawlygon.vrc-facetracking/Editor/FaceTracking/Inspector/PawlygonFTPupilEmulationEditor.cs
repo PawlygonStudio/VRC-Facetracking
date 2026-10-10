@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,6 +14,8 @@ namespace Pawlygon.FaceTracking.Editor
     {
         readonly FTDynamic shapesBadge = new FTDynamic();
         readonly FTDynamic shapesList = new FTDynamic();
+        readonly FTDynamic replacedList = new FTDynamic();
+        VisualElement replacedCard;
 
         protected override string Title => "Pupil Emulation";
         protected override string Subtitle => "Lively pupils on headsets without pupil tracking.";
@@ -27,6 +30,11 @@ namespace Pawlygon.FaceTracking.Editor
             var shapes = FTUI.Card(body, "Pupils", out var shapesExtras);
             shapesExtras.Add(shapesBadge.Element);
             shapes.Add(shapesList.Element);
+
+            replacedCard = FTUI.Card(body, "Replaced at Build", out _);
+            replacedCard.Add(FTUI.Text("Fake pupil layers from 1.x (Face Tracking Extras, or made by hand) would fight Pupil Emulation, " +
+                                       "so they're emptied in the uploaded copy. Your controllers aren't changed.", "ft-muted", "ft-card__note"));
+            replacedCard.Add(replacedList.Element);
 
             var idle = FTUI.Card(body, "Idle Drift", out _);
             idle.Add(Field(nameof(PawlygonFTPupilEmulation.idleDilationMin), "Dilation Min"));
@@ -79,6 +87,42 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             UpdateShapes(plan, issues);
+            UpdateReplaced(avatar);
+        }
+
+        /// <summary>The fake pupil layers in the FX controller and in the controllers VRCFury / Modular Avatar will merge into it.</summary>
+        void UpdateReplaced(VRCAvatarDescriptor avatar)
+        {
+            var found = new List<(string source, string layer)>();
+            var seen = new HashSet<AnimatorController>();
+
+            void Add(string source, RuntimeAnimatorController runtime)
+            {
+                if (!(FTAvatarUtils.BaseController(runtime) is AnimatorController controller) || !seen.Add(controller)) return;
+                found.AddRange(FTFakePupilLayers.Find(controller).Select(i => (source, controller.layers[i].name)));
+            }
+
+            var fx = FTAvatarAssets.GetFX(avatar);
+            if (fx != null) Add($"FX ({fx.name})", fx);
+            foreach (var behaviour in avatar.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour == null || behaviour is VRC.SDKBase.VRC_AvatarDescriptor || behaviour is PawlygonFTComponent) continue;
+                if (FTAvatarUtils.IsEditorOnly(behaviour.transform, avatar.transform)) continue;
+                foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour, (int)VRCAvatarDescriptor.AnimLayerType.FX))
+                {
+                    if (!LegacyOscDetector.IsPawlygonLegacyController(controller)) Add(FTAvatarUtils.GetPath(behaviour.transform, avatar.transform), controller);
+                }
+            }
+
+            replacedCard.style.display = found.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            replacedList.Update(string.Join("|", found), container =>
+            {
+                foreach (var group in found.GroupBy(f => f.source))
+                {
+                    container.Add(FTUI.Text(group.Key, "ft-group-title"));
+                    container.Add(FTUI.Chips(group.Select(f => f.layer), null, "Emptied in the uploaded copy"));
+                }
+            });
         }
 
         void UpdateShapes(FTPupilEmulationPlan plan, FTIssues issues)

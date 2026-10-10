@@ -56,6 +56,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             var descriptor = context.Descriptor;
             var fx = FTAvatarAssets.CopyFX(FTAvatarAssets.GetFX(descriptor), context.BuildFolder, out var assign);
+            ReplaceFakePupilLayers(component, context, fx);
             new LayerBuilder(fx, component, plan, context).Build();
             FTGuardDriver.AddBlinkDriver(fx);
             FTAvatarAssets.SetFX(descriptor, assign);
@@ -64,6 +65,36 @@ namespace Pawlygon.FaceTracking.Editor
             var parameters = FTAvatarAssets.CopyParameters(descriptor, context.BuildFolder);
             FTAvatarAssets.AddParameter(parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Empties the fake pupil layers avatars bring from 1.x (Face Tracking Extras' or hand-made), which would
+        /// fight this component over the pupil blendshapes, and drops the forwards only they used.
+        /// </summary>
+        static void ReplaceFakePupilLayers(PawlygonFTPupilEmulation component, FTBuildContext context, AnimatorController fx)
+        {
+            var indices = FTFakePupilLayers.Find(fx);
+            if (indices.Count == 0) return;
+
+            var names = indices.Select(i => fx.layers[i].name).ToList();
+            var readByRemoved = new HashSet<string>(indices.SelectMany(i => FTFakePupilLayers.ReadParameters(fx.layers[i])));
+            FTFakePupilLayers.Empty(fx, indices);
+
+            // Forwarded parameters go to every playable layer, so they're only dropped when no layer reads them anymore
+            var otherControllers = (context.Descriptor.baseAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0])
+                .Concat(context.Descriptor.specialAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0])
+                .Where(l => !l.isDefault && l.type != VRCAvatarDescriptor.AnimLayerType.FX && l.animatorController != null)
+                .Select(l => FTAvatarUtils.BaseController(l.animatorController) as AnimatorController)
+                .Where(c => c != null);
+            var stillRead = new HashSet<string>(fx.layers.Concat(otherControllers.SelectMany(c => c.layers)).SelectMany(FTFakePupilLayers.ReadParameters));
+            var dropped = context.Behaviors.RemoveAll(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
+                                                           && readByRemoved.Contains(b.outputParameterName)
+                                                           && !stillRead.Contains(b.outputParameterName));
+
+            Debug.Log($"[{FTErrorBoundary.Title}] Pupil Emulation replaced the fake pupil {(names.Count == 1 ? "layer" : "layers")} " +
+                      $"{string.Join(", ", names.Select(n => $"'{n}'"))} in the FX controller" +
+                      (dropped > 0 ? $", and dropped {dropped} forwarded {(dropped == 1 ? "parameter" : "parameters")} only {(names.Count == 1 ? "it" : "they")} used." : "."),
+                component);
         }
 
         static void AddForward(FTBuildContext context, string parameter, string expression)
