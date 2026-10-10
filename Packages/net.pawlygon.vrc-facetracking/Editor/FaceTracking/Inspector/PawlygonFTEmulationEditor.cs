@@ -25,6 +25,7 @@ namespace Pawlygon.FaceTracking.Editor
         protected override void BuildBody(VisualElement body)
         {
             var emulations = FTUI.Card(body, "Emulations", out _);
+            emulations.Add(FTUI.Text("Each one only adds to the tracked value. The slider sets how strongly.", "ft-muted", "ft-card__note"));
             AddRule(emulations, nameof(PawlygonFTEmulation.tongueOpensJaw), nameof(PawlygonFTEmulation.tongueOpensJawAmount), "Tongue Opens Jaw");
             AddRule(emulations, nameof(PawlygonFTEmulation.browsUpWithWideEyes), nameof(PawlygonFTEmulation.browsUpWithWideEyesAmount), "Brows Up With Wide Eyes");
             AddRule(emulations, nameof(PawlygonFTEmulation.browsDownWithSquint), nameof(PawlygonFTEmulation.browsDownWithSquintAmount), "Brows Down With Squint");
@@ -32,33 +33,43 @@ namespace Pawlygon.FaceTracking.Editor
             AddRule(emulations, nameof(PawlygonFTEmulation.sadBrows), nameof(PawlygonFTEmulation.sadBrowsAmount), "Sad Brows");
 
             var limits = FTUI.Card(body, "Limits", out _);
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitFunnelByChinRaise), "Funnel Relaxed by Chin Raise"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitRaisersByMouthClosed), "Raisers Relaxed by Closed Mouth"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitTongueByFunnel), "Tongue Pulled In by Funnel"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitLipsByFunnel), "Lips Relaxed by Funnel"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitJawByMouthSideways), "Jaw Sideways Reduced by Mouth"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitFrownByMouthSideways), "Frown Reduced by Mouth Sideways"));
-            limits.Add(Field(nameof(PawlygonFTEmulation.limitLipSuckByMouthClosed), "Lip Suck Relaxed by Closed Mouth"));
+            limits.Add(FTUI.Text("Recommended", "ft-group-title"));
+            AddRule(limits, nameof(PawlygonFTEmulation.limitFunnelByChinRaise), null, "Funnel Relaxed by Chin Raise");
+            AddRule(limits, nameof(PawlygonFTEmulation.limitRaisersByMouthClosed), null, "Raisers Relaxed by Closed Mouth");
+            AddRule(limits, nameof(PawlygonFTEmulation.limitTongueByFunnel), null, "Tongue Pulled In by Funnel");
+            limits.Add(FTUI.Text("Optional", "ft-group-title"));
+            AddRule(limits, nameof(PawlygonFTEmulation.limitLipsByFunnel), null, "Lips Relaxed by Funnel");
+            AddRule(limits, nameof(PawlygonFTEmulation.limitJawByMouthSideways), null, "Jaw Reduced by Mouth Sideways");
+            AddRule(limits, nameof(PawlygonFTEmulation.limitFrownByMouthSideways), null, "Frown Reduced by Mouth Sideways");
+            AddRule(limits, nameof(PawlygonFTEmulation.limitLipSuckByMouthClosed), null, "Lip Suck Relaxed by Closed Mouth");
 
             var shapes = FTUI.Card(body, "Rewritten Blendshapes", out var shapesExtras);
             shapesExtras.Add(shapesBadge.Element);
             shapes.Add(shapesList.Element);
         }
 
-        void AddRule(VisualElement card, string toggle, string amount, string label)
+        /// <summary>One rule on one line: its switch and name, then its amount (greyed out while it's off).</summary>
+        void AddRule(VisualElement card, string toggleProperty, string amountProperty, string label)
         {
-            card.Add(Field(toggle, label));
-            var amountField = Field(amount, "Amount");
-            amountField.style.marginLeft = 16;
-            card.Add(amountField);
+            var row = new VisualElement();
+            row.AddToClassList("ft-rule");
 
-            var property = serializedObject.FindProperty(toggle);
-            void Update() => amountField.SetEnabled(property.boolValue);
-            Update();
-            amountField.TrackPropertyValue(property, _ => Update());
+            var property = serializedObject.FindProperty(toggleProperty);
+            var toggle = new Toggle { text = label, tooltip = property.tooltip };
+            toggle.BindProperty(property);
+            row.Add(toggle);
+
+            if (amountProperty != null)
+            {
+                var amount = serializedObject.FindProperty(amountProperty);
+                var slider = new Slider(0f, 1f) { showInputField = true, tooltip = "How strongly it's applied." };
+                slider.BindProperty(amount);
+                row.Add(slider);
+                slider.SetEnabled(property.boolValue);
+                row.TrackPropertyValue(property, p => slider.SetEnabled(p.boolValue));
+            }
+            card.Add(row);
         }
-
-        PropertyField Field(string property, string label) => new PropertyField(serializedObject.FindProperty(property), label);
 
         protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
         {

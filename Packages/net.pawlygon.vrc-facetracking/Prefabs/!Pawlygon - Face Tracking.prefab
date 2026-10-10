@@ -132,7 +132,7 @@ MonoBehaviour:
   reflexDuration: 1.8
   lidClosedBelow: 0.15
   lidOpenAbove: 0.35
-  moodReactions: 0
+  moodReactions: 1
   wideEyesConstrict: 70
   frownDilation: 70
 --- !u!114 &5074269645722866870

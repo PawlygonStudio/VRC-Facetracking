@@ -412,6 +412,27 @@
 .ft-card__note {
     font-size: 11px;
     margin: 0 0 4px 2px;
+    white-space: normal;
+}
+
+/* A rule: its toggle and label, then its amount */
+
+.ft-rule {
+    flex-direction: row;
+    align-items: center;
+    min-height: 20px;
+}
+
+.ft-rule > .unity-toggle {
+    width: 190px;
+    flex-shrink: 0;
+    margin: 0 4px 0 0;
+}
+
+.ft-rule > .unity-slider {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
 }
 
 .ft-check {

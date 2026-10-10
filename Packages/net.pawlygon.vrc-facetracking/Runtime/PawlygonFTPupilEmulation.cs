@@ -36,7 +36,7 @@ namespace Pawlygon.FaceTracking
         [Range(0f, 1f)] public float lidOpenAbove = 0.35f;
 
         [Tooltip("The emulated pupils react to the expression: wide eyes constrict them, frowning with both mouth corners dilates them.")]
-        public bool moodReactions = false;
+        public bool moodReactions = true;
 
         [Tooltip("EyeConstrict added when both eyes are fully wide.")]
         [Range(0f, 100f)] public float wideEyesConstrict = 70f;

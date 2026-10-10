@@ -49,20 +49,23 @@ namespace Pawlygon.FaceTracking.Editor
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.lidClosedBelow), "Closed Below"));
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.lidOpenAbove), "Reopened Above"));
 
-            var mood = FTUI.Card(body, "Mood Reactions", out _);
-            mood.Add(Field(nameof(PawlygonFTPupilEmulation.moodReactions), "React to Expression"));
-            var wide = Field(nameof(PawlygonFTPupilEmulation.wideEyesConstrict), "Wide Eyes Constrict");
-            var frown = Field(nameof(PawlygonFTPupilEmulation.frownDilation), "Frown Dilates");
-            mood.Add(wide);
-            mood.Add(frown);
+            // Same layout as the Guards cards: the switch in the header, the settings greyed out while it's off
+            var mood = FTUI.Card(body, "Mood Reactions", out var moodExtras);
             var moodProperty = serializedObject.FindProperty(nameof(PawlygonFTPupilEmulation.moodReactions));
-            void UpdateMood()
-            {
-                wide.SetEnabled(moodProperty.boolValue);
-                frown.SetEnabled(moodProperty.boolValue);
-            }
-            UpdateMood();
-            mood.TrackPropertyValue(moodProperty, _ => UpdateMood());
+            var moodToggle = new Toggle { tooltip = "Enabled" };
+            moodToggle.AddToClassList("ft-toggle");
+            moodToggle.BindProperty(moodProperty);
+            moodExtras.Add(moodToggle);
+
+            var moodBody = new VisualElement();
+            moodBody.Add(FTUI.Text("While the pupils are emulated, wide eyes constrict them and a frown on both sides dilates them.",
+                "ft-muted", "ft-card__note"));
+            moodBody.Add(Field(nameof(PawlygonFTPupilEmulation.wideEyesConstrict), "Wide Eyes Constrict"));
+            moodBody.Add(Field(nameof(PawlygonFTPupilEmulation.frownDilation), "Frown Dilation"));
+            mood.Add(moodBody);
+
+            moodBody.SetEnabled(moodProperty.boolValue);
+            mood.TrackPropertyValue(moodProperty, p => moodBody.SetEnabled(p.boolValue));
         }
 
         PropertyField Field(string property, string label)
