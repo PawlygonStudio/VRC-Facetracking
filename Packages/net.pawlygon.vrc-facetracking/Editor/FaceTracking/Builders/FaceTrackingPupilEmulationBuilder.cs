@@ -20,6 +20,12 @@ namespace Pawlygon.FaceTracking.Editor
         const string LayerName = "Pawlygon FT - Pupil Emulation";
         const string LidParameter = FTPupilEmulationPlan.ParameterPrefix + "Lid";
         const string OneParameter = FTPupilEmulationPlan.ParameterPrefix + "One";
+        const string WideParameter = FTPupilEmulationPlan.ParameterPrefix + "Wide";
+        const string FrownParameter = FTPupilEmulationPlan.ParameterPrefix + "Frown";
+
+        // Mood reactions: how wide both eyes are, and how much both mouth corners frown
+        const string WideExpression = "(EyeWideLeft + EyeWideRight) / 2";
+        const string FrownExpression = "min(MouthFrownLeft, MouthFrownRight)";
 
         // The more open eyelid, on the 1.x EyeLid scale (0 closed, 0.75 normally open): both eyelids are
         // below a threshold exactly when this is
@@ -52,6 +58,11 @@ namespace Pawlygon.FaceTracking.Editor
             if (plan.RealTracking)
             {
                 foreach (var shape in plan.Shapes) AddForward(context, shape.Parameter, shape.Expression);
+            }
+            if (UsesMood(component, plan))
+            {
+                AddForward(context, WideParameter, WideExpression);
+                AddForward(context, FrownParameter, FrownExpression);
             }
 
             var descriptor = context.Descriptor;
@@ -97,6 +108,9 @@ namespace Pawlygon.FaceTracking.Editor
                 component);
         }
 
+        /// <summary>Mood reactions read keys that need All Tracking Keys, like real pupil tracking.</summary>
+        static bool UsesMood(PawlygonFTPupilEmulation component, FTPupilEmulationPlan plan) => component.moodReactions && plan.RealTracking;
+
         static void AddForward(FTBuildContext context, string parameter, string expression)
         {
             context.Behaviors.RemoveAll(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
@@ -137,7 +151,8 @@ namespace Pawlygon.FaceTracking.Editor
                 fx.AddLayer(new AnimatorControllerLayer { name = fx.MakeUniqueLayerName(LayerName), defaultWeight = 0f, stateMachine = machine });
 
                 var (reflexDilation, reflexConstrict) = FTPupilCurves.ReflexCurves(settings);
-                var idleClip = Clip("Pupils - Idle", true, FTPupilCurves.IdleCurve(settings), Constant(0f, FTPupilCurves.IdleLength));
+                Motion idleClip = Clip("Pupils - Idle", true, FTPupilCurves.IdleCurve(settings), Constant(0f, FTPupilCurves.IdleLength));
+                if (UsesMood(settings, plan)) idleClip = WithMood(idleClip);
                 var reflexClip = Clip("Pupils - Blink Reflex", false, reflexDilation, reflexConstrict);
 
                 var off = State(machine, "Off", new Vector3(300f, 0f), Save(new AnimationClip { name = "Pupils - Off" }));
@@ -180,6 +195,47 @@ namespace Pawlygon.FaceTracking.Editor
                         Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = shape.Parameter, threshold = RealTrackingMargin });
                     }
                 }
+            }
+
+            /// <summary>
+            /// The idle drift with the mood reactions added on top in a Direct tree: wide eyes add constriction, a
+            /// frown on both sides adds dilation.
+            /// </summary>
+            Motion WithMood(Motion idle)
+            {
+                AddFloat(OneParameter, 1f);
+                AddFloat(WideParameter, 0f);
+                AddFloat(FrownParameter, 0f);
+
+                var children = new List<ChildMotion> { new ChildMotion { motion = idle, directBlendParameter = OneParameter, timeScale = 1f } };
+                if (plan.ConstrictShapes.Any() && settings.wideEyesConstrict > 0f)
+                {
+                    children.Add(MoodChild("Wide Eyes", WideParameter, false, settings.wideEyesConstrict));
+                }
+                if (plan.DilationShapes.Any() && settings.frownDilation > 0f)
+                {
+                    children.Add(MoodChild("Frown", FrownParameter, true, settings.frownDilation));
+                }
+
+                var root = Tree("Pupils - Idle With Mood", BlendTreeType.Direct, null);
+                root.children = children.ToArray();
+                return root;
+            }
+
+            ChildMotion MoodChild(string name, string parameter, bool dilation, float amount)
+            {
+                var tree = Tree($"Pupils - Mood {name}", BlendTreeType.Simple1D, parameter);
+                tree.AddChild(GroupClip($"Pupils - Mood {name} 0", dilation, 0f), 0f);
+                tree.AddChild(GroupClip($"Pupils - Mood {name}", dilation, amount), 1f);
+                return new ChildMotion { motion = tree, directBlendParameter = OneParameter, timeScale = 1f };
+            }
+
+            /// <summary>Only the dilation (or only the constriction) shapes, held at one value.</summary>
+            AnimationClip GroupClip(string name, bool dilation, float value)
+            {
+                var clip = new AnimationClip { name = name };
+                foreach (var shape in plan.Shapes.Where(s => s.IsDilation == dilation)) SetCurve(clip, shape.Name, Constant(value, 1f / 60f));
+                return Save(clip);
             }
 
             /// <summary>Each pupil blendshape follows its own tracking value, played together in a Direct tree.</summary>

@@ -22,6 +22,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override string Details =>
             "While eye tracking is active, the pupils drift gently and react to every blink: they reopen wide, tighten, then settle. " +
+            "Mood reactions can add constriction with wide eyes and dilation with a frown. " +
             "As soon as the headset reports real pupil dilation, that plays instead. When the avatar is built, the EyeDilation and " +
             "EyeConstrict blendshapes are taken over from native face tracking and driven by an FX layer.";
 
@@ -47,6 +48,21 @@ namespace Pawlygon.FaceTracking.Editor
             reflex.Add(FTUI.Text("Eyelids are about 0 when closed and 0.75 when normally open.", "ft-muted", "ft-card__note"));
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.lidClosedBelow), "Closed Below"));
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.lidOpenAbove), "Reopened Above"));
+
+            var mood = FTUI.Card(body, "Mood Reactions", out _);
+            mood.Add(Field(nameof(PawlygonFTPupilEmulation.moodReactions), "React to Expression"));
+            var wide = Field(nameof(PawlygonFTPupilEmulation.wideEyesConstrict), "Wide Eyes Constrict");
+            var frown = Field(nameof(PawlygonFTPupilEmulation.frownDilation), "Frown Dilates");
+            mood.Add(wide);
+            mood.Add(frown);
+            var moodProperty = serializedObject.FindProperty(nameof(PawlygonFTPupilEmulation.moodReactions));
+            void UpdateMood()
+            {
+                wide.SetEnabled(moodProperty.boolValue);
+                frown.SetEnabled(moodProperty.boolValue);
+            }
+            UpdateMood();
+            mood.TrackPropertyValue(moodProperty, _ => UpdateMood());
         }
 
         PropertyField Field(string property, string label)
@@ -84,6 +100,11 @@ namespace Pawlygon.FaceTracking.Editor
             if (Component.lidOpenAbove <= Component.lidClosedBelow)
             {
                 issues.Warning("Reopened Above should be higher than Closed Below.", "Otherwise noisy eyelid tracking can trigger reflexes that aren't blinks.");
+            }
+
+            if (Component.moodReactions && plan.Shapes.Count > 0 && !plan.RealTracking)
+            {
+                issues.Info("Mood reactions need All Tracking Keys.", "They read EyeWide and MouthFrown, which only come with All Tracking Keys.");
             }
 
             UpdateShapes(plan, issues);

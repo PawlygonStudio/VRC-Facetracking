@@ -34,5 +34,14 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("Either eyelid above this, after a blink, starts the reflex. The gap to Closed Below stops noisy tracking from triggering false reflexes.")]
         [Range(0f, 1f)] public float lidOpenAbove = 0.35f;
+
+        [Tooltip("The emulated pupils react to the expression: wide eyes constrict them, frowning with both mouth corners dilates them.")]
+        public bool moodReactions = false;
+
+        [Tooltip("EyeConstrict added when both eyes are fully wide.")]
+        [Range(0f, 100f)] public float wideEyesConstrict = 70f;
+
+        [Tooltip("EyeDilation added when both mouth corners fully frown.")]
+        [Range(0f, 100f)] public float frownDilation = 70f;
     }
 }
