@@ -127,7 +127,7 @@ namespace Pawlygon.FaceTracking.Editor
         static string SourceExpression(List<Driver> drivers)
         {
             var terms = drivers
-                .Select(d => Mathf.Approximately(d.Multiplier, 1f) ? d.Key : $"{d.Key} * {d.Multiplier.ToString(CultureInfo.InvariantCulture)}")
+                .Select(d => Mathf.Approximately(d.Multiplier, 1f) ? d.Key : $"{d.Key} * {d.Multiplier.ToString("0.#####", CultureInfo.InvariantCulture)}")
                 .Distinct()
                 .ToList();
             return Fold(terms, "max");

@@ -15,7 +15,7 @@ namespace Pawlygon.FaceTracking.Editor
     internal static class FTExpressionCheck
     {
         static readonly HashSet<string> Functions = new HashSet<string>(StringComparer.Ordinal) { "abs", "min", "max", "clamp" };
-        static readonly Regex Token = new Regex(@"[A-Za-z_][A-Za-z0-9_]*|\d+(\.\d+)?|[()+\-*/,]|\S");
+        static readonly Regex Token = new Regex(@"[A-Za-z_][A-Za-z0-9_]*|\d+(\.\d*)?|\.\d+|[()+\-*/,]|\S");
 
         static HashSet<string> inputs;
 
@@ -50,7 +50,7 @@ namespace Pawlygon.FaceTracking.Editor
                     if (Functions.Contains(token)) continue;
                     if (!Inputs.Contains(token)) return $"Unknown input '{token}'. Names are case-sensitive.";
                 }
-                else if (!char.IsDigit(token[0]) && "+-*/,".IndexOf(token[0]) < 0)
+                else if (!char.IsDigit(token[0]) && !(token[0] == '.' && token.Length > 1) && "+-*/,".IndexOf(token[0]) < 0)
                 {
                     return $"Unexpected '{token}'.";
                 }

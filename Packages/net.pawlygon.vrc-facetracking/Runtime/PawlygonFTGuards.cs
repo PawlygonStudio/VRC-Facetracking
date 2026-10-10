@@ -7,7 +7,7 @@ namespace Pawlygon.FaceTracking
     /// Stops hand gestures and blink animations in the FX layer from fighting face tracking.
     /// At build time, guards are added to a copy of the FX controller. They're keyed on the same
     /// parameters as Pawlygon VRCFT 1.x (FacialExpressionsDisabled, EyeTrackingActive), which are
-    /// driven from VRChat's UserFaceTracking and UserEyeTracking.
+    /// driven from VRChat's UserFaceTracking and UserEyeTracking, and from a Disable Gestures menu toggle.
     /// </summary>
     [AddComponentMenu("Pawlygon/Pawlygon Face Tracking Guards")]
     [DisallowMultipleComponent]

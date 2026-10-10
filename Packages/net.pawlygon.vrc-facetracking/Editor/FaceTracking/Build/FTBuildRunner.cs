@@ -41,7 +41,7 @@ namespace Pawlygon.FaceTracking.Editor
                 }
                 catch (Exception e) when (!(e is FTBuildCancelledException))
                 {
-                    var name = ObjectNames.NicifyVariableName(step.component.GetType().Name);
+                    var name = FTAvatarUtils.DisplayName(step.component.GetType());
                     var path = FTAvatarUtils.GetPath(step.component.transform, avatarRoot.transform);
                     throw new FTBuildException($"{name} on '{path}' failed:\n{e.Message}", e);
                 }
@@ -88,7 +88,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (group.Count() < 2 || !Attribute.IsDefined(group.Key, typeof(FTSingleInstanceAttribute))) continue;
 
                 var paths = string.Join("\n", group.Select(c => "• " + FTAvatarUtils.GetPath(c.transform, avatarRoot)));
-                throw new FTBuildException($"Only one {ObjectNames.NicifyVariableName(group.Key.Name)} is allowed per avatar, found:\n{paths}");
+                throw new FTBuildException($"Only one {FTAvatarUtils.DisplayName(group.Key)} is allowed per avatar, found:\n{paths}");
             }
         }
     }

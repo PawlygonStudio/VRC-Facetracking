@@ -16,58 +16,60 @@ namespace Pawlygon.FaceTracking.Editor
         {
             var descriptor = context.Descriptor;
             var sourceFX = FTAvatarAssets.GetFX(descriptor);
-            var drivesLipTracking = UsesLipTracking(sourceFX);
-            var guardsGestures = GuardsGestures(component);
-            if (!guardsGestures && !component.guardBlinking && !drivesLipTracking) return;
+            var analysis = FXGuardAnalysis.Analyze(FTAvatarUtils.BaseController(sourceFX) as AnimatorController,
+                new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
 
+            // Each driver is only added when it has something to pause, or an animator already reads its
+            // parameter (e.g. FX controllers guarded by Unity Tools), so avatars don't pay for unused synced bits
+            var gestureLayers = GuardsGestures(component) ? analysis.GestureLayers.Where(l => ShouldGuard(component, l)).ToList() : null;
+            var blinkLayers = component.guardBlinking ? analysis.BlinkLayers.Where(l => ShouldGuard(component, l)).ToList() : null;
+            var drivesGestures = gestureLayers != null && (gestureLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.GestureGuardParameter));
+            var drivesBlinking = blinkLayers != null && (blinkLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.BlinkGuardParameter));
+            var drivesLipTracking = UsesParameter(sourceFX, FTGuardDriver.LipTrackingParameter);
+            if (!drivesGestures && !drivesBlinking && !drivesLipTracking) return;
+
+            // The copy has the same layers in the same order, so the analysis indices apply to it
             var fx = FTAvatarAssets.CopyFX(sourceFX, context.BuildFolder, out var assign);
-            var analysis = FXGuardAnalysis.Analyze(fx, new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
 
             // Blink guards first: the gesture guard then gates their Any State transitions, so it wins
             // on layers that have both, like the Unity Tools FX Check does
-            if (component.guardBlinking)
+            if (drivesBlinking)
             {
                 var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.BlinkGuardState, FXGuardWriter.BlinkGuardParameter,
                     AnimatorControllerParameterType.Float, new Vector3(30, -140), FXGuardWriter.GestureGuardState);
-                foreach (var layer in analysis.BlinkLayers.Where(l => ShouldGuard(component, l)))
-                {
-                    FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
-                }
+                foreach (var layer in blinkLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
                 FTGuardDriver.AddBlinkDriver(fx);
             }
 
-            if (guardsGestures)
+            if (drivesGestures)
             {
                 var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
                     AnimatorControllerParameterType.Bool, new Vector3(30, -80));
-                foreach (var layer in analysis.GestureLayers.Where(l => ShouldGuard(component, l)))
-                {
-                    FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
-                }
+                foreach (var layer in gestureLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
                 FTGuardDriver.AddGestureDriver(fx, component.disableWithFaceTracking, component.disableGesturesToggle);
             }
 
             if (drivesLipTracking) FTGuardDriver.AddLipDriver(fx);
 
             FTAvatarAssets.SetFX(descriptor, assign);
-            AddParameters(component, context, drivesLipTracking);
+            AddParameters(component, context, drivesGestures, drivesBlinking, drivesLipTracking);
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>
-        /// LipTrackingActive is only driven when an animator reads it, e.g. Custom Animations made for
-        /// Pawlygon VRCFT 1.x, so avatars that don't use it don't pay for a synced parameter.
-        /// </summary>
         /// <summary>Gestures need something to pause them: face tracking, the menu toggle, or both.</summary>
         public static bool GuardsGestures(PawlygonFTGuards component)
         {
             return component.guardGestures && (component.disableWithFaceTracking || component.disableGesturesToggle);
         }
 
-        public static bool UsesLipTracking(RuntimeAnimatorController controller)
+        /// <summary>
+        /// Whether the controller declares the parameter. LipTrackingActive is only driven when an animator
+        /// reads it, e.g. Custom Animations made for Pawlygon VRCFT 1.x.
+        /// </summary>
+        public static bool UsesParameter(RuntimeAnimatorController controller, string parameter)
         {
             return FTAvatarUtils.BaseController(controller) is AnimatorController animator
-                   && animator.parameters.Any(p => p.name == FTGuardDriver.LipTrackingParameter);
+                   && animator.parameters.Any(p => p.name == parameter);
         }
 
         /// <summary>
@@ -94,16 +96,16 @@ namespace Pawlygon.FaceTracking.Editor
         /// The guard parameters are set on the owner only, so they're synced. VRChat converts the synced
         /// Bool to the Float EyeTrackingActive is in the animator.
         /// </summary>
-        static void AddParameters(PawlygonFTGuards component, FTBuildContext context, bool drivesLipTracking)
+        static void AddParameters(PawlygonFTGuards component, FTBuildContext context, bool drivesGestures, bool drivesBlinking, bool drivesLipTracking)
         {
             var descriptor = context.Descriptor;
             var parameters = FTAvatarAssets.CopyParameters(descriptor, context.BuildFolder);
 
-            if (GuardsGestures(component))
+            if (drivesGestures)
             {
                 FTAvatarAssets.AddParameter(parameters, FXGuardWriter.GestureGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             }
-            if (component.guardBlinking)
+            if (drivesBlinking)
             {
                 FTAvatarAssets.AddParameter(parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             }
@@ -111,18 +113,20 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 FTAvatarAssets.AddParameter(parameters, FTGuardDriver.LipTrackingParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
             }
-            if (GuardsGestures(component) && component.disableGesturesToggle)
+            if (drivesGestures && component.disableGesturesToggle)
             {
                 // Read by the owner's driver only, so it doesn't need syncing
                 FTAvatarAssets.AddParameter(parameters, FTGuardDriver.DisableGesturesParameter, VRCExpressionParameters.ValueType.Bool, 0, true, false);
                 AddMenuToggle(component, context);
             }
 
+            // A warning, not an error: VRCFury's Parameter Compressor runs after this and may still bring it
+            // under the limit. The SDK blocks the upload if it doesn't.
             var cost = parameters.CalcTotalCost();
             if (cost > VRCExpressionParameters.MAX_PARAMETER_COST)
             {
-                throw new FTBuildException($"The avatar's synced parameters use {cost} of {VRCExpressionParameters.MAX_PARAMETER_COST} bits after " +
-                                           "adding the face tracking guards. Free up some synced parameters.");
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's synced parameters use {cost} of {VRCExpressionParameters.MAX_PARAMETER_COST} bits " +
+                                 "after adding the face tracking guards. Free up some synced parameters unless a parameter compressor handles it.", component);
             }
         }
 
@@ -134,7 +138,7 @@ namespace Pawlygon.FaceTracking.Editor
             if (submenu == null)
             {
                 Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's main menu is full, so the Disable Gestures toggle wasn't added. " +
-                                 "Free a slot or set an existing submenu name on the Face Tracking Guards component.", component);
+                                 "Free a slot, or set In Menu on the Face Tracking Guards component to an existing submenu.", component);
                 return;
             }
             if (submenu.controls.Count >= VRCExpressionsMenu.MAX_CONTROLS)

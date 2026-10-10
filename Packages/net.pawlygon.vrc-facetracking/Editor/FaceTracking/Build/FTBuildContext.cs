@@ -69,8 +69,6 @@ namespace Pawlygon.FaceTracking.Editor
             Behaviors.Clear();
         }
 
-        public BlendshapesSet FindSet(string setName) => Sets.FirstOrDefault(s => s.setName == setName);
-
         /// <summary>
         /// A set with correctly sized arrays. The SDK's constructor leaves them null and the weight at 0.
         /// </summary>

@@ -132,7 +132,8 @@ namespace Pawlygon.FaceTracking.Editor
                 if (string.IsNullOrEmpty(name)) problem = "Enter the fix blendshape.";
                 else problem = entry?.Problem;
 
-                manualStates[i].image = FTUI.Icon(problem == null ? FTKind.Ok : FTKind.Error);
+                // The build skips these with a warning, it doesn't fail
+                manualStates[i].image = FTUI.Icon(problem == null ? FTKind.Ok : FTKind.Warning);
                 manualStates[i].tooltip = problem ?? "= " + entry?.Expression;
             }
         }

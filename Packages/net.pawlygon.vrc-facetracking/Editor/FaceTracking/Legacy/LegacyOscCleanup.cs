@@ -12,7 +12,7 @@ namespace Pawlygon.FaceTracking.Editor
     {
         public static void Run(GameObject avatarRoot)
         {
-            if (FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatarRoot).Count == 0) return;
+            if (FTAvatarUtils.GetBuildComponents<PawlygonFTComponent>(avatarRoot).Count == 0) return;
 
             var findings = LegacyOscDetector.Find(avatarRoot);
             if (findings.Count == 0) return;

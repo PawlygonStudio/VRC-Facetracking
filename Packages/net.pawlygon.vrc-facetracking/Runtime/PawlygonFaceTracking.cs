@@ -66,7 +66,7 @@ namespace Pawlygon.FaceTracking
         [Tooltip("Face Tracking drives the eyelids with the EyeClosed blendshapes.")]
         public FTEyelidMode eyelids = FTEyelidMode.FaceTracking;
 
-        [Tooltip("Auto uses Both when the descriptor has eye bones set up in Eye Look, otherwise Face Tracking.")]
+        [Tooltip("Auto: Both with EyeLook blendshapes and eye bones set up in the descriptor's Eye Look, Face Tracking with only the blendshapes, Bone Rotation with only the bones, unchanged with neither.")]
         public FTGazeMode eyeGaze = FTGazeMode.Auto;
 
         [Tooltip("How visemes and mouth tracking are blended. Needs face tracking visemes and all tracking keys.")]

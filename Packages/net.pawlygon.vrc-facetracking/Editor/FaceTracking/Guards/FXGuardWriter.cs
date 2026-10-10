@@ -230,7 +230,7 @@ namespace Pawlygon.FaceTracking.Editor
                 AnimationUtility.SetObjectReferenceCurve(clip, binding, new[] { new ObjectReferenceKeyframe { time = 0, value = keys[0].value } });
             }
 
-            AssetDatabase.AddObjectToAsset(clip, controller);
+            if (AssetDatabase.Contains(controller)) AssetDatabase.AddObjectToAsset(clip, controller);
             return clip;
         }
 

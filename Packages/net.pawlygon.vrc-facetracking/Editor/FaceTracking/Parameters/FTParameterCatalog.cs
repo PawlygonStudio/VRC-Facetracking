@@ -8,7 +8,6 @@ namespace Pawlygon.FaceTracking.Editor
     /// <summary>
     /// Known OSC face tracking parameters and how to rebuild each from native tracking keys.
     /// Combined parameters follow the VRCFaceTracking v2 definitions.
-    /// Directions and scales still need checking against the client.
     /// </summary>
     internal static class FTParameterCatalog
     {

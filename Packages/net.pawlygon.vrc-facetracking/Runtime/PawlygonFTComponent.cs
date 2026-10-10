@@ -18,7 +18,7 @@ namespace Pawlygon.FaceTracking
 
         /// <summary>
         /// Brings data saved by an older version of the component up to date.
-        /// Called explicitly by the inspector and the build, never from OnValidate.
+        /// Called by the build, never from OnValidate.
         /// </summary>
         public void Upgrade()
         {
@@ -35,7 +35,11 @@ namespace Pawlygon.FaceTracking
             if (version < 0) version = LatestVersion;
         }
 
-        void ISerializationCallbackReceiver.OnAfterDeserialize() { }
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            // Loaded data without a version was saved before versioning existed, so it gets upgraded
+            if (version < 0) version = 0;
+        }
     }
 
     /// <summary>

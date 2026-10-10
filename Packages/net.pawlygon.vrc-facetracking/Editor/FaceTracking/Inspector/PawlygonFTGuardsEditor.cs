@@ -124,12 +124,17 @@ namespace Pawlygon.FaceTracking.Editor
                 .Select(a => a.source)
                 .ToList();
 
+            // Same rule as the build: driven when something is guarded or an animator reads the parameter
+            bool Reads(string parameter) => analyses.Any(a => a.controller.parameters.Any(p => p.name == parameter));
+            var guardedGestures = analyses.Any(a => a.analysis.GestureLayers.Any(l => FaceTrackingGuardsBuilder.ShouldGuard(Component, l)));
+            var guardedBlinks = analyses.Any(a => a.analysis.BlinkLayers.Any(l => FaceTrackingGuardsBuilder.ShouldGuard(Component, l)));
+
             var rows = new List<(string parameter, string source, string tooltip)>();
-            if (FaceTrackingGuardsBuilder.GuardsGestures(Component))
+            if (FaceTrackingGuardsBuilder.GuardsGestures(Component) && (guardedGestures || Reads(FXGuardWriter.GestureGuardParameter)))
             {
                 rows.Add((FXGuardWriter.GestureGuardParameter, GestureSources(), "Pauses the guarded gesture layers."));
             }
-            if (Component.guardBlinking)
+            if (Component.guardBlinking && (guardedBlinks || Reads(FXGuardWriter.BlinkGuardParameter)))
             {
                 rows.Add((FXGuardWriter.BlinkGuardParameter, "UserEyeTracking", "Pauses the guarded blink layers."));
             }
@@ -142,7 +147,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 if (rows.Count == 0)
                 {
-                    container.Add(FTUI.Text("Nothing to drive.", "ft-muted"));
+                    container.Add(FTUI.Text("Nothing to drive: no layers are guarded and no animator reads these parameters.", "ft-muted"));
                     return;
                 }
 

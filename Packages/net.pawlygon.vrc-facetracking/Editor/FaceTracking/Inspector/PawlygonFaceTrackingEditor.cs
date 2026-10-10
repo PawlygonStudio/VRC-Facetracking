@@ -107,13 +107,17 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 nextSlowScan = EditorApplication.timeSinceStartup + SlowScanSeconds;
                 legacyFindings = LegacyOscDetector.Find(avatar.gameObject);
-                blendshapeOptimizer = FindBlendshapeOptimizer(avatar);
+                blendshapeOptimizer = FTAvatarUtils.FindBlendshapeOptimizer(avatar.gameObject);
             }
 
             foreach (var finding in legacyFindings.Where(f => f.Holder != null))
             {
                 var holder = finding.Holder;
-                var actions = new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => DisableLegacy(holder)) };
+                // Disabling the avatar root would hide the whole avatar, so only offer to select it
+                var onRoot = holder == avatar.gameObject;
+                var actions = onRoot
+                    ? new[] { ("Select", (System.Action)(() => Select(holder))) }
+                    : new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => DisableLegacy(holder)) };
                 if (finding.IsPawlygonLegacy)
                 {
                     issues.Error($"Legacy OSC face tracking on '{finding.Path}'.",
@@ -136,8 +140,8 @@ namespace Pawlygon.FaceTracking.Editor
             if (blendshapeOptimizer != null)
             {
                 var optimizer = blendshapeOptimizer;
-                issues.Warning("VRCFury Blendshape Optimizer will strip face tracking blendshapes.",
-                    "It doesn't know about native face tracking and removes blendshapes it thinks are unused. Remove it from this avatar.",
+                issues.Error("VRCFury Blendshape Optimizer would strip face tracking blendshapes.",
+                    "It doesn't know about native face tracking and removes blendshapes it thinks are unused, so the build stops. Remove it from this avatar.",
                     ("Select", () => Select(optimizer)));
             }
         }
@@ -218,20 +222,5 @@ namespace Pawlygon.FaceTracking.Editor
             PrefabUtility.RecordPrefabInstancePropertyModifications(holder);
         }
 
-        static Object FindBlendshapeOptimizer(VRCAvatarDescriptor avatar)
-        {
-            foreach (var behaviour in avatar.GetComponentsInChildren<MonoBehaviour>(true))
-            {
-                if (behaviour == null || behaviour.GetType().FullName != "VF.Model.VRCFury") continue;
-                if (FTAvatarUtils.IsEditorOnly(behaviour.transform, avatar.transform)) continue;
-
-                using (var serialized = new SerializedObject(behaviour))
-                {
-                    var content = serialized.FindProperty("content");
-                    if (content != null && content.managedReferenceFullTypename.EndsWith("BlendshapeOptimizer")) return behaviour.gameObject;
-                }
-            }
-            return null;
-        }
     }
 }

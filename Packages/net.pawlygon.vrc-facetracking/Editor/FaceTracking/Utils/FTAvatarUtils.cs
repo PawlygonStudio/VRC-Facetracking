@@ -113,6 +113,34 @@ namespace Pawlygon.FaceTracking.Editor
             return controller is AnimatorOverrideController overrideController ? overrideController.runtimeAnimatorController : controller;
         }
 
+        /// <summary>
+        /// A VRCFury Blendshape Optimizer on the avatar, or null. It doesn't know about native face tracking
+        /// and removes the face tracking blendshapes as unused.
+        /// </summary>
+        public static GameObject FindBlendshapeOptimizer(GameObject avatarRoot)
+        {
+            foreach (var behaviour in avatarRoot.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour == null || behaviour.GetType().FullName != "VF.Model.VRCFury") continue;
+                if (IsEditorOnly(behaviour.transform, avatarRoot.transform)) continue;
+
+                using (var serialized = new SerializedObject(behaviour))
+                {
+                    var content = serialized.FindProperty("content");
+                    if (content != null && content.managedReferenceFullTypename.EndsWith("BlendshapeOptimizer")) return behaviour.gameObject;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>A component's name as shown in the Add Component menu.</summary>
+        public static string DisplayName(System.Type type)
+        {
+            var menu = (AddComponentMenu)System.Attribute.GetCustomAttribute(type, typeof(AddComponentMenu));
+            var path = menu?.componentMenu;
+            return string.IsNullOrEmpty(path) ? ObjectNames.NicifyVariableName(type.Name) : path.Substring(path.LastIndexOf('/') + 1);
+        }
+
         public static string GetPath(Transform transform, Transform avatarRoot)
         {
             if (transform == null) return "(missing)";

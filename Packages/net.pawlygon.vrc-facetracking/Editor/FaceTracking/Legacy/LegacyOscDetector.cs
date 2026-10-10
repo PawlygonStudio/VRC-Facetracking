@@ -67,25 +67,36 @@ namespace Pawlygon.FaceTracking.Editor
             return findings;
         }
 
+        // OSC face tracking templates use more than a handful of these. Animators that only read a few,
+        // like Face Tracking Extras, are what the Parameters component supports, not something to remove.
+        const int MinOscParameters = 10;
+
         /// <summary>
-        /// Removes a finding from a build copy: its whole GameObject, or only the component if it sits on the avatar root.
+        /// Removes a finding from a build copy. The whole GameObject goes when it's just a merge prefab (no
+        /// children, only VRCFury / Modular Avatar components, like the 1.x prefabs), otherwise only the component.
         /// </summary>
         public static void Strip(Finding finding, Transform avatarRoot)
         {
             if (finding.Component == null) return;
-            if (finding.Component.transform == avatarRoot)
-            {
-                Object.DestroyImmediate(finding.Component);
-            }
-            else
-            {
-                Object.DestroyImmediate(finding.Component.gameObject);
-            }
+
+            var holder = finding.Component.gameObject;
+            var isMergePrefab = holder.transform != avatarRoot
+                                && holder.transform.childCount == 0
+                                && holder.GetComponents<Component>().All(c => c is Transform || IsMergeTool(c));
+            if (isMergePrefab) Object.DestroyImmediate(holder);
+            else Object.DestroyImmediate(finding.Component);
+        }
+
+        static bool IsMergeTool(Component component)
+        {
+            var ns = component != null ? component.GetType().Namespace ?? "" : "";
+            return ns.StartsWith("VF") || ns.StartsWith("nadena");
         }
 
         public static bool IsPawlygonLegacyController(RuntimeAnimatorController controller)
         {
-            if (legacyControllerGuids == null)
+            // Not cached while empty, in case the asset database wasn't ready the first time
+            if (legacyControllerGuids == null || legacyControllerGuids.Count == 0)
             {
                 legacyControllerGuids = AssetDatabase.IsValidFolder(LegacyAnimatorsFolder)
                     ? new HashSet<string>(AssetDatabase.FindAssets("t:AnimatorController", new[] { LegacyAnimatorsFolder }))
@@ -98,7 +109,7 @@ namespace Pawlygon.FaceTracking.Editor
         static bool UsesOscParameters(RuntimeAnimatorController controller)
         {
             return FTAvatarUtils.BaseController(controller) is AnimatorController animator
-                   && animator.parameters.Any(p => p.name.StartsWith("FT/v2/") || p.name.StartsWith("v2/"));
+                   && animator.parameters.Count(p => p.name.StartsWith("FT/v2/") || p.name.StartsWith("v2/")) >= MinOscParameters;
         }
     }
 }

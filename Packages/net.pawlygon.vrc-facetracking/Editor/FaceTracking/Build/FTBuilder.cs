@@ -11,11 +11,9 @@ namespace Pawlygon.FaceTracking.Editor
     {
         // Base face tracking configuration (meshes, base set, visemes, eyes)
         Setup = 100,
-        // Changes to blendshape sets (splits, weights)
-        Sets = 200,
-        // Parameter behaviors (forward to animator, blendshape limits)
+        // Parameter behaviors (forward to animator, blendshape fixes)
         Behaviors = 300,
-        // Animator changes (toggles, menus, set weight states)
+        // Animator changes (guards, driver layers, menus)
         Animator = 400,
     }
 

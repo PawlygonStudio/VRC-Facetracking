@@ -15,7 +15,28 @@ namespace Pawlygon.FaceTracking.Editor
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
-            return FTErrorBoundary.Run(() => LegacyOscCleanup.Run(avatarGameObject));
+            // A test copy was already built: skip it in play mode, refuse to build it again otherwise
+            if (avatarGameObject.GetComponent<PawlygonFTTestCopy>() != null)
+            {
+                if (Application.isPlaying) return true;
+                return FTErrorBoundary.Run(() => throw new FTBuildException(
+                    "This is a Pawlygon Face Tracking test copy, which is already built. Build or upload the original avatar instead."));
+            }
+
+            return FTErrorBoundary.Run(() =>
+            {
+                if (!Application.isPlaying) FTTempAssets.CleanUnused();
+                if (FTAvatarUtils.GetBuildComponents<PawlygonFTComponent>(avatarGameObject).Count == 0) return;
+
+                var optimizer = FTAvatarUtils.FindBlendshapeOptimizer(avatarGameObject);
+                if (optimizer != null)
+                {
+                    throw new FTBuildException($"VRCFury's Blendshape Optimizer on '{FTAvatarUtils.GetPath(optimizer.transform, avatarGameObject.transform)}' " +
+                                               "would remove the face tracking blendshapes before face tracking is set up. Remove it from this avatar.");
+                }
+
+                LegacyOscCleanup.Run(avatarGameObject);
+            });
         }
     }
 
@@ -53,7 +74,8 @@ namespace Pawlygon.FaceTracking.Editor
             catch (Exception e)
             {
                 Debug.LogException(e);
-                if (!Application.isBatchMode)
+                // Play mode (Av3Emulator, Gesture Manager) keeps going anyway, so the Console is enough there
+                if (!Application.isBatchMode && !Application.isPlaying)
                 {
                     var message = e is FTBuildException ? e.Message : e.ToString();
                     EditorUtility.DisplayDialog(Title, $"The avatar build failed.\n\n{message}\n\nSee the Console for details.", "OK");

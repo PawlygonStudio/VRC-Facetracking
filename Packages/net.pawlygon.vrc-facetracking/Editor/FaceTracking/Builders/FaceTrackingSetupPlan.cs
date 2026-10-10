@@ -44,17 +44,18 @@ namespace Pawlygon.FaceTracking.Editor
                     : "No face tracking meshes are assigned.");
                 return plan;
             }
-            if (plan.Meshes.Count > FTBuildContext.MaxMeshes)
-            {
-                plan.Errors.Add($"{plan.Meshes.Count} meshes were found, but face tracking supports up to {FTBuildContext.MaxMeshes}. " +
-                                "Use Manual mesh mode to pick them.");
-            }
-
             var blendshapes = GetBlendshapeNames(plan.Meshes);
             plan.Set = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
             plan.MapKeys(component, blendshapes);
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
+
+            // After visemes, which can add the avatar's viseme mesh
+            if (plan.Meshes.Count > FTBuildContext.MaxMeshes)
+            {
+                plan.Errors.Add($"{plan.Meshes.Count} meshes were found, but face tracking supports up to {FTBuildContext.MaxMeshes}. " +
+                                "Use Manual mesh mode to pick them.");
+            }
 
             if (component.visemeDampenMode != FTVisemeDampenMode.None && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
             {

@@ -79,7 +79,7 @@ namespace Pawlygon.FaceTracking.Editor
         static AnimatorStateMachine AddLayer(AnimatorController controller, string name)
         {
             var machine = new AnimatorStateMachine { name = name, hideFlags = HideFlags.HideInHierarchy };
-            AssetDatabase.AddObjectToAsset(machine, controller);
+            if (AssetDatabase.Contains(controller)) AssetDatabase.AddObjectToAsset(machine, controller);
             controller.AddLayer(new AnimatorControllerLayer
             {
                 name = controller.MakeUniqueLayerName(name),

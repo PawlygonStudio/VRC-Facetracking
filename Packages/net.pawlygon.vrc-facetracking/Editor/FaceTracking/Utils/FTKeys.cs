@@ -19,7 +19,6 @@ namespace Pawlygon.FaceTracking.Editor
         public static readonly int VisemeCount = (int)VRC_AvatarDescriptor.Viseme.Count;
 
         static readonly MethodInfo FindKeyMethod;
-        static readonly MethodInfo FindVisemeMethod;
         static readonly MethodInfo NamesForKeyMethod;
         static Dictionary<string, List<int>> keysByName;
 
@@ -28,10 +27,9 @@ namespace Pawlygon.FaceTracking.Editor
             const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
             var autoFill = Type.GetType("VRC.SDK3A.Editor.FaceTrackingAutoFill, VRC.SDK3A.Editor");
             FindKeyMethod = autoFill?.GetMethod("FindFaceTrackingBlendshape", flags);
-            FindVisemeMethod = autoFill?.GetMethod("FindVisemeBlendshape", flags);
             NamesForKeyMethod = autoFill?.GetMethod("GetNamesForFaceTrackingKey", flags);
 
-            if (FindKeyMethod == null || FindVisemeMethod == null)
+            if (FindKeyMethod == null)
             {
                 Debug.LogWarning("[Pawlygon Face Tracking] The VRChat SDK face tracking auto-fill wasn't found. " +
                                  "Blendshapes will only be matched by their exact Unified Expressions names.");
@@ -79,15 +77,20 @@ namespace Pawlygon.FaceTracking.Editor
             return keysByName.TryGetValue(name, out var found) ? found : (IReadOnlyList<int>)Array.Empty<int>();
         }
 
-        /// <summary>Index into <paramref name="blendshapes"/> of the best match for a viseme, or -1.</summary>
+        /// <summary>
+        /// Index into <paramref name="blendshapes"/> of the best match for a viseme, or -1. Only exact viseme
+        /// names count (vrc.v_aa, v_aa, aa...). The SDK's auto-fill also matches substrings, which maps single
+        /// letter visemes like "e" to unrelated shapes on avatars without visemes.
+        /// </summary>
         public static int FindViseme(string[] blendshapes, int viseme)
         {
-            var name = VisemeName(viseme).ToLowerInvariant();
-            if (FindVisemeMethod != null)
+            var name = VisemeName(viseme);
+            foreach (var candidate in new[] { "vrc.v_" + name, "v_" + name, "vrc_v_" + name, "viseme_" + name, name })
             {
-                return (int)FindVisemeMethod.Invoke(null, new object[] { blendshapes, name, null });
+                var index = Array.FindIndex(blendshapes, b => string.Equals(b, candidate, StringComparison.OrdinalIgnoreCase));
+                if (index >= 0) return index;
             }
-            return Array.FindIndex(blendshapes, b => string.Equals(b, "vrc.v_" + name, StringComparison.OrdinalIgnoreCase));
+            return -1;
         }
     }
 }

@@ -262,8 +262,6 @@ namespace Pawlygon.FaceTracking.Editor
         readonly List<(FTKind kind, string text, string tooltip, (string label, Action action)[] actions)> items =
             new List<(FTKind, string, string, (string, Action)[])>();
 
-        public int Count => items.Count;
-
         public void Add(FTKind kind, string text, string tooltip = null, params (string label, Action action)[] actions)
         {
             items.Add((kind, text, tooltip, actions));
