@@ -144,14 +144,8 @@ namespace Pawlygon.FaceTracking.Editor
             }
             if (submenu.controls.Any(c => c.parameter?.name == FTGuardDriver.DisableGesturesParameter)) return;
 
-            submenu.controls.Add(new VRCExpressionsMenu.Control
-            {
-                name = "Disable Gestures",
-                type = VRCExpressionsMenu.Control.ControlType.Toggle,
-                parameter = new VRCExpressionsMenu.Control.Parameter { name = FTGuardDriver.DisableGesturesParameter },
-                value = 1,
-                icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Gestures_Disable_Icon.png"),
-            });
+            submenu.controls.Add(FTAvatarAssets.CreateControl("Disable Gestures", VRCExpressionsMenu.Control.ControlType.Toggle,
+                FTGuardDriver.DisableGesturesParameter, AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Gestures_Disable_Icon.png")));
             EditorUtility.SetDirty(submenu);
         }
     }

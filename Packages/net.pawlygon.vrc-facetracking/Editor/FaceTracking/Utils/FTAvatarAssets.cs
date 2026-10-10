@@ -141,15 +141,29 @@ namespace Pawlygon.FaceTracking.Editor
             if (root.controls.Count >= VRCExpressionsMenu.MAX_CONTROLS) return null;
 
             var submenu = CreateMenu(folder, $"{SafeName(submenuName)} Menu");
-            root.controls.Add(new VRCExpressionsMenu.Control
-            {
-                name = submenuName,
-                type = VRCExpressionsMenu.Control.ControlType.SubMenu,
-                subMenu = submenu,
-                icon = icon,
-            });
+            var submenuControl = CreateControl(submenuName, VRCExpressionsMenu.Control.ControlType.SubMenu, "", icon);
+            submenuControl.subMenu = submenu;
+            root.controls.Add(submenuControl);
             EditorUtility.SetDirty(root);
             return submenu;
+        }
+
+        /// <summary>
+        /// A menu control with every list filled in like the SDK's inspector does. Tools like Av3Emulator
+        /// and Gesture Manager expect them and fail to draw the menu when they're null.
+        /// </summary>
+        public static VRCExpressionsMenu.Control CreateControl(string name, VRCExpressionsMenu.Control.ControlType type, string parameter, Texture2D icon)
+        {
+            return new VRCExpressionsMenu.Control
+            {
+                name = name,
+                type = type,
+                icon = icon,
+                parameter = new VRCExpressionsMenu.Control.Parameter { name = parameter ?? "" },
+                subParameters = new VRCExpressionsMenu.Control.Parameter[0],
+                labels = new VRCExpressionsMenu.Control.Label[0],
+                value = 1,
+            };
         }
 
         static VRCExpressionsMenu CreateMenu(string folder, string name)
