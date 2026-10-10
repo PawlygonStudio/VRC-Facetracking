@@ -5,7 +5,7 @@ Native face tracking for the VRChat Avatars SDK face tracking beta. Everything i
 - New `!Pawlygon - Face Tracking` prefab with four components:
   - Face Tracking: sets up native face tracking on the avatar descriptor (meshes, blendshape mapping, visemes, eyelids, eye gaze).
   - Face Tracking Parameters: feeds FT/v2 and OSCm/Proxy parameters used by existing animators from native face tracking.
-  - Face Tracking Guards: pauses gesture expressions and blink animations while face / eye tracking is active, with a Disable Gestures menu toggle.
+  - Face Tracking Guards: pauses gesture expressions and blink animations while face / eye tracking is active, with a Disable Gestures menu toggle. Also drives `EyeTrackingActive` and `LipTrackingActive` whenever an animator reads them (e.g. Face Tracking Extras or 1.x custom animations), even with Blinking off.
   - Blendshape Fixes: drives anti-clipping fix shapes like MouthSmileLeft-EyeClosedLeft.
 - Detects the 1.x OSC prefab and offers to remove it from the build.
 - Build Test Copy in the Hierarchy context menu (!Pawlygon > Face Tracking).

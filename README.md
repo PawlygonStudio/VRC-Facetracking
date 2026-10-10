@@ -23,7 +23,7 @@ The prefab contains these components. Each one shows what it will do in its insp
 |---|---|
 | **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. Replaces any face tracking setup already on the descriptor. |
 | **Face Tracking Parameters** | Keeps animators made for OSC face tracking working (e.g. Face Tracking Extras). Parameters like `FT/v2/JawX` or `OSCm/Proxy/FT/v2/EyeLidLeft` used by the avatar's animators are fed from native face tracking. |
-| **Face Tracking Guards** | Pauses gesture expressions while face tracking is active, and blink animations while eye tracking is active. Adds a **Disable Gestures** toggle to the avatar menu. Uses the same `FacialExpressionsDisabled` / `EyeTrackingActive` parameters as 1.x and Pawlygon Unity Tools. |
+| **Face Tracking Guards** | Pauses gesture expressions while face tracking is active, and blink animations while eye tracking is active. Adds a **Disable Gestures** toggle to the avatar menu. Uses the same `FacialExpressionsDisabled` / `EyeTrackingActive` parameters as 1.x and Pawlygon Unity Tools, and drives `EyeTrackingActive` / `LipTrackingActive` for any animator that reads them, like 1.x did. |
 | **Blendshape Fixes** | Drives fix shapes that prevent clipping, named after the shapes they fix (e.g. `MouthSmileLeft-EyeClosedLeft`, `LipFunnel-LipPucker`). |
 
 ### Upgrading from 1.x

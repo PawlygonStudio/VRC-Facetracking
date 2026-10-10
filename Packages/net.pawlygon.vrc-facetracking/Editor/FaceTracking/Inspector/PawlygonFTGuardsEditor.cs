@@ -103,6 +103,14 @@ namespace Pawlygon.FaceTracking.Editor
                 issues.Info("No FX controller to guard yet.", "Only the driver layers will be added when the avatar is built.");
             }
 
+            var bakedBlinkGuards = analyses.Sum(a => a.analysis.BlinkLayers.Count(l => l.AlreadyGuarded));
+            if (!Component.guardBlinking && bakedBlinkGuards > 0)
+            {
+                issues.Info($"Blinking is off, but {bakedBlinkGuards} blink {(bakedBlinkGuards == 1 ? "layer already has a guard" : "layers already have guards")} in the FX controller.",
+                    "EyeTrackingActive is still driven because they read it, so they pause blinking while eye tracking is on. " +
+                    "Remove those guards from the FX controller to keep blinking.");
+            }
+
             UpdateGestures();
             UpdateBlinks();
             UpdateDriven();
@@ -119,10 +127,12 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>The Pawlygon VRCFT 1.x parameters this component sets, and from what.</summary>
         void UpdateDriven()
         {
-            var lipSources = analyses
-                .Where(a => a.controller.parameters.Any(p => p.name == FTGuardDriver.LipTrackingParameter))
+            List<string> ReadBy(string parameter) => analyses
+                .Where(a => a.controller.parameters.Any(p => p.name == parameter))
                 .Select(a => a.source)
                 .ToList();
+            var lipSources = ReadBy(FTGuardDriver.LipTrackingParameter);
+            var eyeSources = ReadBy(FXGuardWriter.BlinkGuardParameter);
 
             // Same rule as the build: driven when something is guarded or an animator reads the parameter
             bool Reads(string parameter) => analyses.Any(a => a.controller.parameters.Any(p => p.name == parameter));
@@ -134,9 +144,12 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 rows.Add((FXGuardWriter.GestureGuardParameter, GestureSources(), "Pauses the guarded gesture layers."));
             }
-            if (Component.guardBlinking && (guardedBlinks || Reads(FXGuardWriter.BlinkGuardParameter)))
+            // Driven whenever an animator reads it, even with Blinking off
+            if ((Component.guardBlinking && guardedBlinks) || eyeSources.Count > 0)
             {
-                rows.Add((FXGuardWriter.BlinkGuardParameter, "UserEyeTracking", "Pauses the guarded blink layers."));
+                rows.Add((FXGuardWriter.BlinkGuardParameter, "UserEyeTracking", Component.guardBlinking && guardedBlinks
+                    ? "Pauses the guarded blink layers."
+                    : "Used by: " + string.Join(", ", eyeSources)));
             }
             if (lipSources.Count > 0)
             {

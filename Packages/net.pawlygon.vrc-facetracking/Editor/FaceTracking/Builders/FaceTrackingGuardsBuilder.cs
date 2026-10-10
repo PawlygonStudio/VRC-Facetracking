@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -20,11 +21,15 @@ namespace Pawlygon.FaceTracking.Editor
                 new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
 
             // Each driver is only added when it has something to pause, or an animator already reads its
-            // parameter (e.g. FX controllers guarded by Unity Tools), so avatars don't pay for unused synced bits
+            // parameter (e.g. FX controllers guarded by Unity Tools), so avatars don't pay for unused synced bits.
+            // EyeTrackingActive and LipTrackingActive are driven whenever they're read, like Pawlygon VRCFT 1.x
+            // did, since animators such as Face Tracking Extras wait for them whatever is guarded here
             var gestureLayers = GuardsGestures(component) ? analysis.GestureLayers.Where(l => ShouldGuard(component, l)).ToList() : null;
-            var blinkLayers = component.guardBlinking ? analysis.BlinkLayers.Where(l => ShouldGuard(component, l)).ToList() : null;
+            var blinkLayers = component.guardBlinking
+                ? analysis.BlinkLayers.Where(l => ShouldGuard(component, l)).ToList()
+                : new List<FXGuardAnalysis.BlinkLayer>();
             var drivesGestures = gestureLayers != null && (gestureLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.GestureGuardParameter));
-            var drivesBlinking = blinkLayers != null && (blinkLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.BlinkGuardParameter));
+            var drivesBlinking = blinkLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.BlinkGuardParameter);
             var drivesLipTracking = UsesParameter(sourceFX, FTGuardDriver.LipTrackingParameter);
             if (!drivesGestures && !drivesBlinking && !drivesLipTracking) return;
 
