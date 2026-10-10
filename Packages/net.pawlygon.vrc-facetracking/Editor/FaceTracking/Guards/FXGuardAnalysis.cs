@@ -46,6 +46,7 @@ namespace Pawlygon.FaceTracking.Editor
         public const string GestureLeft = "GestureLeft";
         public const string GestureRight = "GestureRight";
 
+        const string OwnLayerPrefix = "Pawlygon FT - ";
         const int HighConfidence = 5;
         const int MediumConfidence = 3;
 
@@ -79,6 +80,8 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var stateMachine = layers[i].stateMachine;
                 if (stateMachine == null) continue;
+                // Layers added by this package's own builders (drivers, Pupil Emulation) are never guarded
+                if (layers[i].name.StartsWith(OwnLayerPrefix, StringComparison.Ordinal)) continue;
 
                 var gestureTransitions = AllTransitions(stateMachine).Where(UsesGesture).ToList();
                 if (gestureTransitions.Count > 0)

@@ -40,7 +40,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        static ParameterBehavior CreateForward(string parameter, string expression)
+        internal static ParameterBehavior CreateForward(string parameter, string expression)
         {
             return new ParameterBehavior
             {

@@ -21,10 +21,11 @@ The prefab contains these components. Each one shows what it will do in its insp
 
 | Component | What it does |
 |---|---|
-| **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. Replaces any face tracking setup already on the descriptor. **Pupils** (Auto) leaves the EyeDilation / EyeConstrict blendshapes to the avatar's animators when one animates them, like the fake pupil dilation of Pawlygon Unity Tools' Face Tracking Extras, which then plays real pupil tracking too. |
+| **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. Replaces any face tracking setup already on the descriptor. |
 | **Face Tracking Parameters** | Keeps animators made for OSC face tracking working (e.g. Face Tracking Extras). Parameters like `FT/v2/JawX` or `OSCm/Proxy/FT/v2/EyeLidLeft` used by the avatar's animators are fed from native face tracking. |
 | **Face Tracking Guards** | Pauses gesture expressions while face tracking is active, and blink animations while eye tracking is active. Adds a **Disable Gestures** toggle to the avatar menu. Uses the same `FacialExpressionsDisabled` / `EyeTrackingActive` parameters as 1.x and Pawlygon Unity Tools, and drives `EyeTrackingActive` / `LipTrackingActive` for any animator that reads them, like 1.x did. |
 | **Blendshape Fixes** | Drives fix shapes that prevent clipping, named after the shapes they fix (e.g. `MouthSmileLeft-EyeClosedLeft`, `LipFunnel-LipPucker`). |
+| **Pupil Emulation** | For headsets without pupil tracking: while eye tracking is active, the pupils drift gently and react to every blink (they reopen wide, tighten, then settle). As soon as the headset reports real pupil dilation, that plays instead, per eye when the avatar has left/right pupil blendshapes. Takes the `EyeDilation` / `EyeConstrict` blendshapes over from native face tracking. Remove it to keep native pupil tracking only. |
 
 ### Upgrading from 1.x
 The old OSC face tracking prefab can't be used together with native face tracking. When it's still on the avatar, the Face Tracking inspector shows it with a **Disable** button, and each build asks whether to remove it from that upload.

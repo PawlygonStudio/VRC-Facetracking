@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
@@ -21,8 +20,6 @@ namespace Pawlygon.FaceTracking.Editor
         // Keys considered for mapping (all keys, or only the basic ones)
         public readonly List<int> MappedKeys = new List<int>();
         public readonly List<int> UnmappedKeys = new List<int>();
-        // Pupil keys whose blendshapes are left to the avatar's animators
-        public readonly List<int> AnimatorKeys = new List<int>();
         public int MappedVisemes;
         public bool VisemesFromDescriptor;
 
@@ -49,7 +46,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
             var blendshapes = GetBlendshapeNames(plan.Meshes);
             plan.Set = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
-            plan.MapKeys(component, descriptor, blendshapes);
+            plan.MapKeys(component, blendshapes);
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
 
@@ -91,19 +88,14 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        void MapKeys(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)
+        void MapKeys(PawlygonFaceTracking component, string[] blendshapes)
         {
-            var pupilsToAnimators = PupilsLeftToAnimators(component, descriptor, blendshapes);
             for (var key = 0; key < FTKeys.KeyCount; key++)
             {
                 if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) continue;
 
                 var index = FTKeys.FindKey(blendshapes, key);
-                if (index >= 0 && pupilsToAnimators && FTKeys.IsPupilKey(key))
-                {
-                    AnimatorKeys.Add(key);
-                }
-                else if (index >= 0)
+                if (index >= 0)
                 {
                     Set.faceTrackingBlendshapeNames[key] = blendshapes[index];
                     MappedKeys.Add(key);
@@ -113,70 +105,6 @@ namespace Pawlygon.FaceTracking.Editor
                     UnmappedKeys.Add(key);
                 }
             }
-        }
-
-        /// <summary>
-        /// Whether the pupil keys stay unmapped so animators own those blendshapes. In Auto, that's when an
-        /// animator on the avatar animates a blendshape they'd map to, e.g. Face Tracking Extras' fake pupil
-        /// dilation: native face tracking would otherwise keep writing them (0 without pupil tracking).
-        /// </summary>
-        static bool PupilsLeftToAnimators(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)
-        {
-            if (component.pupils == FTPupilMode.FaceTracking) return false;
-            if (component.pupils == FTPupilMode.KeepExisting) return true;
-
-            var pupilShapes = Enumerable.Range(0, FTKeys.KeyCount)
-                .Where(FTKeys.IsPupilKey)
-                .Select(key => FTKeys.FindKey(blendshapes, key))
-                .Where(index => index >= 0)
-                .Select(index => blendshapes[index])
-                .ToList();
-            if (pupilShapes.Count == 0) return false;
-
-            var animated = AnimatedBlendshapes(descriptor);
-            return pupilShapes.Any(animated.Contains);
-        }
-
-        /// <summary>
-        /// Blendshapes animated by the avatar's playable layers and by the controllers VRCFury or Modular Avatar
-        /// will merge (already merged at build time). The 1.x OSC controllers are left out, they're removed.
-        /// </summary>
-        static HashSet<string> AnimatedBlendshapes(VRCAvatarDescriptor descriptor)
-        {
-            var controllers = new HashSet<RuntimeAnimatorController>();
-            if (descriptor.customizeAnimationLayers)
-            {
-                foreach (var layer in (descriptor.baseAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0])
-                         .Concat(descriptor.specialAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0]))
-                {
-                    if (!layer.isDefault && layer.animatorController != null) controllers.Add(layer.animatorController);
-                }
-            }
-
-            var root = descriptor.transform;
-            foreach (var behaviour in descriptor.GetComponentsInChildren<MonoBehaviour>(true))
-            {
-                if (behaviour == null || behaviour is VRC_AvatarDescriptor || behaviour is PawlygonFTComponent) continue;
-                if (FTAvatarUtils.IsEditorOnly(behaviour.transform, root)) continue;
-                foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour))
-                {
-                    if (!LegacyOscDetector.IsPawlygonLegacyController(controller)) controllers.Add(controller);
-                }
-            }
-
-            const string prefix = "blendShape.";
-            var names = new HashSet<string>();
-            foreach (var clip in controllers.SelectMany(c => c.animationClips).Where(c => c != null).Distinct())
-            {
-                foreach (var binding in AnimationUtility.GetCurveBindings(clip))
-                {
-                    if (binding.type == typeof(SkinnedMeshRenderer) && binding.propertyName.StartsWith(prefix))
-                    {
-                        names.Add(binding.propertyName.Substring(prefix.Length));
-                    }
-                }
-            }
-            return names;
         }
 
         void MapVisemes(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)

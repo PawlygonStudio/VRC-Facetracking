@@ -49,6 +49,9 @@ namespace Pawlygon.FaceTracking.Editor
             return name.StartsWith("EyeDilation", StringComparison.Ordinal) || name.StartsWith("EyeConstrict", StringComparison.Ordinal);
         }
 
+        /// <summary>The EyeDilation keys (as opposed to EyeConstrict).</summary>
+        public static bool IsDilationKey(int key) => KeyName(key).StartsWith("EyeDilation", StringComparison.Ordinal);
+
         /// <summary>Index into <paramref name="blendshapes"/> of the best match for a tracking key, or -1.</summary>
         public static int FindKey(string[] blendshapes, int key)
         {

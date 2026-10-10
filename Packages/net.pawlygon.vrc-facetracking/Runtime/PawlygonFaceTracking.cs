@@ -21,13 +21,6 @@ namespace Pawlygon.FaceTracking
         KeepExisting,
     }
 
-    public enum FTPupilMode
-    {
-        Auto,
-        FaceTracking,
-        KeepExisting,
-    }
-
     public enum FTGazeMode
     {
         Auto,
@@ -72,10 +65,6 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("Face Tracking drives the eyelids with the EyeClosed blendshapes.")]
         public FTEyelidMode eyelids = FTEyelidMode.FaceTracking;
-
-        [Tooltip("Auto leaves the EyeDilation and EyeConstrict blendshapes to the avatar's animators when one animates them, " +
-                 "like Face Tracking Extras' fake pupil dilation. Face Tracking maps them anyway, Keep Existing never does.")]
-        public FTPupilMode pupils = FTPupilMode.Auto;
 
         [Tooltip("Auto: Both with EyeLook blendshapes and eye bones set up in the descriptor's Eye Look, Face Tracking with only the blendshapes, Bone Rotation with only the bones, unchanged with neither.")]
         public FTGazeMode eyeGaze = FTGazeMode.Auto;

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace Pawlygon.FaceTracking.Editor
         public const string DisableGesturesParameter = "PawlygonFT/DisableGestures";
         // Pawlygon VRCFT 1.x lip tracking toggle, still read by animators like Custom Animations
         public const string LipTrackingParameter = "LipTrackingActive";
+        const string BlinkDriverLayer = "Pawlygon FT - Blink Guard";
 
         /// <summary>
         /// FacialExpressionsDisabled is on while the Disable Gestures toggle is on, or while face tracking
@@ -50,9 +52,12 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>EyeTrackingActive follows UserEyeTracking.</summary>
         public static void AddBlinkDriver(AnimatorController controller)
         {
+            // Pupil Emulation and Face Tracking Guards can both need it
+            if (controller.layers.Any(l => l.name == BlinkDriverLayer)) return;
+
             FXGuardWriter.OnOffConditions(controller, UserEyeTracking, AnimatorControllerParameterType.Bool, out var tracking, out var notTracking);
 
-            var machine = AddLayer(controller, "Pawlygon FT - Blink Guard");
+            var machine = AddLayer(controller, BlinkDriverLayer);
             var off = DriverState(machine, "Eye Tracking Off", new Vector3(300, 0), FXGuardWriter.BlinkGuardParameter, 0);
             var on = DriverState(machine, "Eye Tracking On", new Vector3(300, 100), FXGuardWriter.BlinkGuardParameter, 1);
             machine.defaultState = off;
