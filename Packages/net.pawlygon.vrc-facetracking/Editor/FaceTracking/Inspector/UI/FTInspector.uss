@@ -71,37 +71,18 @@
     background-color: var(--ft-titlebar-hover);
 }
 
+/* The slanted background is drawn by FTTitleBar; the side padding is the slant (10px) plus 3px */
 .ft-tag {
     flex-direction: row;
     align-items: center;
     height: 20px;
-    padding: 0 3px;
+    padding: 0 13px;
     flex-shrink: 0;
-    background-color: rgb(13, 13, 13);
-}
-
-/* Slanted ends drawn with the border triangle trick */
-.ft-tag__start {
-    flex-shrink: 0;
-    border-left-width: 5px;
-    border-right-width: 5px;
-    border-top-width: 10px;
-    border-bottom-width: 10px;
-    border-right-color: rgb(13, 13, 13);
-    border-bottom-color: rgb(13, 13, 13);
-}
-
-.ft-tag__end {
-    flex-shrink: 0;
-    border-left-width: 5px;
-    border-right-width: 5px;
-    border-top-width: 10px;
-    border-bottom-width: 10px;
-    border-left-color: rgb(13, 13, 13);
-    border-top-color: rgb(13, 13, 13);
 }
 
 .ft-tag__text {
+    margin: 0;
+    padding: 0;
     -unity-font-style: bold;
     color: rgb(0, 187, 213);
 }

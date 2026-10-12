@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Pawlygon.FaceTracking.Editor
@@ -11,6 +12,9 @@ namespace Pawlygon.FaceTracking.Editor
     internal static class FTTitleBar
     {
         const string OverlayClass = "ft-titlebar";
+        // Horizontal run of the tag's slanted ends, matching .ft-tag's padding in FTInspector.uss
+        const float TagSlant = 10;
+        static readonly Color TagColor = new Color32(13, 13, 13, 255);
 
         /// <summary>
         /// Add the returned element to the inspector. Once attached it finds the title bar and puts the
@@ -71,14 +75,13 @@ namespace Pawlygon.FaceTracking.Editor
             row.AddToClassList("ft-titlebar__row");
             area.Add(row);
 
-            row.Add(Piece("ft-tag__start"));
             var tag = new VisualElement { pickingMode = PickingMode.Ignore };
             tag.AddToClassList("ft-tag");
+            tag.generateVisualContent += DrawTag;
             var brand = FTUI.Text("Pawlygon", "ft-tag__text");
             brand.pickingMode = PickingMode.Ignore;
             tag.Add(brand);
             row.Add(tag);
-            row.Add(Piece("ft-tag__end"));
 
             var name = FTUI.Text(title, "ft-titlebar__title");
             name.pickingMode = PickingMode.Ignore;
@@ -86,11 +89,22 @@ namespace Pawlygon.FaceTracking.Editor
             return overlay;
         }
 
-        static VisualElement Piece(string className)
+        /// <summary>
+        /// The tag's slanted background, drawn as one antialiased shape. Border triangles leave jagged
+        /// diagonals and, at fractional display scales, steps where they meet the label.
+        /// </summary>
+        static void DrawTag(MeshGenerationContext context)
         {
-            var piece = new VisualElement { pickingMode = PickingMode.Ignore };
-            piece.AddToClassList(className);
-            return piece;
+            var size = context.visualElement.layout.size;
+            var painter = context.painter2D;
+            painter.fillColor = TagColor;
+            painter.BeginPath();
+            painter.MoveTo(new Vector2(0, size.y));
+            painter.LineTo(new Vector2(TagSlant, 0));
+            painter.LineTo(new Vector2(size.x, 0));
+            painter.LineTo(new Vector2(size.x - TagSlant, size.y));
+            painter.ClosePath();
+            painter.Fill();
         }
 
         /// <summary>The element holding one component's title bar and its InspectorElement.</summary>
