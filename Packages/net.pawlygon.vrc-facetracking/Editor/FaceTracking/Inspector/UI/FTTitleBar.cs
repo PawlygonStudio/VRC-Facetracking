@@ -12,9 +12,9 @@ namespace Pawlygon.FaceTracking.Editor
     internal static class FTTitleBar
     {
         const string OverlayClass = "ft-titlebar";
-        // Horizontal run of the tag's slanted ends, matching .ft-tag's padding in FTInspector.uss
-        const float TagSlant = 10;
-        static readonly Color TagColor = new Color32(13, 13, 13, 255);
+        // Width of the tag's pointed right end, matching .ft-tag's right padding in FTInspector.uss
+        const float TagPoint = 7;
+        static readonly Color TagColor = new Color32(75, 166, 173, 255); // #4BA6AD
 
         /// <summary>
         /// Add the returned element to the inspector. Once attached it finds the title bar and puts the
@@ -90,8 +90,8 @@ namespace Pawlygon.FaceTracking.Editor
         }
 
         /// <summary>
-        /// The tag's slanted background, drawn as one antialiased shape. Border triangles leave jagged
-        /// diagonals and, at fractional display scales, steps where they meet the label.
+        /// The tag's background: flat on the left, pointed on the right. Drawn as one antialiased shape,
+        /// so the point stays smooth at any display scale.
         /// </summary>
         static void DrawTag(MeshGenerationContext context)
         {
@@ -99,10 +99,11 @@ namespace Pawlygon.FaceTracking.Editor
             var painter = context.painter2D;
             painter.fillColor = TagColor;
             painter.BeginPath();
-            painter.MoveTo(new Vector2(0, size.y));
-            painter.LineTo(new Vector2(TagSlant, 0));
-            painter.LineTo(new Vector2(size.x, 0));
-            painter.LineTo(new Vector2(size.x - TagSlant, size.y));
+            painter.MoveTo(new Vector2(0, 0));
+            painter.LineTo(new Vector2(size.x - TagPoint, 0));
+            painter.LineTo(new Vector2(size.x, size.y / 2));
+            painter.LineTo(new Vector2(size.x - TagPoint, size.y));
+            painter.LineTo(new Vector2(0, size.y));
             painter.ClosePath();
             painter.Fill();
         }

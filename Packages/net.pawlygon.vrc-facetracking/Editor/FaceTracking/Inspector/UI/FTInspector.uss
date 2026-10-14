@@ -71,12 +71,14 @@
     background-color: var(--ft-titlebar-hover);
 }
 
-/* The slanted background is drawn by FTTitleBar; the side padding is the slant (10px) plus 3px */
+/* Flat on the left, pointed on the right; FTTitleBar draws the background.
+   The right padding is the point (7px) plus 2px. */
 .ft-tag {
     flex-direction: row;
     align-items: center;
     height: 20px;
-    padding: 0 13px;
+    padding: 0 9px 0 5px;
+    margin-right: 2px;
     flex-shrink: 0;
 }
 
@@ -84,7 +86,7 @@
     margin: 0;
     padding: 0;
     -unity-font-style: bold;
-    color: rgb(0, 187, 213);
+    color: rgb(13, 47, 51);
 }
 
 .ft-titlebar__title {
