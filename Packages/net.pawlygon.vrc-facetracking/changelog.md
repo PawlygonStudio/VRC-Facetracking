@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.0.0-beta.3] - 2026-10-14
+- New look for the Pawlygon tag in the component inspectors, drawn smoothly at any display scale.
+
 ## [2.0.0-beta.2] - 2026-10-10
 - New Pupil Emulation component in the `!Pawlygon - Face Tracking` prefab: on headsets without pupil tracking, the pupils drift gently and react to blinks while eye tracking is active, then hand over to real pupil tracking when the headset has it (per eye on avatars with left/right pupil blendshapes).
   - Mood reactions, on by default: wide eyes constrict the pupils, a frown on both sides dilates them.

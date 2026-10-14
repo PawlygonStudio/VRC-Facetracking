@@ -1,6 +1,6 @@
 {
     "name": "net.pawlygon.vrc-facetracking",
-    "version": "2.0.0-beta.2",
+    "version": "2.0.0-beta.3",
     "displayName": "Pawlygon - VRC Facetracking",
     "description": "Non-destructive VRChat native face tracking for avatars with Unified Expressions blendshapes.",
     "unity": "2022.3",
