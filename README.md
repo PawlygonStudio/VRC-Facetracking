@@ -11,6 +11,9 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 VRCFury and Modular Avatar aren't required, but work alongside it.
 
 ## How to use it
+> [!NOTE]
+> 2.0 is in beta, like VRChat's native face tracking. In the Creator Companion, turn on **Show Pre-Release Packages** in Settings to see it. Manual downloads are on the [Releases](https://github.com/PawlygonStudio/VRC-Facetracking/releases) page, marked Pre-release.
+
 1. Import Pawlygon VRC Facetracking using [VRChat Creator Companion](https://vcc.pawlygon.net/) or import the [unity package manually](https://github.com/PawlygonStudio/VRC-Facetracking/releases/latest).
 2. Drag `Packages/Pawlygon - VRC Facetracking/Prefabs/!Pawlygon - Face Tracking` anywhere inside your avatar.
 3. Upload. That's it.
