@@ -1,0 +1,36 @@
+{
+    "name": "Pawlygon.FaceTracking.Editor.VRCFury",
+    "rootNamespace": "Pawlygon.FaceTracking.Editor",
+    "references": [
+        "Pawlygon.FaceTracking.Editor",
+        "com.vrcfury.api"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRCSDKBase.dll",
+        "VRCSDK3A.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "PAWLYGON_FT_NATIVE",
+        "PAWLYGON_FT_VRCFURY"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "3.10.6-beta.1",
+            "define": "PAWLYGON_FT_NATIVE"
+        },
+        {
+            "name": "com.vrcfury.vrcfury",
+            "expression": "1.935.0",
+            "define": "PAWLYGON_FT_VRCFURY"
+        }
+    ],
+    "noEngineReferences": false
+}

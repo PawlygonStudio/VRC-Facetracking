@@ -28,8 +28,6 @@ namespace Pawlygon.FaceTracking.Editor
             "GestureLeft", "GestureRight", "GestureLeftWeight", "GestureRightWeight",
         };
 
-        const string OwnLayerPrefix = "Pawlygon FT - ";
-
         /// <summary>Indices of the controller's fake pupil layers.</summary>
         public static List<int> Find(AnimatorController controller)
         {
@@ -46,7 +44,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         public static bool IsFakePupilLayer(AnimatorControllerLayer layer)
         {
-            if (layer.stateMachine == null || layer.name.StartsWith(OwnLayerPrefix)) return false;
+            if (layer.stateMachine == null || FXGuardAnalysis.IsOwnLayer(layer.name)) return false;
 
             var states = FXGuardAnalysis.AllStates(layer.stateMachine).ToList();
             var clips = states.SelectMany(s => Clips(s.motion)).Where(c => c != null).Distinct().ToList();

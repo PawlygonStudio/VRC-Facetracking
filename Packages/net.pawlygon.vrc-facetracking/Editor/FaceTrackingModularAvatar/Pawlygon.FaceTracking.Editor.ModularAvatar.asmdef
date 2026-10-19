@@ -1,0 +1,36 @@
+{
+    "name": "Pawlygon.FaceTracking.Editor.ModularAvatar",
+    "rootNamespace": "Pawlygon.FaceTracking.Editor",
+    "references": [
+        "Pawlygon.FaceTracking.Editor",
+        "nadena.dev.modular-avatar.core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRCSDKBase.dll",
+        "VRCSDK3A.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "PAWLYGON_FT_NATIVE",
+        "PAWLYGON_FT_MODULAR_AVATAR"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "3.10.6-beta.1",
+            "define": "PAWLYGON_FT_NATIVE"
+        },
+        {
+            "name": "nadena.dev.modular-avatar",
+            "expression": "1.9.0",
+            "define": "PAWLYGON_FT_MODULAR_AVATAR"
+        }
+    ],
+    "noEngineReferences": false
+}

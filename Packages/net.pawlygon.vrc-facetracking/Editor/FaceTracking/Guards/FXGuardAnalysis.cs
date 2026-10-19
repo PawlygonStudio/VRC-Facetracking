@@ -81,7 +81,7 @@ namespace Pawlygon.FaceTracking.Editor
                 var stateMachine = layers[i].stateMachine;
                 if (stateMachine == null) continue;
                 // Layers added by this package's own builders (drivers, Pupil Emulation) are never guarded
-                if (layers[i].name.StartsWith(OwnLayerPrefix, StringComparison.Ordinal)) continue;
+                if (IsOwnLayer(layers[i].name)) continue;
 
                 var gestureTransitions = AllTransitions(stateMachine).Where(UsesGesture).ToList();
                 if (gestureTransitions.Count > 0)
@@ -112,6 +112,9 @@ namespace Pawlygon.FaceTracking.Editor
 
         /// <summary>Layer name without the prefix VRCFury adds when merging, for matching user settings.</summary>
         public static string CleanLayerName(string name) => MergePrefix.Replace(name ?? "", "");
+
+        /// <summary>A layer this package added, also after VRCFury prefixed its name when merging it.</summary>
+        public static bool IsOwnLayer(string name) => CleanLayerName(name).StartsWith(OwnLayerPrefix, StringComparison.Ordinal);
 
         static BlinkLayer ScoreBlinkLayer(int index, AnimatorControllerLayer layer)
         {

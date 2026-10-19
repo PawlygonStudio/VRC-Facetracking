@@ -14,7 +14,7 @@ namespace Pawlygon.FaceTracking.Editor
         // After Blendshape Fixes, which traces its fix shapes through the set mappings this removes
         public override FTPhase Phase => FTPhase.Animator;
 
-        protected override void Build(PawlygonFTEmulation component, FTBuildContext context)
+        protected override void BuildDescriptor(PawlygonFTEmulation component, FTBuildContext context)
         {
             if (!context.EnableFaceTracking)
             {
