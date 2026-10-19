@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.0.0-beta.4] - 2026-10-19
+- Works with the public VRChat Avatars SDK face tracking beta: requires 3.10.6-beta.1 or newer instead of the closed beta's 3.11.0.
+
 ## [2.0.0-beta.3] - 2026-10-14
 - New look for the Pawlygon tag in the component inspectors, drawn smoothly at any display scale.
 

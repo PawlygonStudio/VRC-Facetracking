@@ -4,7 +4,7 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 [![Build Release](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml/badge.svg)](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml)
 
 ## Requisites
-* Unity 2022.3 with a VRChat Avatars SDK that supports native face tracking (3.11.0 beta or newer)
+* Unity 2022.3 with a VRChat Avatars SDK that supports native face tracking (3.10.6 beta or newer)
 * Avatar with [Unified Expression Blendshapes](https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes) (ARKit names are matched too)  
   → See the full list of [Supported UE Blendshapes](./UEBlendshapes.md)
 
