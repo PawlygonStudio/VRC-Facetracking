@@ -84,7 +84,7 @@ namespace Pawlygon.CleanOnUpload
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to remove the OSC config file at {printLocation}");
+                Debug.LogError($"Failed to remove the OSC config file at {printLocation}: {e.Message}");
                 throw;
             }
         }

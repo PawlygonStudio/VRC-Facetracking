@@ -1,8 +1,8 @@
 {
     "name": "net.pawlygon.vrc-facetracking",
-    "version": "1.7.1",
+    "version": "2.0.0-beta.4",
     "displayName": "Pawlygon - VRC Facetracking",
-    "description": "Template to be used on models with Unified Expressions Face Tracking",
+    "description": "Non-destructive VRChat native face tracking for avatars with Unified Expressions blendshapes.",
     "unity": "2022.3",
     "unityRelease": "6f1",
     "documentationUrl": "https://github.com/PawlygonStudio/VRC-Facetracking",
@@ -18,6 +18,9 @@
       "name": "Choki",
       "email": "choki@pawlygon.net",
       "url": "https://github.com/PawlygonStudio/"
+    },
+    "vpmDependencies": {
+      "com.vrchat.avatars": ">=3.10.6-beta.1"
     },
     "hideInEditor": false
   }

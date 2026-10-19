@@ -1,0 +1,167 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2491370522188043101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4128847713953716352}
+  - component: {fileID: 7310599187437552845}
+  - component: {fileID: 5937106628117934110}
+  - component: {fileID: 8812934403761245217}
+  - component: {fileID: 3145729847366120597}
+  - component: {fileID: 4032252349157840617}
+  - component: {fileID: 5074269645722866870}
+  m_Layer: 0
+  m_Name: '!Pawlygon - Face Tracking'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4128847713953716352
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7310599187437552845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3460d23fa2f543f88eca9843bbbea8b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  meshMode: 0
+  meshes: []
+  useAllTrackingKeys: 1
+  lipSync: 0
+  eyelids: 0
+  eyeGaze: 0
+  visemeDampenMode: 0
+  visemeDampenAmount: 0.5
+--- !u!114 &5937106628117934110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45db78f2a2d15144997f5048f2539b5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  autoDetect: 1
+  parameters: []
+--- !u!114 &8812934403761245217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0255c240ffc1d3e4eb9d5796617c933b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  guardGestures: 1
+  disableWithFaceTracking: 1
+  disableGesturesToggle: 1
+  menuName: Face Tracking
+  guardBlinking: 1
+  excludedGestureLayers: []
+  includedGestureLayers: []
+  excludedBlinkLayers: []
+  includedBlinkLayers: []
+--- !u!114 &3145729847366120597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18baa4badc049c4b20c6d0455c60333, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  autoDetect: 1
+  combine: 0
+  excludedFixes: []
+  fixes: []
+--- !u!114 &4032252349157840617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3904c9839d494a247b54d7e52a935a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  idleDilationMin: 0
+  idleDilationMax: 10
+  reflexPeakDilation: 70
+  reflexConstrict: 50
+  reflexDuration: 1.8
+  lidClosedBelow: 0.15
+  lidOpenAbove: 0.35
+  moodReactions: 1
+  wideEyesConstrict: 70
+  frownDilation: 70
+--- !u!114 &5074269645722866870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491370522188043101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 108f0a4eb6bf7cd4c9081aa50c2328ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  tongueOpensJaw: 1
+  tongueOpensJawAmount: 0.25
+  browsUpWithWideEyes: 1
+  browsUpWithWideEyesAmount: 0.33
+  browsDownWithSquint: 1
+  browsDownWithSquintAmount: 0.67
+  angryBrows: 0
+  angryBrowsAmount: 1
+  sadBrows: 0
+  sadBrowsAmount: 1
+  limitFunnelByChinRaise: 1
+  limitRaisersByMouthClosed: 1
+  limitTongueByFunnel: 1
+  limitLipsByFunnel: 0
+  limitJawByMouthSideways: 0
+  limitFrownByMouthSideways: 0
+  limitLipSuckByMouthClosed: 0

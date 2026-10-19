@@ -24,7 +24,6 @@ public class ThresholdEditor : EditorWindow
     };
     private Dictionary<string, List<MotionData>> parameterMotionData = new Dictionary<string, List<MotionData>>();
     private Vector2 scrollPosition;
-    private bool changesPending = false;
     private Dictionary<string, bool> foldouts = new Dictionary<string, bool>();
     private string selectedControllerGuid = "9633f793f4e23c645b722b5db7d61098";
     private string unifiedExpressionGuid = "9633f793f4e23c645b722b5db7d61098";
@@ -300,7 +299,6 @@ public class ThresholdEditor : EditorWindow
                         }
 
                         motionData.HasBeenEdited = true;
-                        changesPending = true;
                     }
                 }
             }
@@ -363,11 +361,11 @@ public class ThresholdEditor : EditorWindow
             Debug.Log($"Properties applied for blend tree: {motionData.BlendTree.name}");
 
             // Show popup
-            ShowPopup();
+            OpenPopup();
         }
     }
 
-    private void ShowPopup()
+    private void OpenPopup()
     {
         showPopup = true;
         popupStartTime = (float)EditorApplication.timeSinceStartup;
