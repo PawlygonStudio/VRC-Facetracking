@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase.Editor.BuildPipeline;
@@ -6,8 +7,8 @@ using VRC.SDKBase.Editor.BuildPipeline;
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// Checks for the legacy OSC face tracking setup. Runs before NDMF / Modular Avatar (about -11000)
-    /// and VRCFury (-10000) so it can be removed before they merge it into the avatar.
+    /// Checks for the legacy OSC face tracking setup and blendshape optimizers. Runs before NDMF / Modular Avatar
+    /// (about -11000) and VRCFury (-10000) so the legacy setup can be removed before they merge it into the avatar.
     /// </summary>
     internal sealed class FTLegacyCheckHook : IVRCSDKPreprocessAvatarCallback
     {
@@ -28,11 +29,11 @@ namespace Pawlygon.FaceTracking.Editor
                 if (!Application.isPlaying) FTTempAssets.CleanUnused();
                 if (FTAvatarUtils.GetBuildComponents<PawlygonFTComponent>(avatarGameObject).Count == 0) return;
 
-                var optimizer = FTAvatarUtils.FindBlendshapeOptimizer(avatarGameObject);
+                var optimizer = FTBlendshapeOptimizers.Find(avatarGameObject).FirstOrDefault();
                 if (optimizer != null)
                 {
-                    throw new FTBuildException($"VRCFury's Blendshape Optimizer on '{FTAvatarUtils.GetPath(optimizer.transform, avatarGameObject.transform)}' " +
-                                               "would remove the face tracking blendshapes before face tracking is set up. Remove it from this avatar.");
+                    throw new FTBuildException($"{optimizer.Name} on '{FTAvatarUtils.GetPath(optimizer.Holder.transform, avatarGameObject.transform)}' " +
+                                               $"would remove the face tracking blendshapes. {optimizer.Fix}");
                 }
 
                 LegacyOscCleanup.Run(avatarGameObject);
@@ -41,8 +42,25 @@ namespace Pawlygon.FaceTracking.Editor
     }
 
     /// <summary>
-    /// Applies the face tracking components. Runs after NDMF / Modular Avatar and VRCFury so the final
-    /// merged controllers are visible, and before the SDK's own processing (-2048).
+    /// Writes the face tracking setup to the descriptor (meshes, blendshape sets, visemes, eyelids, expressions) and
+    /// builds the components' own FX layers, parameters and menu controls. Runs before NDMF / Modular Avatar and
+    /// VRCFury, which merge those (see <see cref="FTGeneratedAssets"/>), and whose blendshape optimizers then see
+    /// which blendshapes face tracking uses.
+    /// </summary>
+    internal sealed class FTDescriptorBuildHook : IVRCSDKPreprocessAvatarCallback
+    {
+        public int callbackOrder => -11500;
+
+        public bool OnPreprocessAvatar(GameObject avatarGameObject)
+        {
+            return FTErrorBoundary.Run(() => FTBuildRunner.Run(avatarGameObject, FTPass.Descriptor));
+        }
+    }
+
+    /// <summary>
+    /// Finishes the components on the merged FX controller: guards in the avatar's gesture and blink layers, 1.x
+    /// fake pupil layers emptied, parameters forwarded to what the playable layers read. Runs after NDMF / Modular
+    /// Avatar and VRCFury so the final merged controllers are visible, and before the SDK's own processing (-2048).
     /// </summary>
     internal sealed class FTBuildHook : IVRCSDKPreprocessAvatarCallback
     {
@@ -50,7 +68,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
         {
-            return FTErrorBoundary.Run(() => FTBuildRunner.Run(avatarGameObject));
+            return FTErrorBoundary.Run(() => FTBuildRunner.Run(avatarGameObject, FTPass.Animator));
         }
     }
 

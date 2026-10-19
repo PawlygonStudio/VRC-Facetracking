@@ -334,15 +334,9 @@ namespace Pawlygon.FaceTracking.Editor
             RefreshNow();
         }
 
-        /// <summary>
-        /// The controllers that end up in FX: the descriptor's own, and the ones VRCFury or
-        /// Modular Avatar will merge into FX. Legacy face tracking controllers are left out.
-        /// </summary>
+        /// <summary>The controllers that end up in FX, each analyzed with the meshes the build will use.</summary>
         static List<(string, AnimatorController, FXGuardAnalysis)> Analyze(VRCAvatarDescriptor avatar)
         {
-            var result = new List<(string, AnimatorController, FXGuardAnalysis)>();
-            var seen = new HashSet<AnimatorController>();
-
             // Same meshes the build uses: the setup component's, or the ones already on the descriptor
             var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
             var meshes = setup != null
@@ -350,27 +344,9 @@ namespace Pawlygon.FaceTracking.Editor
                 : avatar.faceTrackingMeshes ?? new List<SkinnedMeshRenderer>();
             var faceMeshes = new FXFaceMeshes(meshes, avatar.transform);
 
-            void Add(string source, RuntimeAnimatorController runtime)
-            {
-                if (!(FTAvatarUtils.BaseController(runtime) is AnimatorController controller) || !seen.Add(controller)) return;
-                result.Add((source, controller, FXGuardAnalysis.Analyze(controller, faceMeshes)));
-            }
-
-            var fx = FTAvatarAssets.GetFX(avatar);
-            if (fx != null) Add($"FX ({fx.name})", fx);
-
-            foreach (var behaviour in avatar.GetComponentsInChildren<MonoBehaviour>(true))
-            {
-                if (behaviour == null || behaviour is VRC.SDKBase.VRC_AvatarDescriptor || behaviour is PawlygonFTComponent) continue;
-                if (FTAvatarUtils.IsEditorOnly(behaviour.transform, avatar.transform)) continue;
-
-                foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour, (int)VRCAvatarDescriptor.AnimLayerType.FX))
-                {
-                    if (LegacyOscDetector.IsPawlygonLegacyController(controller)) continue;
-                    Add(FTAvatarUtils.GetPath(behaviour.transform, avatar.transform), controller);
-                }
-            }
-            return result;
+            return FTAvatarAssets.GetSourceFXControllers(avatar)
+                .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes)))
+                .ToList();
         }
     }
 }

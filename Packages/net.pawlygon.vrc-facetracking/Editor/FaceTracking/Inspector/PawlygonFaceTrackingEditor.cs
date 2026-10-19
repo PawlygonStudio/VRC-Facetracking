@@ -23,7 +23,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         double nextSlowScan;
         List<LegacyOscDetector.Finding> legacyFindings = new List<LegacyOscDetector.Finding>();
-        Object blendshapeOptimizer;
+        List<FTBlendshapeOptimizers.Finding> blendshapeOptimizers = new List<FTBlendshapeOptimizers.Finding>();
 
         protected override string Title => "Face Tracking";
         protected override string Subtitle => "Native face tracking, applied when the avatar is built.";
@@ -107,7 +107,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 nextSlowScan = EditorApplication.timeSinceStartup + SlowScanSeconds;
                 legacyFindings = LegacyOscDetector.Find(avatar.gameObject);
-                blendshapeOptimizer = FTAvatarUtils.FindBlendshapeOptimizer(avatar.gameObject);
+                blendshapeOptimizers = FTBlendshapeOptimizers.Find(avatar.gameObject);
             }
 
             foreach (var finding in legacyFindings.Where(f => f.Holder != null))
@@ -137,12 +137,25 @@ namespace Pawlygon.FaceTracking.Editor
                     "The avatar descriptor already has native face tracking configured. This component replaces it at build; the scene isn't changed.");
             }
 
-            if (blendshapeOptimizer != null)
+            if (FTMerger.Find() == null)
             {
-                var optimizer = blendshapeOptimizer;
-                issues.Error("VRCFury Blendshape Optimizer would strip face tracking blendshapes.",
-                    "It doesn't know about native face tracking and removes blendshapes it thinks are unused, so the build stops. Remove it from this avatar.",
-                    ("Select", () => Select(optimizer)));
+                var needing = FTAvatarUtils.GetBuildComponents<PawlygonFTComponent>(avatar.gameObject)
+                    .Where(c => c is PawlygonFTGuards || c is PawlygonFTPupilEmulation)
+                    .Select(c => FTAvatarUtils.DisplayName(c.GetType())).Distinct().ToList();
+                if (needing.Count > 0)
+                {
+                    issues.Error("VRCFury or Modular Avatar is needed.",
+                        $"{string.Join(" and ", needing)} add animator layers, which VRCFury (1.935.0 or newer) or Modular Avatar (1.9.0 or newer) " +
+                        "merges into the avatar. Install one of them with the VRChat Creator Companion, or the build stops.");
+                }
+            }
+
+            foreach (var optimizer in blendshapeOptimizers.Where(o => o.Holder != null))
+            {
+                var holder = optimizer.Holder;
+                issues.Error($"{optimizer.Name} would strip face tracking blendshapes.",
+                    $"It removes the blendshapes it thinks are unused, including face tracking's, so the build stops. {optimizer.Fix}",
+                    ("Select", () => Select(holder)));
             }
         }
 

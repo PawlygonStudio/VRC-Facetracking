@@ -7,8 +7,7 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 * Unity 2022.3 with a VRChat Avatars SDK that supports native face tracking (3.10.6 beta or newer)
 * Avatar with [Unified Expression Blendshapes](https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes) (ARKit names are matched too)  
   → See the full list of [Supported UE Blendshapes](./UEBlendshapes.md)
-
-VRCFury and Modular Avatar aren't required, but work alongside it.
+* [VRCFury](https://vrcfury.com) (1.935.0 or newer) or [Modular Avatar](https://modular-avatar.nadena.dev) (1.9.0 or newer) for Face Tracking Guards and Pupil Emulation: they merge the animator layers, parameters and menu toggle those components add. The rest works without either.
 
 ## How to use it
 > [!NOTE]

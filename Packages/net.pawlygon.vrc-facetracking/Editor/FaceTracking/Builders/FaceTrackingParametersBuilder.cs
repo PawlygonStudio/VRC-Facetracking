@@ -11,7 +11,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         public override FTPhase Phase => FTPhase.Behaviors;
 
-        protected override void Build(PawlygonFTParameters component, FTBuildContext context)
+        protected override void BuildAnimator(PawlygonFTParameters component, FTBuildContext context)
         {
             if (!context.EnableFaceTracking)
             {

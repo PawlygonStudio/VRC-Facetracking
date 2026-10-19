@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -13,52 +14,116 @@ namespace Pawlygon.FaceTracking.Editor
 
         public override FTPhase Phase => FTPhase.Animator;
 
-        protected override void Build(PawlygonFTGuards component, FTBuildContext context)
+        /// <summary>What the descriptor pass decided to drive, for the animator pass.</summary>
+        sealed class Drives
         {
-            var descriptor = context.Descriptor;
-            var sourceFX = FTAvatarAssets.GetFX(descriptor);
-            var analysis = FXGuardAnalysis.Analyze(FTAvatarUtils.BaseController(sourceFX) as AnimatorController,
-                new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
+            public bool Gestures, Blinking;
+        }
+
+        static readonly ConditionalWeakTable<PawlygonFTGuards, Drives> decided = new ConditionalWeakTable<PawlygonFTGuards, Drives>();
+
+        /// <summary>
+        /// Adds the driver layers, parameters and menu toggle before VRCFury and Modular Avatar run, so they merge
+        /// them. Whether each driver is needed is decided from the controllers that will be merged into FX.
+        /// </summary>
+        protected override void BuildDescriptor(PawlygonFTGuards component, FTBuildContext context)
+        {
+            var faceMeshes = new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform);
+            var sources = FTAvatarAssets.GetSourceFXControllers(context.Descriptor).Select(s => s.controller).ToList();
+            var analyses = sources.Select(c => FXGuardAnalysis.Analyze(c, faceMeshes)).ToList();
+            // Pupil Emulation may have added a driver already
+            var readers = context.Generated.HasFX ? sources.Append(context.Generated.FX).Distinct().ToList() : sources;
 
             // Each driver is only added when it has something to pause, or an animator already reads its
             // parameter (e.g. FX controllers guarded by Unity Tools), so avatars don't pay for unused synced bits.
             // EyeTrackingActive and LipTrackingActive are driven whenever they're read, like Pawlygon VRCFT 1.x
             // did, since animators such as Face Tracking Extras wait for them whatever is guarded here
-            var gestureLayers = GuardsGestures(component) ? analysis.GestureLayers.Where(l => ShouldGuard(component, l)).ToList() : null;
+            var drivesGestures = GuardsGestures(component)
+                                 && (analyses.Any(a => a.GestureLayers.Any(l => ShouldGuard(component, l)))
+                                     || readers.Any(c => UsesParameter(c, FXGuardWriter.GestureGuardParameter)));
+            var drivesBlinking = (component.guardBlinking && analyses.Any(a => a.BlinkLayers.Any(l => ShouldGuard(component, l))))
+                                 || readers.Any(c => UsesParameter(c, FXGuardWriter.BlinkGuardParameter));
+            var drivesLipTracking = readers.Any(c => UsesParameter(c, FTGuardDriver.LipTrackingParameter));
+
+            decided.Remove(component);
+            decided.Add(component, new Drives { Gestures = drivesGestures, Blinking = drivesBlinking });
+            if (!drivesGestures && !drivesBlinking && !drivesLipTracking) return;
+
+            var fx = context.Generated.FX;
+            if (drivesBlinking) FTGuardDriver.AddBlinkDriver(fx);
+            if (drivesGestures) FTGuardDriver.AddGestureDriver(fx, component.disableWithFaceTracking, component.disableGesturesToggle);
+            if (drivesLipTracking) FTGuardDriver.AddLipDriver(fx);
+            AddParameters(component, context, drivesGestures, drivesBlinking, drivesLipTracking);
+        }
+
+        /// <summary>
+        /// Guards the gesture and blink layers of the merged FX controller, which only exists after VRCFury and
+        /// Modular Avatar ran.
+        /// </summary>
+        protected override void BuildAnimator(PawlygonFTGuards component, FTBuildContext context)
+        {
+            if (!decided.TryGetValue(component, out var drives)) return;
+
+            var descriptor = context.Descriptor;
+            var sourceFX = FTAvatarAssets.GetFX(descriptor);
+            var analysis = FXGuardAnalysis.Analyze(FTAvatarUtils.BaseController(sourceFX) as AnimatorController,
+                new FXFaceMeshes(context.Meshes, context.AvatarRoot.transform));
+
+            var gestureLayers = GuardsGestures(component)
+                ? analysis.GestureLayers.Where(l => ShouldGuard(component, l)).ToList()
+                : new List<FXGuardAnalysis.GestureLayer>();
             var blinkLayers = component.guardBlinking
                 ? analysis.BlinkLayers.Where(l => ShouldGuard(component, l)).ToList()
                 : new List<FXGuardAnalysis.BlinkLayer>();
-            var drivesGestures = gestureLayers != null && (gestureLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.GestureGuardParameter));
-            var drivesBlinking = blinkLayers.Count > 0 || UsesParameter(sourceFX, FXGuardWriter.BlinkGuardParameter);
-            var drivesLipTracking = UsesParameter(sourceFX, FTGuardDriver.LipTrackingParameter);
-            if (!drivesGestures && !drivesBlinking && !drivesLipTracking) return;
+            WarnUndriven(component, gestureLayers.Select(l => l.Name), drives.Gestures, FXGuardWriter.GestureGuardParameter);
+            WarnUndriven(component, blinkLayers.Select(l => l.Name), drives.Blinking, FXGuardWriter.BlinkGuardParameter);
+            if (!drives.Gestures) gestureLayers.Clear();
+            if (!drives.Blinking) blinkLayers.Clear();
 
-            // The copy has the same layers in the same order, so the analysis indices apply to it
-            var fx = FTAvatarAssets.CopyFX(sourceFX, context.BuildFolder, out var assign);
-
-            // Blink guards first: the gesture guard then gates their Any State transitions, so it wins
-            // on layers that have both, like the Unity Tools FX Check does
-            if (drivesBlinking)
+            if (gestureLayers.Count > 0 || blinkLayers.Count > 0)
             {
-                var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.BlinkGuardState, FXGuardWriter.BlinkGuardParameter,
-                    AnimatorControllerParameterType.Float, new Vector3(30, -140), FXGuardWriter.GestureGuardState);
-                foreach (var layer in blinkLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
-                FTGuardDriver.AddBlinkDriver(fx);
+                var fx = FTAvatarAssets.GetBuildFX(descriptor);
+
+                // Blink guards first: the gesture guard then gates their Any State transitions, so it wins
+                // on layers that have both, like the Unity Tools FX Check does
+                if (blinkLayers.Count > 0)
+                {
+                    var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.BlinkGuardState, FXGuardWriter.BlinkGuardParameter,
+                        AnimatorControllerParameterType.Float, new Vector3(30, -140), FXGuardWriter.GestureGuardState);
+                    foreach (var layer in blinkLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
+                }
+                if (gestureLayers.Count > 0)
+                {
+                    var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
+                        AnimatorControllerParameterType.Bool, new Vector3(30, -80));
+                    foreach (var layer in gestureLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
+                }
+
+                EditorUtility.SetDirty(fx);
+                AssetDatabase.SaveAssets();
             }
 
-            if (drivesGestures)
+            // A warning, not an error: VRCFury's Parameter Compressor runs after this and may still bring it
+            // under the limit. The SDK blocks the upload if it doesn't.
+            var cost = descriptor.expressionParameters != null ? descriptor.expressionParameters.CalcTotalCost() : 0;
+            if (cost > VRCExpressionParameters.MAX_PARAMETER_COST)
             {
-                var spec = FXGuardWriter.CreateSpec(fx, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
-                    AnimatorControllerParameterType.Bool, new Vector3(30, -80));
-                foreach (var layer in gestureLayers) FXGuardWriter.EnsureGuard(fx, layer.Index, spec);
-                FTGuardDriver.AddGestureDriver(fx, component.disableWithFaceTracking, component.disableGesturesToggle);
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's synced parameters use {cost} of {VRCExpressionParameters.MAX_PARAMETER_COST} bits " +
+                                 "after adding the face tracking guards. Free up some synced parameters unless a parameter compressor handles it.", component);
             }
+        }
 
-            if (drivesLipTracking) FTGuardDriver.AddLipDriver(fx);
-
-            FTAvatarAssets.SetFX(descriptor, assign);
-            AddParameters(component, context, drivesGestures, drivesBlinking, drivesLipTracking);
-            AssetDatabase.SaveAssets();
+        /// <summary>
+        /// Layers merged in by something the descriptor pass couldn't see, e.g. a controller generated during the
+        /// build, while their driver wasn't added. They're left unguarded, since nothing would set the guard.
+        /// </summary>
+        static void WarnUndriven(PawlygonFTGuards component, IEnumerable<string> layers, bool driven, string parameter)
+        {
+            var names = layers.Select(FXGuardAnalysis.CleanLayerName).ToList();
+            if (driven || names.Count == 0) return;
+            Debug.LogWarning($"[{FTErrorBoundary.Title}] {string.Join(", ", names.Select(n => "'" + n + "'"))} " +
+                             $"{(names.Count == 1 ? "was" : "were")} merged into FX during the build, after Face Tracking Guards " +
+                             $"decided not to drive {parameter}, so {(names.Count == 1 ? "it isn't" : "they aren't")} guarded.", component);
         }
 
         /// <summary>Gestures need something to pause them: face tracking, the menu toggle, or both.</summary>
@@ -103,8 +168,7 @@ namespace Pawlygon.FaceTracking.Editor
         /// </summary>
         static void AddParameters(PawlygonFTGuards component, FTBuildContext context, bool drivesGestures, bool drivesBlinking, bool drivesLipTracking)
         {
-            var descriptor = context.Descriptor;
-            var parameters = FTAvatarAssets.CopyParameters(descriptor, context.BuildFolder);
+            var parameters = context.Generated.Parameters;
 
             if (drivesGestures)
             {
@@ -124,33 +188,17 @@ namespace Pawlygon.FaceTracking.Editor
                 FTAvatarAssets.AddParameter(parameters, FTGuardDriver.DisableGesturesParameter, VRCExpressionParameters.ValueType.Bool, 0, true, false);
                 AddMenuToggle(component, context);
             }
-
-            // A warning, not an error: VRCFury's Parameter Compressor runs after this and may still bring it
-            // under the limit. The SDK blocks the upload if it doesn't.
-            var cost = parameters.CalcTotalCost();
-            if (cost > VRCExpressionParameters.MAX_PARAMETER_COST)
-            {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's synced parameters use {cost} of {VRCExpressionParameters.MAX_PARAMETER_COST} bits " +
-                                 "after adding the face tracking guards. Free up some synced parameters unless a parameter compressor handles it.", component);
-            }
         }
 
         static void AddMenuToggle(PawlygonFTGuards component, FTBuildContext context)
         {
             var menuName = string.IsNullOrWhiteSpace(component.menuName) ? "Face Tracking" : component.menuName.Trim();
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "FaceTrackingIcon.png");
-            var submenu = FTAvatarAssets.GetEditableSubmenu(context.Descriptor, context.BuildFolder, menuName, icon);
-            if (submenu == null)
-            {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] The avatar's main menu is full, so the Disable Gestures toggle wasn't added. " +
-                                 "Free a slot, or set In Menu on the Face Tracking Guards component to an existing submenu.", component);
-                return;
-            }
-            if (submenu.controls.Count >= VRCExpressionsMenu.MAX_CONTROLS)
-            {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] The '{menuName}' menu is full, so the Disable Gestures toggle wasn't added.", component);
-                return;
-            }
+            // The avatar's own submenu of that name may have one already
+            var existing = FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
+            if (existing != null && existing.controls.Any(c => c.parameter?.name == FTGuardDriver.DisableGesturesParameter)) return;
+
+            var submenu = context.Generated.GetSubmenu(menuName, icon);
             if (submenu.controls.Any(c => c.parameter?.name == FTGuardDriver.DisableGesturesParameter)) return;
 
             submenu.controls.Add(FTAvatarAssets.CreateControl("Disable Gestures", VRCExpressionsMenu.Control.ControlType.Toggle,

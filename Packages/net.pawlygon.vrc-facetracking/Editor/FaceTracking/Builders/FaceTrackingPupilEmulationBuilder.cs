@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -37,7 +38,14 @@ namespace Pawlygon.FaceTracking.Editor
         // After Face Tracking has set up the meshes and blendshape sets the pupil keys are taken from
         public override FTPhase Phase => FTPhase.Animator;
 
-        protected override void Build(PawlygonFTPupilEmulation component, FTBuildContext context)
+        // Components whose layer was built in the descriptor pass
+        static readonly ConditionalWeakTable<PawlygonFTPupilEmulation, object> built = new ConditionalWeakTable<PawlygonFTPupilEmulation, object>();
+
+        /// <summary>
+        /// Builds the layer before VRCFury and Modular Avatar run, so they merge it, and blendshape optimizers see
+        /// that it animates the pupil blendshapes.
+        /// </summary>
+        protected override void BuildDescriptor(PawlygonFTPupilEmulation component, FTBuildContext context)
         {
             if (!context.EnableFaceTracking)
             {
@@ -65,16 +73,27 @@ namespace Pawlygon.FaceTracking.Editor
                 AddForward(context, FrownParameter, FrownExpression);
             }
 
-            var descriptor = context.Descriptor;
-            var fx = FTAvatarAssets.CopyFX(FTAvatarAssets.GetFX(descriptor), context.BuildFolder, out var assign);
-            ReplaceFakePupilLayers(component, context, fx);
+            var fx = context.Generated.FX;
             new LayerBuilder(fx, component, plan, context).Build();
             FTGuardDriver.AddBlinkDriver(fx);
-            FTAvatarAssets.SetFX(descriptor, assign);
 
             // Set by the owner's driver and synced, like Face Tracking Guards does
-            var parameters = FTAvatarAssets.CopyParameters(descriptor, context.BuildFolder);
-            FTAvatarAssets.AddParameter(parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+            FTAvatarAssets.AddParameter(context.Generated.Parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+
+            built.Remove(component);
+            built.Add(component, null);
+        }
+
+        /// <summary>Empties the 1.x fake pupil layers, which only exist in the merged FX controller.</summary>
+        protected override void BuildAnimator(PawlygonFTPupilEmulation component, FTBuildContext context)
+        {
+            if (!built.TryGetValue(component, out _)) return;
+
+            var source = FTAvatarAssets.GetFX(context.Descriptor);
+            if (FTFakePupilLayers.Find(FTAvatarUtils.BaseController(source) as AnimatorController).Count == 0) return;
+
+            var fx = FTAvatarAssets.GetBuildFX(context.Descriptor);
+            ReplaceFakePupilLayers(component, context, fx);
             AssetDatabase.SaveAssets();
         }
 

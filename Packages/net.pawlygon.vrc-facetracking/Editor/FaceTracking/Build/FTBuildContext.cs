@@ -31,20 +31,37 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<BlendshapesSet> Sets = new List<BlendshapesSet>();
         public readonly List<ParameterBehavior> Behaviors = new List<ParameterBehavior>();
 
+        public FTPass Pass { get; }
+
         string buildFolder;
+        FTGeneratedAssets generated;
 
         /// <summary>Folder for assets generated during this build, emptied the first time it's used.</summary>
         public string BuildFolder => buildFolder ?? (buildFolder = FTTempAssets.PrepareBuildFolder(AvatarRoot));
 
-        FTBuildContext(VRCAvatarDescriptor descriptor)
+        /// <summary>
+        /// The components' own FX layers, expression parameters and menu controls. Only in the descriptor pass, so
+        /// VRCFury or Modular Avatar can merge them afterwards.
+        /// </summary>
+        public FTGeneratedAssets Generated
+        {
+            get
+            {
+                if (Pass != FTPass.Descriptor) throw new System.InvalidOperationException("Generated assets are only added in the descriptor pass.");
+                return generated ?? (generated = new FTGeneratedAssets(this));
+            }
+        }
+
+        FTBuildContext(VRCAvatarDescriptor descriptor, FTPass pass)
         {
             Descriptor = descriptor;
             AvatarRoot = descriptor.gameObject;
+            Pass = pass;
         }
 
-        public static FTBuildContext FromDescriptor(VRCAvatarDescriptor descriptor)
+        public static FTBuildContext FromDescriptor(VRCAvatarDescriptor descriptor, FTPass pass)
         {
-            var context = new FTBuildContext(descriptor)
+            var context = new FTBuildContext(descriptor, pass)
             {
                 EnableFaceTracking = descriptor.enableFaceTracking,
                 UseAllTrackingKeys = descriptor.useAllTrackingKeys,
@@ -122,6 +139,8 @@ namespace Pawlygon.FaceTracking.Editor
             Descriptor.faceTrackingBlendshapesSetList = new List<BlendshapesSet>(Sets);
             Descriptor.faceTrackingParameterBehaviors = new List<ParameterBehavior>(Behaviors);
             EditorUtility.SetDirty(Descriptor);
+
+            generated?.Install();
         }
     }
 }

@@ -7,12 +7,12 @@ using VRC.SDK3.Avatars.Components;
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// Applies every Pawlygon face tracking component on an avatar. Only ever runs on a copy of the
-    /// avatar (the SDK's upload clone, a test copy, or play mode).
+    /// Applies every Pawlygon face tracking component on an avatar, in two passes (see <see cref="FTPass"/>).
+    /// Only ever runs on a copy of the avatar (the SDK's upload clone, a test copy, or play mode).
     /// </summary>
     internal static class FTBuildRunner
     {
-        public static void Run(GameObject avatarRoot)
+        public static void Run(GameObject avatarRoot, FTPass pass)
         {
             var descriptor = avatarRoot.GetComponent<VRCAvatarDescriptor>();
             if (descriptor == null) return;
@@ -27,17 +27,21 @@ namespace Pawlygon.FaceTracking.Editor
                 .Select((component, index) => (component, index, builder: FTBuilderRegistry.Get(component.GetType())))
                 .ToList();
 
-            foreach (var step in steps.Where(s => s.builder == null))
+            if (pass == FTPass.Descriptor)
             {
-                Debug.LogWarning($"[Pawlygon Face Tracking] Nothing builds {step.component.GetType().Name}, skipping it.", step.component);
+                foreach (var step in steps.Where(s => s.builder == null))
+                {
+                    Debug.LogWarning($"[Pawlygon Face Tracking] Nothing builds {step.component.GetType().Name}, skipping it.", step.component);
+                }
             }
 
-            var context = FTBuildContext.FromDescriptor(descriptor);
+            // The animator pass starts from what the descriptor pass committed
+            var context = FTBuildContext.FromDescriptor(descriptor, pass);
             foreach (var step in steps.Where(s => s.builder != null).OrderBy(s => s.builder.Phase).ThenBy(s => s.index))
             {
                 try
                 {
-                    step.builder.Build(step.component, context);
+                    step.builder.Build(pass, step.component, context);
                 }
                 catch (Exception e) when (!(e is FTBuildCancelledException))
                 {
@@ -48,7 +52,11 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             context.Commit();
+            // Components stay for the animator pass, which removes them
+            if (pass == FTPass.Descriptor) return;
+
             RemoveComponents(components, avatarRoot.transform);
+            FTMerger.Find()?.CleanUp(avatarRoot);
 
             // The SDK's own check of custom expressions, e.g. typos in manually entered ones
             foreach (var warning in FaceTrackingExpressionValidator.CollectWarnings(descriptor))

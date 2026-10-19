@@ -20,6 +20,12 @@ namespace Pawlygon.FaceTracking.Editor
         public const string LipTrackingParameter = "LipTrackingActive";
         const string BlinkDriverLayer = "Pawlygon FT - Blink Guard";
 
+        /// <summary>Parameters the driver layers share with the avatar's own controllers.</summary>
+        public static readonly string[] SharedParameters =
+        {
+            FXGuardWriter.GestureGuardParameter, FXGuardWriter.BlinkGuardParameter, LipTrackingParameter, UserFaceTracking, UserEyeTracking,
+        };
+
         /// <summary>
         /// FacialExpressionsDisabled is on while the Disable Gestures toggle is on, or while face tracking
         /// is on when <paramref name="withFaceTracking"/> is set.
