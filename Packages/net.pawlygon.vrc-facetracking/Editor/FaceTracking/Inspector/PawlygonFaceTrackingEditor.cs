@@ -154,7 +154,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var holder = optimizer.Holder;
                 issues.Error($"{optimizer.Name} would strip face tracking blendshapes.",
-                    $"It doesn't know about native face tracking and removes blendshapes it thinks are unused, so the build stops. {optimizer.Fix}",
+                    $"It removes the blendshapes it thinks are unused, including face tracking's, so the build stops. {optimizer.Fix}",
                     ("Select", () => Select(holder)));
             }
         }

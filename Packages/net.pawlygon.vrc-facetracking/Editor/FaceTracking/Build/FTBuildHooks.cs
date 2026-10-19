@@ -33,7 +33,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (optimizer != null)
                 {
                     throw new FTBuildException($"{optimizer.Name} on '{FTAvatarUtils.GetPath(optimizer.Holder.transform, avatarGameObject.transform)}' " +
-                                               $"would remove the face tracking blendshapes, since it doesn't know about native face tracking. {optimizer.Fix}");
+                                               $"would remove the face tracking blendshapes. {optimizer.Fix}");
                 }
 
                 LegacyOscCleanup.Run(avatarGameObject);

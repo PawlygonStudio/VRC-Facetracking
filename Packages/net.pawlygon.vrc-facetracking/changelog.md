@@ -5,7 +5,9 @@
 - The FX layers, parameters and menu toggle the components add (Pupil Emulation, the guard drivers, Disable Gestures) are merged by VRCFury as a Full Controller, or by Modular Avatar when VRCFury isn't installed, instead of being written into the merged FX controller afterwards.
 - Face Tracking Guards and Pupil Emulation now need VRCFury (1.935.0 or newer) or Modular Avatar (1.9.0 or newer). The avatar's own animators are no longer copied by this package, only edited after one of those tools made build copies of them: copying the controller file could keep references to the originals.
 - Face Tracking Guards decides which drivers to add from the controllers that will be merged into FX, the same ones its inspector shows. The guards themselves are still added to the merged gesture and blink layers.
-- The build stops when AAO Trace And Optimize would remove the face tracking blendshapes (Optimize BlendShape on), as it does for VRCFury's Blendshape Optimizer. Neither knows about native face tracking yet.
+- VRCFury's Blendshape Optimizer is allowed from VRCFury 1.1434.1-beta.2, which keeps the blendshapes native face tracking uses. With older VRCFury versions the build still stops.
+- The build stops when AAO Trace And Optimize would remove the face tracking blendshapes (Optimize BlendShape on). AAO doesn't know about native face tracking yet.
+- VRCFury's Blendshape Link and Advanced Visemes (1.1434.1-beta.2) see the face tracking setup, since it's written before VRCFury runs.
 
 ## [2.0.0-beta.4] - 2026-10-19
 - Works with the public VRChat Avatars SDK face tracking beta: requires 3.10.6-beta.1 or newer instead of the closed beta's 3.11.0.
