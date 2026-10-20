@@ -50,7 +50,7 @@ Sets up native face tracking on the avatar descriptor when the avatar is built: 
 | Eye Gaze | Auto | **Auto** uses **Both** with `EyeLook` blendshapes and eye bones set up in the descriptor's Eye Look, **Face Tracking** with only the blendshapes, **Bone Rotation** with only the bones, and leaves it unchanged with neither. |
 | Viseme Dampening (Advanced) | None | How visemes and mouth tracking are blended: **Dampen Tracking** lets active visemes dampen mouth tracking, **Dampen Visemes** the other way round. Needs face tracking visemes and All Tracking Keys. |
 
-Blendshapes are matched by their Unified Expressions names, and by the ARKit and other aliases the VRChat SDK knows.
+Blendshapes are matched by their Unified Expressions names, and by the ARKit and other aliases the VRChat SDK knows. The **Tracking Keys** list shows what every key is mapped to, grouped by face region, with a search and an All / Unmapped / Edited filter. Click a key's blendshape to pick another one, or None to leave it unmapped; the reset button goes back to the automatic match. When an unmapped key has a blendshape with almost the same name (e.g. a misspelled `EyeContsrictLeft`), it's suggested next to the key.
 
 ### Face Tracking Parameters
 Keeps animators made for OSC face tracking working, such as Pawlygon Unity Tools' Face Tracking Extras or your own custom animations: their face tracking parameters are fed from native face tracking instead of VRCFaceTracking.
@@ -58,23 +58,25 @@ Keeps animators made for OSC face tracking working, such as Pawlygon Unity Tools
 | Setting | Default | What it does |
 |---|---|---|
 | Auto-detect | On | Forwards every known face tracking parameter (`FT/v2/...`, `OSCm/Proxy/FT/v2/...`) the avatar's animators use, including the controllers VRCFury and Modular Avatar merge. |
-| Manual | Empty | Extra parameters to forward: an animator parameter and an expression of tracking keys, combined with `+ - * /`, `abs()`, `min()`, `max()` and `clamp()` (e.g. `JawRight - JawLeft`). The result is clamped to -1..1. An entry with the same name as a detected parameter replaces it. |
+| Manual | Empty | Extra parameters to forward: an animator parameter and an expression of tracking keys, combined with `+ - * /`, `abs()`, `min()`, `max()` and `clamp()` (e.g. `JawRight - JawLeft`). The result is clamped to -1..1. An entry with the same name as a detected parameter replaces it. The **+** button inserts a tracking key at the cursor: type to search, also by ARKit and other names (e.g. `MouthSmile` finds `MouthCornerPull`). **ƒ** inserts a function or operator. |
 
 Each forwarded parameter counts toward the avatar's face tracking performance; the inspector shows a rank (Excellent up to 10, Good up to 20, Medium up to 30, Poor up to 40). No synced parameters are added.
 
 ### Face Tracking Guards
-Stops hand gestures and blink animations in the FX controller from fighting face tracking. When the avatar is built, guards are added to a copy of the FX controller: gesture-driven expression layers pause while face tracking is on, and blink layers pause while eye tracking is on. The inspector lists the layers it found and lets you change which ones are guarded.
+Stops hand gestures and blink animations in the FX controller from fighting face tracking, the same way 1.x did. Guards in the FX controller pause gesture-driven expression layers while `FacialExpressionsDisabled` is on, and blink layers while `EyeTrackingActive` is on. This component drives those parameters from native face tracking and the **Disable Gestures** toggle. Building the avatar never changes its animators.
+
+The guards themselves are part of the controller. Avatars set up with Pawlygon Unity Tools' FX Gesture Checker, or with face tracking add-ons using the same parameters, already have them. The inspector lists the gesture and blink layers it finds and whether each one is guarded. For the ones that aren't, **Bake Guards** writes the guards into a copy of the FX controller (`<name> (FT Guards).controller`) and makes the copy the avatar's FX controller. The original file isn't changed, and **Restore Original** switches back to it. Layers merged in by VRCFury or Modular Avatar prefabs need guards in their own controller.
 
 | Setting | Default | What it does |
 |---|---|---|
-| Gestures | On | Pauses gesture-driven facial expressions. |
-| Disable With Face Tracking | On | Pauses gestures automatically while face tracking is active. |
-| Disable Gestures Toggle | On | Adds a **Disable Gestures** menu toggle that pauses gestures whenever it's on, with or without face tracking. |
-| In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the toggle. Created if missing. |
-| Blinking | On | Pauses blink animations while eye tracking is active. |
-| Layer lists | Empty | Expression layers left unguarded, gesture layers guarded anyway, and blink layers left out or added, by name. Set from the inspector's layer list. |
+| Gestures | On | Drives `FacialExpressionsDisabled` to pause guarded gesture layers. |
+| Disable With Face Tracking | On | Also pauses gestures while VRChat's `UserFaceTracking` is on, whatever the toggle says. |
+| Disabled By Default | On | The **Disable Gestures** menu toggle starts on, so gestures stay paused until it's turned off, like 1.x. Its state is saved. |
+| In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the **Disable Gestures** toggle. Created if missing. |
+| Blinking | On | Includes blink layers when baking guards. |
+| Layer lists | Empty | Which layers Bake Guards guards: expression layers left out, gesture layers added anyway, and blink layers left out or added, by name. Set from the inspector's layer list. |
 
-Guards use the same `FacialExpressionsDisabled` and `EyeTrackingActive` parameters as 1.x and Pawlygon Unity Tools, so FX controllers already guarded with Unity Tools keep working. They're set by the avatar's owner and synced, 1 bit each. `EyeTrackingActive` and `LipTrackingActive` are also driven whenever an animator reads them (e.g. Face Tracking Extras or 1.x custom animations), even with Blinking off.
+Each parameter is only driven when an animator reads it, so avatars don't pay for unused synced bits: `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive` (e.g. for Face Tracking Extras or 1.x custom animations). They're set by the avatar's owner and synced, 1 bit each.
 
 ### Blendshape Fixes
 Drives fix shapes: helper blendshapes that prevent clipping while two face tracking shapes are active together, like `MouthSmileLeft-EyeClosedLeft`. Each fix follows the same tracking keys as the shapes it fixes, straight from face tracking, without animators.
@@ -101,9 +103,9 @@ When the avatar is built, the `EyeDilation` / `EyeConstrict` blendshapes are tak
 | Mood Reactions | On | While the pupils are emulated, wide eyes constrict them and a frown on both sides dilates them. |
 | Mood Reactions: Wide Eyes Constrict / Frown Dilation | 70 / 70 | How much each adds. |
 
-Real pupil tracking and mood reactions need All Tracking Keys. The layer is gated by `EyeTrackingActive`, which is shared with Face Tracking Guards (1 synced bit), and adds a few forwarded parameters: the eyelids, one per pupil blendshape, and two for mood reactions.
+Real pupil tracking and mood reactions need All Tracking Keys. The layer is gated by `EyeTrackingActive`, which is shared with Face Tracking Guards (1 synced bit), and adds a few forwarded parameters: the eyelids, one per eye for real pupil tracking (one in all when both eyes share their pupil blendshapes), and two for mood reactions.
 
-Fake pupil layers avatars bring from 1.x, the one Face Tracking Extras generated or one made by hand, would fight Pupil Emulation over the pupil blendshapes, so they're emptied in the uploaded copy. A layer counts when it animates nothing but pupil blendshapes, reads face or eye tracking parameters, and doesn't react to hand gestures. The inspector lists them under **Replaced at Build**; your controllers aren't changed.
+Fake pupil layers avatars bring from 1.x, the one Face Tracking Extras generated or one made by hand, would fight Pupil Emulation over the pupil blendshapes, so they're emptied in the uploaded copy. A layer counts when it animates nothing but pupil blendshapes, reads face or eye tracking parameters, and doesn't react to hand gestures. The inspector lists them under **Fake Pupil Layers**. The ones from Face Tracking Extras and Pawlygon Custom Animations prefabs aren't needed anymore: **Remove Fake Pupils** empties them in their controller (with undo). Untick Fake Pupil Dilation in Face Tracking Extras before generating again, or it comes back.
 
 ### Face Tracking Emulation
 Fills in face tracking shapes from related ones, for trackers that don't send them (e.g. brows from the eyelids on eye-only trackers), and relaxes shapes that fight each other. Emulations only ever add to the tracked value, so they never override real tracking. When the avatar is built, each affected blendshape is driven by one native face tracking expression instead of its plain mapping, without animators or synced parameters. The inspector lists every rewritten blendshape; hover a row to see its expression.

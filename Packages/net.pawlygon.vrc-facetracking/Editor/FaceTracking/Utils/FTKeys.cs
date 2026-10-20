@@ -38,6 +38,14 @@ namespace Pawlygon.FaceTracking.Editor
 
         public static string KeyName(int key) => ((VRCAvatarDescriptor.FaceTrackingKey)key).ToString();
 
+        /// <summary>The tracking key with this name, or -1.</summary>
+        public static int KeyByName(string name)
+        {
+            if (string.IsNullOrEmpty(name) || !Enum.TryParse(name, out VRCAvatarDescriptor.FaceTrackingKey key)) return -1;
+            var index = (int)key;
+            return index >= 0 && index < KeyCount ? index : -1;
+        }
+
         public static string VisemeName(int viseme) => ((VRC_AvatarDescriptor.Viseme)viseme).ToString();
 
         public static bool IsBasic(int key) => VRCAvatarDescriptor.IsBasicFaceTrackingKey(key);
@@ -85,6 +93,70 @@ namespace Pawlygon.FaceTracking.Editor
                 }
             }
             return keysByName.TryGetValue(name, out var found) ? found : (IReadOnlyList<int>)Array.Empty<int>();
+        }
+
+        /// <summary>
+        /// Other names the SDK matches to the key (ARKit, SRanipal and older Unified Expressions names), without the
+        /// key's own name and case-insensitive duplicates.
+        /// </summary>
+        public static List<string> AliasesFor(int key)
+        {
+            var names = NamesForKeyMethod != null
+                ? (IEnumerable<string>)NamesForKeyMethod.Invoke(null, new object[] { (VRCAvatarDescriptor.FaceTrackingKey)key }) ?? Enumerable.Empty<string>()
+                : Enumerable.Empty<string>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { KeyName(key) };
+            return names.Where(n => !string.IsNullOrWhiteSpace(n) && seen.Add(n)).ToList();
+        }
+
+        /// <summary>
+        /// A blendshape that looks like a misspelling of the key's name or one of its aliases (a letter or two off, or
+        /// two letters swapped), for keys nothing matched. Blendshapes in <paramref name="used"/> are skipped.
+        /// </summary>
+        public static string SuggestFor(int key, string[] blendshapes, ICollection<string> used)
+        {
+            var names = NamesForKeyMethod != null
+                ? ((IEnumerable<string>)NamesForKeyMethod.Invoke(null, new object[] { (VRCAvatarDescriptor.FaceTrackingKey)key }) ?? Enumerable.Empty<string>())
+                : Enumerable.Empty<string>();
+            var targets = names.Append(KeyName(key)).Select(n => n.ToLowerInvariant()).Distinct().ToList();
+
+            string best = null;
+            var bestDistance = int.MaxValue;
+            foreach (var blendshape in blendshapes)
+            {
+                if (used.Contains(blendshape)) continue;
+                var candidate = blendshape.ToLowerInvariant();
+                foreach (var target in targets)
+                {
+                    // One edit for short names, two for longer ones
+                    var allowed = target.Length >= 8 ? 2 : 1;
+                    if (Math.Abs(candidate.Length - target.Length) > allowed) continue;
+                    var distance = Distance(candidate, target);
+                    if (distance > 0 && distance <= allowed && distance < bestDistance)
+                    {
+                        best = blendshape;
+                        bestDistance = distance;
+                    }
+                }
+            }
+            return best;
+        }
+
+        /// <summary>Edits between two names, counting two swapped neighbouring letters as one.</summary>
+        static int Distance(string a, string b)
+        {
+            var d = new int[a.Length + 1, b.Length + 1];
+            for (var i = 0; i <= a.Length; i++) d[i, 0] = i;
+            for (var j = 0; j <= b.Length; j++) d[0, j] = j;
+            for (var i = 1; i <= a.Length; i++)
+            {
+                for (var j = 1; j <= b.Length; j++)
+                {
+                    var cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                    d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                    if (i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]) d[i, j] = Math.Min(d[i, j], d[i - 2, j - 2] + 1);
+                }
+            }
+            return d[a.Length, b.Length];
         }
 
         /// <summary>

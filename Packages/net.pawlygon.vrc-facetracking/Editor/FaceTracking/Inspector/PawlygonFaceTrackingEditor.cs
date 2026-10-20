@@ -18,7 +18,25 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic meshList = new FTDynamic();
         readonly FTDynamic keysBadge = new FTDynamic();
         readonly FTDynamic keysDetails = new FTDynamic();
+        readonly FTDynamic keysList = new FTDynamic();
         PropertyField manualMeshes;
+        VisualElement keysTools;
+        Button[] filterButtons;
+
+        enum KeyFilter
+        {
+            All,
+            Unmapped,
+            Edited,
+        }
+
+        KeyFilter keyFilter;
+        string keySearch = "";
+        readonly HashSet<string> openGroups = new HashSet<string>();
+
+        // Suggestions only change with the blendshapes and the unmapped keys, and are slow to find
+        string suggestionsKey;
+        Dictionary<int, string> suggestions = new Dictionary<int, string>();
         Label lipSyncResult, eyelidsResult, gazeResult;
 
         double nextSlowScan;
@@ -47,6 +65,8 @@ namespace Pawlygon.FaceTracking.Editor
             keysExtras.Add(keysBadge.Element);
             keys.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
             keys.Add(keysDetails.Element);
+            keys.Add(BuildKeysTools());
+            keys.Add(keysList.Element);
 
             var face = FTUI.Card(body, "Lip Sync & Eyes", out _);
             face.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Lip Sync", out lipSyncResult));
@@ -89,7 +109,7 @@ namespace Pawlygon.FaceTracking.Editor
             foreach (var warning in plan.Warnings) issues.Warning(warning);
 
             UpdateMeshes(plan);
-            UpdateKeys(plan);
+            UpdateKeys(plan, issues);
             UpdateResults(plan);
         }
 
@@ -179,14 +199,55 @@ namespace Pawlygon.FaceTracking.Editor
             });
         }
 
-        void UpdateKeys(FaceTrackingSetupPlan plan)
+        /// <summary>The search field and filter, built once so typing doesn't lose focus when the list redraws.</summary>
+        VisualElement BuildKeysTools()
+        {
+            keysTools = new VisualElement();
+            keysTools.AddToClassList("ft-key-tools");
+
+            var search = new ToolbarSearchField { tooltip = "Search tracking keys and blendshapes" };
+            search.AddToClassList("ft-key-tools__search");
+            search.RegisterValueChangedCallback(e =>
+            {
+                keySearch = e.newValue ?? "";
+                RefreshNow();
+            });
+            keysTools.Add(search);
+
+            var segmented = new VisualElement();
+            segmented.AddToClassList("ft-segmented");
+            segmented.AddToClassList("ft-key-tools__filter");
+            var filters = (KeyFilter[])System.Enum.GetValues(typeof(KeyFilter));
+            filterButtons = new Button[filters.Length];
+            for (var i = 0; i < filters.Length; i++)
+            {
+                var filter = filters[i];
+                var button = new Button(() =>
+                {
+                    keyFilter = filter;
+                    RefreshNow();
+                }) { text = filter.ToString() };
+                button.AddToClassList("ft-segmented__button");
+                if (i == 0) button.AddToClassList("ft-segmented__button--first");
+                if (i == filters.Length - 1) button.AddToClassList("ft-segmented__button--last");
+                filterButtons[i] = button;
+                segmented.Add(button);
+            }
+            keysTools.Add(segmented);
+            return keysTools;
+        }
+
+        void UpdateKeys(FaceTrackingSetupPlan plan, FTIssues issues)
         {
             if (plan.Set == null)
             {
                 keysBadge.Hide();
                 keysDetails.Hide();
+                keysList.Hide();
+                keysTools.style.display = DisplayStyle.None;
                 return;
             }
+            keysTools.style.display = DisplayStyle.Flex;
 
             var mapped = plan.MappedKeys.Count;
             var total = mapped + plan.UnmappedKeys.Count;
@@ -194,17 +255,173 @@ namespace Pawlygon.FaceTracking.Editor
             var kind = fraction >= 0.9f ? FTKind.Ok : fraction >= 0.5f ? FTKind.Info : FTKind.Warning;
 
             keysBadge.Update($"{mapped}/{total}", e => e.Add(FTUI.Badge($"{mapped}/{total} mapped", kind)));
+            keysDetails.Update($"{fraction}", e => e.Add(FTUI.Progress(fraction, fraction >= 0.5f ? FTKind.Ok : FTKind.Warning)));
 
-            var unmapped = plan.UnmappedKeys.Select(FTKeys.KeyName).ToList();
-            keysDetails.Update(string.Join("|", unmapped) + total, e =>
+            UpdateSuggestions(plan);
+            if (suggestions.Count > 0)
             {
-                e.Add(FTUI.Progress(fraction, fraction >= 0.5f ? FTKind.Ok : FTKind.Warning));
-                if (unmapped.Count == 0) return;
+                issues.Info($"{(suggestions.Count == 1 ? "1 unmapped key has" : $"{suggestions.Count} unmapped keys have")} a blendshape with a similar name.",
+                    string.Join("\n", suggestions.Select(x => $"{FTKeys.KeyName(x.Key)}: {x.Value}")) + "\nIt may be misspelled. Use them to map those keys by hand.",
+                    ("Use", () => { foreach (var x in suggestions.ToList()) SetOverride(FTKeys.KeyName(x.Key), x.Value, plan); }));
+            }
 
-                var foldout = FTUI.Collapsible($"Unmapped ({unmapped.Count})");
-                foldout.Add(FTUI.Chips(unmapped, null, "No blendshape matches this tracking key"));
-                e.Add(foldout);
+            // Filter buttons show their counts
+            var counts = new[] { total, plan.UnmappedKeys.Count, plan.OverriddenKeys.Count };
+            for (var i = 0; i < filterButtons.Length; i++)
+            {
+                var filter = (KeyFilter)i;
+                filterButtons[i].text = filter == KeyFilter.All ? "All" : $"{filter} ({counts[i]})";
+                filterButtons[i].EnableInClassList("ft-segmented__button--selected", filter == keyFilter);
+            }
+
+            var keys = plan.MappedKeys.Concat(plan.UnmappedKeys).OrderBy(k => k).ToList();
+            var visible = keys.Where(k => MatchesFilter(plan, k)).ToList();
+            var filtering = keyFilter != KeyFilter.All || !string.IsNullOrWhiteSpace(keySearch);
+
+            var listKey = string.Join("|", visible.Select(k => k + ":" + plan.Set.faceTrackingBlendshapeNames[k] + (plan.OverriddenKeys.Contains(k) ? "*" : "")
+                                                              + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")))
+                          + filtering + string.Join(",", openGroups);
+            keysList.Update(listKey, container =>
+            {
+                if (visible.Count == 0)
+                {
+                    container.Add(FTUI.Text(keyFilter == KeyFilter.Edited && string.IsNullOrWhiteSpace(keySearch)
+                        ? "No keys are mapped by hand. Click a key's blendshape to change it."
+                        : "No matching keys.", "ft-muted", "ft-card__note"));
+                    return;
+                }
+
+                foreach (var group in visible.GroupBy(k => KeyGroup(FTKeys.KeyName(k))))
+                {
+                    var groupKeys = keys.Where(k => KeyGroup(FTKeys.KeyName(k)) == group.Key).ToList();
+                    var groupMapped = groupKeys.Count(k => plan.MappedKeys.Contains(k));
+                    var name = group.Key;
+
+                    // Searching or filtering opens every group that has results
+                    var foldout = FTUI.Collapsible($"{name}  {groupMapped}/{groupKeys.Count}", filtering || openGroups.Contains(name));
+                    foldout.RegisterValueChangedCallback(e =>
+                    {
+                        if (e.target != foldout || filtering) return;
+                        if (e.newValue) openGroups.Add(name);
+                        else openGroups.Remove(name);
+                    });
+                    foreach (var key in group) foldout.Add(KeyRow(plan, key));
+                    container.Add(foldout);
+                }
             });
+        }
+
+        bool MatchesFilter(FaceTrackingSetupPlan plan, int key)
+        {
+            if (keyFilter == KeyFilter.Unmapped && !plan.UnmappedKeys.Contains(key)) return false;
+            if (keyFilter == KeyFilter.Edited && !plan.OverriddenKeys.Contains(key)) return false;
+            if (string.IsNullOrWhiteSpace(keySearch)) return true;
+
+            var search = keySearch.Trim();
+            var blendshape = plan.Set.faceTrackingBlendshapeNames[key] ?? "";
+            return FTKeys.KeyName(key).IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0
+                   || blendshape.IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        VisualElement KeyRow(FaceTrackingSetupPlan plan, int key)
+        {
+            var keyName = FTKeys.KeyName(key);
+            var blendshape = plan.Set.faceTrackingBlendshapeNames[key];
+            var mapped = plan.MappedKeys.Contains(key);
+            var edited = plan.OverriddenKeys.Contains(key);
+            plan.AutoMatches.TryGetValue(key, out var auto);
+
+            var row = new VisualElement();
+            row.AddToClassList("ft-key");
+            row.Add(FTUI.Text(keyName, "ft-key__name"));
+
+            var value = new Button { text = mapped ? blendshape : "unmapped" };
+            value.AddToClassList("ft-key__value");
+            value.EnableInClassList("ft-key__value--unmapped", !mapped);
+            value.EnableInClassList("ft-key__value--edited", edited);
+            value.tooltip = edited
+                ? $"Mapped by hand. Automatic match: {auto ?? "none"}."
+                : mapped
+                    ? (string.Equals(blendshape, keyName, System.StringComparison.OrdinalIgnoreCase) ? "Matched by name." : $"Matched by alias: {blendshape}.") + " Click to change."
+                    : "No blendshape matches this key. Click to pick one.";
+            value.clicked += () =>
+            {
+                new FTBlendshapePicker(keyName, plan.Blendshapes, picked => SetOverride(keyName, picked, plan)).Show(value.worldBound);
+            };
+            row.Add(value);
+
+            if (!mapped && suggestions.TryGetValue(key, out var suggestion))
+            {
+                var use = new Button(() => SetOverride(keyName, suggestion, plan)) { text = suggestion + "?", tooltip = $"'{suggestion}' looks like a misspelling of {keyName}. Click to use it." };
+                use.AddToClassList("ft-key__suggestion");
+                row.Add(use);
+            }
+            if (edited)
+            {
+                var reset = new Button(() => SetOverride(keyName, null, plan)) { text = "↺", tooltip = $"Back to the automatic match ({auto ?? "unmapped"})." };
+                reset.AddToClassList("ft-key__reset");
+                row.Add(reset);
+            }
+            return row;
+        }
+
+        /// <summary>
+        /// Maps a key by hand, or back to the automatic match with null. Picking what it would match on its own just
+        /// removes the manual mapping.
+        /// </summary>
+        void SetOverride(string keyName, string blendshape, FaceTrackingSetupPlan plan)
+        {
+            var key = FTKeys.KeyByName(keyName);
+            plan.AutoMatches.TryGetValue(key, out var auto);
+            if (blendshape != null && blendshape == (auto ?? "")) blendshape = null;
+
+            var list = serializedObject.FindProperty(nameof(PawlygonFaceTracking.keyOverrides));
+            for (var i = list.arraySize - 1; i >= 0; i--)
+            {
+                if (list.GetArrayElementAtIndex(i).FindPropertyRelative(nameof(FTKeyOverride.key)).stringValue == keyName) list.DeleteArrayElementAtIndex(i);
+            }
+            if (blendshape != null)
+            {
+                list.arraySize++;
+                var entry = list.GetArrayElementAtIndex(list.arraySize - 1);
+                entry.FindPropertyRelative(nameof(FTKeyOverride.key)).stringValue = keyName;
+                entry.FindPropertyRelative(nameof(FTKeyOverride.blendshape)).stringValue = blendshape;
+            }
+            serializedObject.ApplyModifiedProperties();
+            RefreshNow();
+        }
+
+        void UpdateSuggestions(FaceTrackingSetupPlan plan)
+        {
+            var key = plan.Blendshapes.Length + "|" + string.Join(",", plan.Blendshapes.Take(8)) + "|" + string.Join(",", plan.UnmappedKeys)
+                      + "|" + string.Join(",", plan.MappedKeys.Select(k => plan.Set.faceTrackingBlendshapeNames[k]));
+            if (key == suggestionsKey) return;
+            suggestionsKey = key;
+
+            var used = new HashSet<string>(plan.MappedKeys.Select(k => plan.Set.faceTrackingBlendshapeNames[k]));
+            suggestions = new Dictionary<int, string>();
+            foreach (var unmapped in plan.UnmappedKeys)
+            {
+                // Keys left unmapped on purpose don't get suggestions
+                if (plan.OverriddenKeys.Contains(unmapped)) continue;
+                var suggestion = FTKeys.SuggestFor(unmapped, plan.Blendshapes, used);
+                if (suggestion == null) continue;
+                suggestions[unmapped] = suggestion;
+                used.Add(suggestion);
+            }
+        }
+
+        /// <summary>Face regions to group the tracking keys by, in face order.</summary>
+        static string KeyGroup(string key)
+        {
+            if (key.StartsWith("Eye")) return "Eyes";
+            if (key.StartsWith("Brow")) return "Brows";
+            if (key.StartsWith("Cheek") || key.StartsWith("Nose") || key.StartsWith("Nasal")) return "Cheeks & Nose";
+            if (key.StartsWith("Jaw")) return "Jaw";
+            if (key.StartsWith("Mouth")) return "Mouth";
+            if (key.StartsWith("Lip")) return "Lips";
+            if (key.StartsWith("Tongue")) return "Tongue";
+            return "Neck & Throat";
         }
 
         void UpdateResults(FaceTrackingSetupPlan plan)

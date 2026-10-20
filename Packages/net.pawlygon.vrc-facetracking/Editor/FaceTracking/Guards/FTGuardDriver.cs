@@ -30,28 +30,24 @@ namespace Pawlygon.FaceTracking.Editor
         /// FacialExpressionsDisabled is on while the Disable Gestures toggle is on, or while face tracking
         /// is on when <paramref name="withFaceTracking"/> is set.
         /// </summary>
-        public static void AddGestureDriver(AnimatorController controller, bool withFaceTracking, bool withToggle)
+        public static void AddGestureDriver(AnimatorController controller, bool withFaceTracking)
         {
-            AnimatorCondition tracking = default, notTracking = default, toggled = default, notToggled = default;
+            AnimatorCondition tracking = default, notTracking = default;
             if (withFaceTracking)
             {
                 FXGuardWriter.OnOffConditions(controller, UserFaceTracking, AnimatorControllerParameterType.Bool, out tracking, out notTracking);
             }
-            if (withToggle)
-            {
-                FXGuardWriter.OnOffConditions(controller, DisableGesturesParameter, AnimatorControllerParameterType.Bool, out toggled, out notToggled);
-            }
+            FXGuardWriter.OnOffConditions(controller, DisableGesturesParameter, AnimatorControllerParameterType.Bool, out var toggled, out var notToggled);
 
             var machine = AddLayer(controller, "Pawlygon FT - Gesture Guard");
             var enabled = DriverState(machine, "Gestures Enabled", new Vector3(300, 0), FXGuardWriter.GestureGuardParameter, 0);
             var disabled = DriverState(machine, "Gestures Disabled", new Vector3(300, 100), FXGuardWriter.GestureGuardParameter, 1);
             machine.defaultState = enabled;
 
-            // Disabled when any source is on, enabled again once all of them are off
+            // Disabled while the toggle or face tracking is on, enabled again once both are off
             if (withFaceTracking) Transition(enabled, disabled, tracking);
-            if (withToggle) Transition(enabled, disabled, toggled);
-            if (withFaceTracking && withToggle) Transition(disabled, enabled, notTracking, notToggled);
-            else if (withFaceTracking) Transition(disabled, enabled, notTracking);
+            Transition(enabled, disabled, toggled);
+            if (withFaceTracking) Transition(disabled, enabled, notTracking, notToggled);
             else Transition(disabled, enabled, notToggled);
         }
 

@@ -24,7 +24,8 @@ namespace Pawlygon.FaceTracking.Editor
         const string WideParameter = FTPupilEmulationPlan.ParameterPrefix + "Wide";
         const string FrownParameter = FTPupilEmulationPlan.ParameterPrefix + "Frown";
 
-        // Mood reactions: how wide both eyes are, and how much both mouth corners frown
+        // Mood reactions: how wide both eyes are, and how much both mouth corners frown. Kept apart so both can
+        // apply at once.
         const string WideExpression = "(EyeWideLeft + EyeWideRight) / 2";
         const string FrownExpression = "min(MouthFrownLeft, MouthFrownRight)";
 
@@ -65,7 +66,7 @@ namespace Pawlygon.FaceTracking.Editor
             AddForward(context, LidParameter, LidExpression);
             if (plan.RealTracking)
             {
-                foreach (var shape in plan.Shapes) AddForward(context, shape.Parameter, shape.Expression);
+                foreach (var channel in plan.Channels) AddForward(context, channel.Parameter, channel.Expression);
             }
             if (UsesMood(component, plan))
             {
@@ -206,12 +207,14 @@ namespace Pawlygon.FaceTracking.Editor
                 // Stays in Tracked until eye tracking stops, even when the pupils come back to rest
                 var tracked = State(machine, "Tracked", new Vector3(560f, 0f), TrackedMotion());
                 LayerControl(tracked, layerIndex, 1f);
-                foreach (var shape in plan.Shapes)
+                foreach (var channel in plan.Channels)
                 {
-                    AddFloat(shape.Parameter, 0f);
+                    AddFloat(channel.Parameter, 0f);
                     foreach (var from in new[] { idle, closed, reflex })
                     {
-                        Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = shape.Parameter, threshold = RealTrackingMargin });
+                        // Dilating or constricting: the value is signed
+                        Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = channel.Parameter, threshold = RealTrackingMargin });
+                        Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Less, parameter = channel.Parameter, threshold = -RealTrackingMargin });
                     }
                 }
             }
@@ -229,11 +232,11 @@ namespace Pawlygon.FaceTracking.Editor
                 var children = new List<ChildMotion> { new ChildMotion { motion = idle, directBlendParameter = OneParameter, timeScale = 1f } };
                 if (plan.ConstrictShapes.Any() && settings.wideEyesConstrict > 0f)
                 {
-                    children.Add(MoodChild("Wide Eyes", WideParameter, false, settings.wideEyesConstrict));
+                    children.Add(MoodChild("Wide Eyes", WideParameter, plan.ConstrictShapes, 0f, settings.wideEyesConstrict));
                 }
                 if (plan.DilationShapes.Any() && settings.frownDilation > 0f)
                 {
-                    children.Add(MoodChild("Frown", FrownParameter, true, settings.frownDilation));
+                    children.Add(MoodChild("Frown", FrownParameter, plan.DilationShapes, settings.frownDilation, 0f));
                 }
 
                 var root = Tree("Pupils - Idle With Mood", BlendTreeType.Direct, null);
@@ -241,32 +244,37 @@ namespace Pawlygon.FaceTracking.Editor
                 return root;
             }
 
-            ChildMotion MoodChild(string name, string parameter, bool dilation, float amount)
+            ChildMotion MoodChild(string name, string parameter, IEnumerable<FTPupilEmulationPlan.Shape> shapes, float dilation, float constriction)
             {
+                var list = shapes.ToList();
                 var tree = Tree($"Pupils - Mood {name}", BlendTreeType.Simple1D, parameter);
-                tree.AddChild(GroupClip($"Pupils - Mood {name} 0", dilation, 0f), 0f);
-                tree.AddChild(GroupClip($"Pupils - Mood {name}", dilation, amount), 1f);
+                tree.AddChild(PupilClip($"Pupils - Mood {name} 0", list, 0f, 0f), 0f);
+                tree.AddChild(PupilClip($"Pupils - Mood {name}", list, dilation, constriction), 1f);
                 return new ChildMotion { motion = tree, directBlendParameter = OneParameter, timeScale = 1f };
             }
 
-            /// <summary>Only the dilation (or only the constriction) shapes, held at one value.</summary>
-            AnimationClip GroupClip(string name, bool dilation, float value)
+            /// <summary>The given shapes held at one value: <paramref name="dilation"/> for dilation shapes, <paramref name="constriction"/> for the others.</summary>
+            AnimationClip PupilClip(string name, IEnumerable<FTPupilEmulationPlan.Shape> shapes, float dilation, float constriction)
             {
                 var clip = new AnimationClip { name = name };
-                foreach (var shape in plan.Shapes.Where(s => s.IsDilation == dilation)) SetCurve(clip, shape.Name, Constant(value, 1f / 60f));
+                foreach (var shape in shapes) SetCurve(clip, shape.Name, Constant(shape.IsDilation ? dilation : constriction, 1f / 60f));
                 return Save(clip);
             }
 
-            /// <summary>Each pupil blendshape follows its own tracking value, played together in a Direct tree.</summary>
+            /// <summary>
+            /// Each eye's pupil shapes follow its signed tracking value, played together in a Direct tree: -1 fully
+            /// constricted, 0 at rest, 1 fully dilated.
+            /// </summary>
             Motion TrackedMotion()
             {
                 AddFloat(OneParameter, 1f);
                 var root = Tree("Pupils - Tracked", BlendTreeType.Direct, null);
-                root.children = plan.Shapes.Select(shape =>
+                root.children = plan.Channels.Select(channel =>
                 {
-                    var tree = Tree($"Pupils - Tracked {shape.Name}", BlendTreeType.Simple1D, shape.Parameter);
-                    tree.AddChild(ShapeClip($"Pupils - {shape.Name} 0", shape.Name, 0f), 0f);
-                    tree.AddChild(ShapeClip($"Pupils - {shape.Name} 100", shape.Name, 100f), 1f);
+                    var tree = Tree($"Pupils - Tracked {channel.Side}", BlendTreeType.Simple1D, channel.Parameter);
+                    if (channel.ConstrictShapes.Any()) tree.AddChild(PupilClip($"Pupils - {channel.Side} Constricted", channel.Shapes, 0f, 100f), -1f);
+                    tree.AddChild(PupilClip($"Pupils - {channel.Side} 0", channel.Shapes, 0f, 0f), 0f);
+                    if (channel.DilationShapes.Any()) tree.AddChild(PupilClip($"Pupils - {channel.Side} Dilated", channel.Shapes, 100f, 0f), 1f);
                     return new ChildMotion { motion = tree, directBlendParameter = OneParameter, timeScale = 1f };
                 }).ToArray();
                 return root;
@@ -279,13 +287,6 @@ namespace Pawlygon.FaceTracking.Editor
                 var clipSettings = AnimationUtility.GetAnimationClipSettings(clip);
                 clipSettings.loopTime = loop;
                 AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
-                return Save(clip);
-            }
-
-            AnimationClip ShapeClip(string name, string shape, float value)
-            {
-                var clip = new AnimationClip { name = name };
-                SetCurve(clip, shape, Constant(value, 1f / 60f));
                 return Save(clip);
             }
 

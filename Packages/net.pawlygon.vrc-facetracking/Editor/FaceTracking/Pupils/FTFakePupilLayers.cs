@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace Pawlygon.FaceTracking.Editor
 {
@@ -15,6 +17,12 @@ namespace Pawlygon.FaceTracking.Editor
     /// </summary>
     internal static class FTFakePupilLayers
     {
+        // The fake pupil layers Pawlygon's own 1.x content brings: Face Tracking Extras (Pawlygon Unity Tools) generates
+        // the first, the Custom Animations prefabs of Pawlygon avatars have the second
+        const string ExtrasLayerName = "Fake Pupil Dilation";
+        const string CustomAnimationsLayerName = "Fake Pupil";
+        const string CustomAnimationsController = "Custom Animations";
+
         // VRCFury prefixes parameters it makes local to one merged controller
         static readonly Regex MergedParameter = new Regex(@"^VF\d+_");
 
@@ -59,6 +67,44 @@ namespace Pawlygon.FaceTracking.Editor
         }
 
         /// <summary>
+        /// A fake pupil layer from Pawlygon's own 1.x content (Face Tracking Extras or a Custom Animations prefab), which
+        /// Remove Fake Pupils can empty. Only meaningful for layers <see cref="Find"/> returned.
+        /// </summary>
+        public static bool IsPawlygonLayer(AnimatorController controller, AnimatorControllerLayer layer)
+        {
+            var name = FXGuardAnalysis.CleanLayerName(layer.name);
+            return name == ExtrasLayerName
+                   || (name == CustomAnimationsLayerName && controller.name.Contains(CustomAnimationsController));
+        }
+
+        /// <summary>
+        /// Removes the fake pupil layers of Pawlygon's own 1.x content from their controller, after asking, with undo.
+        /// Only controllers in Assets can be changed. Hand-made fake pupil layers are left to their owner.
+        /// </summary>
+        public static bool RemovePawlygonLayers(AnimatorController controller)
+        {
+            var path = AssetDatabase.GetAssetPath(controller);
+            var indices = Find(controller).Where(i => IsPawlygonLayer(controller, controller.layers[i])).ToList();
+            if (indices.Count == 0 || !path.StartsWith("Assets/")) return false;
+
+            var fromExtras = indices.Any(i => FXGuardAnalysis.CleanLayerName(controller.layers[i].name) == ExtrasLayerName);
+            if (!EditorUtility.DisplayDialog("Remove Fake Pupils",
+                    $"Removes the fake pupils from '{controller.name}': the layer stays, empty, so layers after it keep their place. " +
+                    "Pupil Emulation replaces it." +
+                    (fromExtras ? "\n\nUntick Fake Pupil Dilation in Face Tracking Extras before generating again, or it comes back." : ""),
+                    "Remove", "Cancel"))
+            {
+                return false;
+            }
+
+            Undo.RecordObject(controller, "Remove Fake Pupils");
+            Empty(controller, indices);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[{FTErrorBoundary.Title}] Removed the fake pupils from '{path}'.", controller);
+            return true;
+        }
+
+        /// <summary>
         /// Replaces each layer's state machine with an empty one at weight 0. The layers stay where they are, so
         /// Animator Layer Control behaviours elsewhere keep pointing at the right layers.
         /// </summary>
@@ -78,16 +124,34 @@ namespace Pawlygon.FaceTracking.Editor
             EditorUtility.SetDirty(controller);
         }
 
-        /// <summary>Parameters a layer reads: transition conditions and blend tree parameters.</summary>
+        /// <summary>
+        /// Parameters a layer reads: transition conditions, blend tree parameters, state speed / time parameters, and
+        /// the sources parameter drivers copy from.
+        /// </summary>
         public static IEnumerable<string> ReadParameters(AnimatorControllerLayer layer)
         {
             if (layer.stateMachine == null) return Enumerable.Empty<string>();
+            var states = FXGuardAnalysis.AllStates(layer.stateMachine).ToList();
             var conditions = FXGuardAnalysis.AllTransitions(layer.stateMachine).SelectMany(t => t.conditions).Select(c => c.parameter);
-            var trees = FXGuardAnalysis.AllStates(layer.stateMachine).SelectMany(s => Trees(s.motion))
+            var trees = states.SelectMany(s => Trees(s.motion))
                 .SelectMany(t => new[] { t.blendParameter, t.blendParameterY }.Concat(t.children.Select(c => c.directBlendParameter)));
-            var stateParameters = FXGuardAnalysis.AllStates(layer.stateMachine)
+            var stateParameters = states
                 .SelectMany(s => new[] { s.speedParameterActive ? s.speedParameter : null, s.timeParameterActive ? s.timeParameter : null });
-            return conditions.Concat(trees).Concat(stateParameters).Where(p => !string.IsNullOrEmpty(p)).Distinct();
+            var copied = states.SelectMany(s => s.behaviours).Concat(StateMachines(layer.stateMachine).SelectMany(m => m.behaviours))
+                .OfType<VRCAvatarParameterDriver>()
+                .SelectMany(d => d.parameters)
+                .Where(p => p.type == VRC_AvatarParameterDriver.ChangeType.Copy)
+                .Select(p => p.source);
+            return conditions.Concat(trees).Concat(stateParameters).Concat(copied).Where(p => !string.IsNullOrEmpty(p)).Distinct();
+        }
+
+        static IEnumerable<AnimatorStateMachine> StateMachines(AnimatorStateMachine machine)
+        {
+            yield return machine;
+            foreach (var child in machine.stateMachines)
+            {
+                foreach (var nested in StateMachines(child.stateMachine)) yield return nested;
+            }
         }
 
         static bool IsPupilBinding(EditorCurveBinding binding)

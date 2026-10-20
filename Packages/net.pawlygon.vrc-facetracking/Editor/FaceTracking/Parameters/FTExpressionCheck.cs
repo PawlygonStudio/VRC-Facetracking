@@ -30,7 +30,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        static IEnumerable<string> VisemeInputs => Enumerable.Range(0, FTKeys.VisemeCount)
+        internal static IEnumerable<string> VisemeInputs => Enumerable.Range(0, FTKeys.VisemeCount)
             .Select(v => VRCAvatarDescriptor.GetFaceTrackingVisemeInputName((VRC_AvatarDescriptor.Viseme)v));
 
         /// <summary>Null when the expression looks fine, otherwise a short problem description.</summary>
@@ -70,25 +70,29 @@ namespace Pawlygon.FaceTracking.Editor
             return null;
         }
 
-        /// <summary>A menu of every input, grouped by face region, that calls <paramref name="onPick"/> with the name.</summary>
-        public static GenericMenu InputMenu(Action<string> onPick)
+        /// <summary>
+        /// The functions and operators an expression can use, as templates: <paramref name="onPick"/> gets the text to
+        /// insert and where the cursor goes in it.
+        /// </summary>
+        public static GenericMenu FunctionMenu(Action<string, int> onPick)
         {
             var menu = new GenericMenu();
-            for (var key = 0; key < FTKeys.KeyCount; key++)
-            {
-                var name = FTKeys.KeyName(key);
-                menu.AddItem(new UnityEngine.GUIContent($"{Region(name)}/{name}"), false, () => onPick(name));
-            }
+            void Add(string label, string text, int cursor) => menu.AddItem(new UnityEngine.GUIContent(label), false, () => onPick(text, cursor));
+
+            Add("abs(x)    Absolute value", "abs()", 4);
+            Add("min(a, b)    Smaller of the two", "min(, )", 4);
+            Add("max(a, b)    Larger of the two", "max(, )", 4);
+            Add("clamp(x, min, max)    Keeps x between min and max", "clamp(, 0, 1)", 6);
             menu.AddSeparator("");
-            menu.AddItem(new UnityEngine.GUIContent("Voice"), false, () => onPick("Voice"));
-            foreach (var viseme in VisemeInputs)
-            {
-                menu.AddItem(new UnityEngine.GUIContent("Visemes/" + viseme), false, () => onPick(viseme));
-            }
+            Add("( )    Parentheses", "()", 1);
+            Add("+    Add", " + ", 3);
+            Add("-    Subtract", " - ", 3);
+            Add("*    Multiply", " * ", 3);
+            Add("/    Divide", " / ", 3);
             return menu;
         }
 
-        static string Region(string key)
+        internal static string Region(string key)
         {
             if (key.StartsWith("EyeLook")) return "Eye Look";
             if (key.StartsWith("Eye")) return "Eyes";
