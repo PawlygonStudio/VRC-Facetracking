@@ -18,13 +18,51 @@ namespace Pawlygon.FaceTracking.Editor
             public bool IsDilation;
             public readonly List<int> Keys = new List<int>();
 
-            /// <summary>Animator parameter receiving this shape's real tracking value, 0 to 1.</summary>
-            public string Parameter => ParameterPrefix + FTKeys.KeyName(Keys[0]);
+            /// <summary>Left, Right, or Both when the shape's keys cover both eyes.</summary>
+            public string Side
+            {
+                get
+                {
+                    var names = Keys.Select(FTKeys.KeyName).ToList();
+                    if (names.All(n => n.EndsWith("Left"))) return "Left";
+                    if (names.All(n => n.EndsWith("Right"))) return "Right";
+                    return "Both";
+                }
+            }
+        }
 
-            /// <summary>The average of the keys that map to this shape, like native face tracking would apply.</summary>
-            public string Expression => Keys.Count == 1
-                ? FTKeys.KeyName(Keys[0])
-                : $"({string.Join(" + ", Keys.Select(FTKeys.KeyName))}) / {Keys.Count}";
+        /// <summary>
+        /// The pupil shapes of one eye (or of both, when they share shapes), forwarded as a single signed value:
+        /// dilation minus constriction, -1 to 1. A pupil doesn't dilate and constrict at once, so nothing is lost,
+        /// and it takes one forwarded parameter per eye instead of one per shape.
+        /// </summary>
+        internal sealed class Channel
+        {
+            public string Side;
+            public readonly List<Shape> Shapes = new List<Shape>();
+
+            public string Parameter => ParameterPrefix + (Side == "Both" ? "Pupil" : "Pupil" + Side);
+
+            public IEnumerable<Shape> DilationShapes => Shapes.Where(s => s.IsDilation);
+            public IEnumerable<Shape> ConstrictShapes => Shapes.Where(s => !s.IsDilation);
+
+            /// <summary>The average of the dilation keys minus the average of the constriction keys, like native face tracking would apply them.</summary>
+            public string Expression
+            {
+                get
+                {
+                    var dilation = Average(DilationShapes.SelectMany(s => s.Keys).Distinct().ToList());
+                    var constrict = Average(ConstrictShapes.SelectMany(s => s.Keys).Distinct().ToList());
+                    if (constrict == null) return dilation;
+                    return $"{dilation ?? "0"} - {constrict}";
+                }
+            }
+
+            static string Average(List<int> keys)
+            {
+                if (keys.Count == 0) return null;
+                return keys.Count == 1 ? FTKeys.KeyName(keys[0]) : $"({string.Join(" + ", keys.Select(FTKeys.KeyName))}) / {keys.Count}";
+            }
         }
 
         public const string ParameterPrefix = "PawlygonFT/Pupils/";
@@ -36,6 +74,16 @@ namespace Pawlygon.FaceTracking.Editor
 
         public IEnumerable<Shape> DilationShapes => Shapes.Where(s => s.IsDilation);
         public IEnumerable<Shape> ConstrictShapes => Shapes.Where(s => !s.IsDilation);
+
+        /// <summary>The shapes grouped by eye, each forwarded as one value for real pupil tracking.</summary>
+        public List<Channel> Channels => Shapes.GroupBy(s => s.Side)
+            .Select(g =>
+            {
+                var channel = new Channel { Side = g.Key };
+                channel.Shapes.AddRange(g);
+                return channel;
+            })
+            .ToList();
 
         /// <summary>
         /// Each pupil key's blendshape: the one a set already maps it to, or the SDK's best match among the face

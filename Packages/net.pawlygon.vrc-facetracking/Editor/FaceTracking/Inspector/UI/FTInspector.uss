@@ -486,3 +486,86 @@
 .ft-advanced {
     margin-top: 2px;
 }
+
+/* Tracking keys: search and filter, then one row per key */
+
+.ft-key-tools {
+    flex-direction: row;
+    align-items: center;
+    margin: 2px 0 4px 0;
+}
+
+.ft-key-tools__search {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: auto;
+    min-width: 60px;
+    margin: 0 4px 0 0;
+}
+
+.ft-key-tools__filter {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.ft-key-tools__filter > .ft-segmented__button {
+    flex-grow: 0;
+    padding: 0 8px;
+}
+
+.ft-key {
+    flex-direction: row;
+    align-items: center;
+    min-height: 20px;
+    padding: 1px 2px 1px 4px;
+    border-radius: 3px;
+}
+
+.ft-key:hover {
+    background-color: var(--ft-surface-alt);
+}
+
+.ft-key__name {
+    width: 42%;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.ft-key__value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 18px;
+    margin: 0;
+    padding: 0 6px;
+    -unity-text-align: middle-left;
+    overflow: hidden;
+}
+
+.ft-key__value--unmapped {
+    color: var(--ft-muted);
+    -unity-font-style: italic;
+}
+
+.ft-key__value--edited {
+    color: var(--ft-info);
+    -unity-font-style: bold;
+}
+
+.ft-key__suggestion {
+    height: 18px;
+    margin: 0 0 0 4px;
+    padding: 0 6px;
+    flex-shrink: 1;
+    font-size: 11px;
+    color: var(--ft-warning);
+    background-color: var(--ft-warning-bg);
+    border-width: 0;
+}
+
+.ft-key__reset {
+    width: 20px;
+    height: 18px;
+    margin: 0 0 0 2px;
+    padding: 0;
+    flex-shrink: 0;
+}

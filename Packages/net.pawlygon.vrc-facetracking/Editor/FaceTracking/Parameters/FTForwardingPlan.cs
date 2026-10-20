@@ -28,6 +28,9 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<Entry> Entries = new List<Entry>();
         public readonly List<string> Warnings = new List<string>();
 
+        // Known face tracking parameters a controller declares but no layer reads, so they aren't forwarded
+        public readonly List<string> Unread = new List<string>();
+
         public static FTForwardingPlan ForBuild(PawlygonFTParameters component, VRCAvatarDescriptor descriptor, bool useAllTrackingKeys)
         {
             var controllers = GetLayerControllers(descriptor).Select(c => (c, "Playable layers"));
@@ -62,6 +65,9 @@ namespace Pawlygon.FaceTracking.Editor
             foreach (var (controller, source) in controllers)
             {
                 if (!(FTAvatarUtils.BaseController(controller) is AnimatorController animator)) continue;
+                // Controllers made for OSC face tracking often declare far more parameters than they use, and each
+                // forwarded parameter counts toward the avatar's performance rank
+                var read = new HashSet<string>(animator.layers.SelectMany(FTFakePupilLayers.ReadParameters));
                 foreach (var parameter in animator.parameters)
                 {
                     types[parameter.name] = parameter.type;
@@ -69,6 +75,12 @@ namespace Pawlygon.FaceTracking.Editor
 
                     var expression = FTParameterCatalog.GetExpression(parameter.name);
                     if (expression == null) continue;
+                    if (!read.Contains(parameter.name))
+                    {
+                        if (!plan.Unread.Contains(parameter.name)) plan.Unread.Add(parameter.name);
+                        continue;
+                    }
+                    plan.Unread.Remove(parameter.name);
                     plan.Entries.Add(new Entry { Parameter = parameter.name, Expression = expression, Source = source });
                 }
             }

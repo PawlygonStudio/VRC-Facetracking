@@ -20,6 +20,11 @@ namespace Pawlygon.FaceTracking.Editor
         // Keys considered for mapping (all keys, or only the basic ones)
         public readonly List<int> MappedKeys = new List<int>();
         public readonly List<int> UnmappedKeys = new List<int>();
+
+        // For the inspector: every blendshape on the meshes, what each key matched on its own, and the keys mapped by hand
+        public string[] Blendshapes = new string[0];
+        public readonly Dictionary<int, string> AutoMatches = new Dictionary<int, string>();
+        public readonly HashSet<int> OverriddenKeys = new HashSet<int>();
         public int MappedVisemes;
         public bool VisemesFromDescriptor;
 
@@ -45,6 +50,7 @@ namespace Pawlygon.FaceTracking.Editor
                 return plan;
             }
             var blendshapes = GetBlendshapeNames(plan.Meshes);
+            plan.Blendshapes = blendshapes;
             plan.Set = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
             plan.MapKeys(component, blendshapes);
             plan.MapVisemes(component, descriptor, blendshapes);
@@ -95,15 +101,45 @@ namespace Pawlygon.FaceTracking.Editor
                 if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) continue;
 
                 var index = FTKeys.FindKey(blendshapes, key);
-                if (index >= 0)
+                if (index >= 0) AutoMatches[key] = blendshapes[index];
+
+                var name = index >= 0 ? blendshapes[index] : null;
+                var manual = component.keyOverrides?.LastOrDefault(o => o != null && o.key == FTKeys.KeyName(key));
+                if (manual != null)
                 {
-                    Set.faceTrackingBlendshapeNames[key] = blendshapes[index];
+                    if (string.IsNullOrEmpty(manual.blendshape))
+                    {
+                        name = null;
+                        OverriddenKeys.Add(key);
+                    }
+                    else if (blendshapes.Contains(manual.blendshape))
+                    {
+                        name = manual.blendshape;
+                        OverriddenKeys.Add(key);
+                    }
+                    else
+                    {
+                        Warnings.Add($"{FTKeys.KeyName(key)} is set to '{manual.blendshape}', which isn't on the face tracking meshes, so it's matched automatically.");
+                    }
+                }
+
+                if (name != null)
+                {
+                    Set.faceTrackingBlendshapeNames[key] = name;
                     MappedKeys.Add(key);
                 }
                 else
                 {
                     UnmappedKeys.Add(key);
                 }
+            }
+
+            foreach (var manual in component.keyOverrides ?? new List<FTKeyOverride>())
+            {
+                if (manual == null) continue;
+                var key = FTKeys.KeyByName(manual.key);
+                if (key < 0) Warnings.Add($"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
+                else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warnings.Add($"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
             }
         }
 

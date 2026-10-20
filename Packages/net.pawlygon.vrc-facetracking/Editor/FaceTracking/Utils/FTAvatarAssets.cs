@@ -61,9 +61,9 @@ namespace Pawlygon.FaceTracking.Editor
 
         /// <summary>
         /// The avatar's FX controller, to edit in place. Only a controller VRCFury or Modular Avatar made for this
-        /// build is edited: copying animators correctly means cloning their whole object graph, which those tools
-        /// already do when they merge (copying the asset file would keep references into other files, and edits
-        /// could reach the originals).
+        /// build is edited, since copying the asset file would keep references into other files. Neither tool
+        /// guarantees a full clone though: layers can still share state machines, states or clips with the
+        /// originals, so existing layers are never edited, only replaced (see <see cref="FTFakePupilLayers.Empty"/>).
         /// </summary>
         public static AnimatorController GetBuildFX(VRCAvatarDescriptor descriptor)
         {

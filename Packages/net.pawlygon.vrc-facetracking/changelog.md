@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0-beta.6] - 2026-10-20
+- Face Tracking Guards only drives `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive`, like 1.x, and no longer adds guards to the merged FX controller during the build. VRCFury and Modular Avatar don't always clone animators fully, so editing their layers could reach the originals. Guards baked by Unity Tools' FX Gesture Checker or other add-ons keep working, and each parameter is only driven when an animator reads it.
+- New **Bake Guards** in the Face Tracking Guards inspector: writes the guards into a copy of the FX controller and makes it the avatar's FX controller, without changing the original. **Restore Original** switches back.
+- The **Disable Gestures** menu toggle is always added when gestures are driven, and starts on by default (new **Disabled By Default** option), like 1.x. The Disable Gestures Toggle option is gone.
+- The Face Tracking Guards inspector shows which gesture and blink layers are guarded, and warns about the ones that aren't.
+- New **Remove Fake Pupils** in the Pupil Emulation inspector: empties the fake pupil layers of Face Tracking Extras and Pawlygon Custom Animations prefabs, which Pupil Emulation replaces.
+- The Face Tracking inspector lists what every tracking key is mapped to, with search and filters, and keys can be mapped to another blendshape (or left unmapped) by hand. Unmapped keys with a similarly named blendshape, like a misspelling, get a one-click suggestion.
+- Fewer forwarded parameters, which count toward the face tracking performance rank: Face Tracking Parameters only forwards the face tracking parameters an animator layer actually reads (the inspector lists the ones it skips), and Pupil Emulation uses one per eye for real pupil tracking instead of one per pupil blendshape.
+- Face Tracking Parameters' manual expressions: the + button opens a searchable list of tracking keys, which also finds them by their ARKit and other names, and inserts at the cursor. A new ƒ button inserts abs(), min(), max(), clamp(), parentheses and operators.
+- The VRCFury version that keeps face tracking blendshapes is detected with an assembly version define instead of the Package Manager.
+
 ## [2.0.0-beta.5] - 2026-10-19
 - The face tracking setup (meshes, blendshape sets, visemes, eyelids, and the Blendshape Fixes and Face Tracking Emulation expressions) is written to the avatar descriptor before Modular Avatar and VRCFury run, so tools running in between can see which blendshapes face tracking uses.
 - The FX layers, parameters and menu toggle the components add (Pupil Emulation, the guard drivers, Disable Gestures) are merged by VRCFury as a Full Controller, or by Modular Avatar when VRCFury isn't installed, instead of being written into the merged FX controller afterwards.

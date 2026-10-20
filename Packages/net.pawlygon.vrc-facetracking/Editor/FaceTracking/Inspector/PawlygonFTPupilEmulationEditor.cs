@@ -32,9 +32,10 @@ namespace Pawlygon.FaceTracking.Editor
             shapesExtras.Add(shapesBadge.Element);
             shapes.Add(shapesList.Element);
 
-            replacedCard = FTUI.Card(body, "Replaced at Build", out _);
-            replacedCard.Add(FTUI.Text("Fake pupil layers from 1.x (Face Tracking Extras, or made by hand) would fight Pupil Emulation, " +
-                                       "so they're emptied in the uploaded copy. Your controllers aren't changed.", "ft-muted", "ft-card__note"));
+            replacedCard = FTUI.Card(body, "Fake Pupil Layers", out _);
+            replacedCard.Add(FTUI.Text("Fake pupil layers from 1.x (Face Tracking Extras, Custom Animations, or made by hand) would fight Pupil Emulation, " +
+                                       "so they're emptied in the uploaded copy. The ones from Pawlygon content aren't needed anymore and can " +
+                                       "be removed from its controller.", "ft-muted", "ft-card__note"));
             replacedCard.Add(replacedList.Element);
 
             var idle = FTUI.Card(body, "Idle Drift", out _);
@@ -111,19 +112,25 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             UpdateShapes(plan, issues);
-            UpdateReplaced(avatar);
+            UpdateReplaced(avatar, issues);
         }
 
         /// <summary>The fake pupil layers in the FX controller and in the controllers VRCFury / Modular Avatar will merge into it.</summary>
-        void UpdateReplaced(VRCAvatarDescriptor avatar)
+        void UpdateReplaced(VRCAvatarDescriptor avatar, FTIssues issues)
         {
             var found = new List<(string source, string layer)>();
             var seen = new HashSet<AnimatorController>();
+            var removable = new List<AnimatorController>();
 
             void Add(string source, RuntimeAnimatorController runtime)
             {
                 if (!(FTAvatarUtils.BaseController(runtime) is AnimatorController controller) || !seen.Add(controller)) return;
-                found.AddRange(FTFakePupilLayers.Find(controller).Select(i => (source, controller.layers[i].name)));
+                var indices = FTFakePupilLayers.Find(controller);
+                found.AddRange(indices.Select(i => (source, controller.layers[i].name)));
+                if (indices.Any(i => FTFakePupilLayers.IsPawlygonLayer(controller, controller.layers[i])) && AssetDatabase.GetAssetPath(controller).StartsWith("Assets/"))
+                {
+                    removable.Add(controller);
+                }
             }
 
             var fx = FTAvatarAssets.GetFX(avatar);
@@ -138,13 +145,34 @@ namespace Pawlygon.FaceTracking.Editor
                 }
             }
 
-            replacedCard.style.display = found.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            replacedList.Update(string.Join("|", found), container =>
+            void Remove()
+            {
+                var removed = false;
+                foreach (var controller in removable) removed |= FTFakePupilLayers.RemovePawlygonLayers(controller);
+                if (removed) RefreshNow();
+            }
+
+            if (removable.Count > 0)
+            {
+                issues.Info("The fake pupils from Face Tracking Extras or Custom Animations aren't needed anymore.",
+                    "Pupil Emulation replaces it. It's emptied in the uploaded copy either way.", ("Remove", Remove));
+            }
+
+            // Card() returns the body, so the whole card is its parent
+            replacedCard.parent.style.display = found.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            var key = string.Join("|", found) + "|" + string.Join(",", removable.Select(c => c.GetInstanceID()));
+            replacedList.Update(key, container =>
             {
                 foreach (var group in found.GroupBy(f => f.source))
                 {
                     container.Add(FTUI.Text(group.Key, "ft-group-title"));
                     container.Add(FTUI.Chips(group.Select(f => f.layer), null, "Emptied in the uploaded copy"));
+                }
+                if (removable.Count > 0)
+                {
+                    var button = new Button(Remove) { text = "Remove Fake Pupils", tooltip = "Removes the fake pupils of Face Tracking Extras and Custom Animations from their controllers." };
+                    button.AddToClassList("ft-add-button");
+                    container.Add(button);
                 }
             });
         }

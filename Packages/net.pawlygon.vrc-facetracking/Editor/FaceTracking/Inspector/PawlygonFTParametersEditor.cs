@@ -73,6 +73,11 @@ namespace Pawlygon.FaceTracking.Editor
 
             var plan = FTForwardingPlan.ForPreview(Component, avatar, useAllTrackingKeys);
             foreach (var warning in plan.Warnings) issues.Warning(warning);
+            if (plan.Unread.Count > 0)
+            {
+                issues.Info($"{plan.Unread.Count} face tracking {(plan.Unread.Count == 1 ? "parameter isn't" : "parameters aren't")} forwarded: no layer reads {(plan.Unread.Count == 1 ? "it" : "them")}.",
+                    "Their controllers declare them but never use them, so forwarding them would only cost performance rank: " + string.Join(", ", plan.Unread));
+            }
 
             var duplicate = Component.parameters.Where(p => !string.IsNullOrWhiteSpace(p.parameter))
                 .GroupBy(p => p.parameter.Trim()).FirstOrDefault(g => g.Count() > 1);
@@ -217,15 +222,27 @@ namespace Pawlygon.FaceTracking.Editor
                 expression.BindProperty(expressionProperty);
                 row.Add(expression);
 
+                // Where the cursor was, so the buttons insert there instead of at the end. -1 until the field had focus.
+                var cursor = -1;
+                expression.RegisterCallback<KeyUpEvent>(_ => cursor = expression.cursorIndex);
+                expression.RegisterCallback<PointerUpEvent>(_ => cursor = expression.cursorIndex);
+                expression.RegisterCallback<FocusOutEvent>(_ => cursor = expression.cursorIndex);
+
                 var state = new Image();
                 state.AddToClassList("ft-manual__state");
                 manualStates.Add(state);
                 row.Add(state);
 
-                var pick = new Button() { text = "+", tooltip = "Insert a tracking key" };
-                pick.clicked += () => FTExpressionCheck.InputMenu(input => AppendInput(index, input)).DropDown(pick.worldBound);
+                var pick = new Button { text = "+", tooltip = "Insert a tracking key. Type to search, also by ARKit and other names." };
+                pick.clicked += () => new FTInputPicker(input => cursor = InsertInput(expression, cursor, input)).Show(pick.worldBound);
                 pick.AddToClassList("ft-manual__button");
                 row.Add(pick);
+
+                var functions = new Button { text = "ƒ", tooltip = "Insert a function or operator" };
+                functions.clicked += () => FTExpressionCheck.FunctionMenu((text, caret) => cursor = Insert(expression, cursor, text, caret, !text.StartsWith(" ")))
+                    .DropDown(functions.worldBound);
+                functions.AddToClassList("ft-manual__button");
+                row.Add(functions);
 
                 var remove = new Button(() => RemoveManual(index)) { text = "✕", tooltip = "Remove" };
                 remove.AddToClassList("ft-manual__button");
@@ -255,15 +272,33 @@ namespace Pawlygon.FaceTracking.Editor
             RefreshNow();
         }
 
-        void AppendInput(int index, string input)
+        /// <summary>Inserts an input at the cursor, with a + in front when it would follow another value.</summary>
+        static int InsertInput(TextField field, int at, string input) => Insert(field, at, input, input.Length, true);
+
+        /// <summary>
+        /// Inserts <paramref name="text"/> where the cursor was (the end when <paramref name="at"/> is -1) and puts the
+        /// cursor <paramref name="caret"/> characters into it. A value or function goes after a + when it would follow
+        /// another value, so the expression stays valid. Returns the new cursor position.
+        /// </summary>
+        static int Insert(TextField field, int at, string text, int caret, bool isValue)
         {
-            var property = ParametersProperty;
-            if (index >= property.arraySize) return;
-            var expression = property.GetArrayElementAtIndex(index).FindPropertyRelative(nameof(FTForwardedParameter.expression));
-            var current = expression.stringValue?.TrimEnd() ?? "";
-            var needsOperator = current.Length > 0 && "+-*/(,".IndexOf(current[current.Length - 1]) < 0;
-            expression.stringValue = current.Length == 0 ? input : current + (needsOperator ? " + " : " ") + input;
-            serializedObject.ApplyModifiedProperties();
+            var value = field.value ?? "";
+            var index = at < 0 || at > value.Length ? value.Length : at;
+            var before = value.Substring(0, index).TrimEnd();
+            var last = before.Length > 0 ? before[before.Length - 1] : ' ';
+
+            var prefix = "";
+            if (isValue && (char.IsLetterOrDigit(last) || last == '_' || last == ')' || last == '.')) prefix = " + ";
+            else if (isValue && index > 0 && !char.IsWhiteSpace(value[index - 1]) && value[index - 1] != '(') prefix = " ";
+
+            field.value = value.Substring(0, index) + prefix + text + value.Substring(index);
+            var cursor = index + prefix.Length + caret;
+            field.schedule.Execute(() =>
+            {
+                field.Focus();
+                field.SelectRange(cursor, cursor);
+            });
+            return cursor;
         }
 
         void UpdateSummary(int total, int existing)

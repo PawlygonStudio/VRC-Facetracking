@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +39,17 @@ namespace Pawlygon.FaceTracking
         DampenVisemes,
     }
 
+    /// <summary>A tracking key mapped by hand.</summary>
+    [Serializable]
+    public class FTKeyOverride
+    {
+        [Tooltip("The tracking key's name, e.g. EyeConstrictLeft.")]
+        public string key;
+
+        [Tooltip("The blendshape it drives. Empty leaves the key unmapped.")]
+        public string blendshape;
+    }
+
     /// <summary>
     /// Sets up VRChat native face tracking on the avatar descriptor at build time.
     /// Replaces any face tracking configuration already on the descriptor.
@@ -59,6 +71,9 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("Map every tracking key. Off limits the avatar to eye look and eyelids.")]
         public bool useAllTrackingKeys = true;
+
+        [Tooltip("Tracking keys mapped by hand, replacing the automatic match. Edited from the Tracking Keys list.")]
+        public List<FTKeyOverride> keyOverrides = new List<FTKeyOverride>();
 
         [Tooltip("Face Tracking Visemes switches lip sync to the face tracking viseme mode, reusing the avatar's viseme blendshapes.")]
         public FTLipSyncMode lipSync = FTLipSyncMode.FaceTrackingVisemes;
