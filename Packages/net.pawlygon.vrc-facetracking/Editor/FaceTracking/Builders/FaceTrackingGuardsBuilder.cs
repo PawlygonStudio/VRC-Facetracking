@@ -51,7 +51,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        /// <summary>Gestures need something to pause them: face tracking, the menu toggle, or both.</summary>
+        /// <summary>Whether gestures are paused at all: by face tracking and the Disable Gestures toggle.</summary>
         public static bool GuardsGestures(PawlygonFTGuards component)
         {
             return component.guardGestures;
@@ -65,26 +65,6 @@ namespace Pawlygon.FaceTracking.Editor
         {
             return FTAvatarUtils.BaseController(controller) is AnimatorController animator
                    && animator.parameters.Any(p => p.name == parameter);
-        }
-
-        /// <summary>
-        /// Which layers Bake Guards guards: layers whose gestures animate the face unless excluded, and layers that only
-        /// check gestures when included. Already guarded layers count as expression layers.
-        /// </summary>
-        public static bool ShouldGuard(PawlygonFTGuards component, FXGuardAnalysis.GestureLayer layer)
-        {
-            var name = FXGuardAnalysis.CleanLayerName(layer.Name);
-            if (IsAutomatic(layer)) return !component.excludedGestureLayers.Contains(name);
-            return component.includedGestureLayers.Contains(name);
-        }
-
-        public static bool IsAutomatic(FXGuardAnalysis.GestureLayer layer) => layer.DrivesExpressions || layer.AlreadyGuarded;
-
-        public static bool ShouldGuard(PawlygonFTGuards component, FXGuardAnalysis.BlinkLayer layer)
-        {
-            var name = FXGuardAnalysis.CleanLayerName(layer.Name);
-            if (component.excludedBlinkLayers.Contains(name)) return false;
-            return layer.Confidence == FXBlinkConfidence.High || layer.AlreadyGuarded || component.includedBlinkLayers.Contains(name);
         }
 
         /// <summary>

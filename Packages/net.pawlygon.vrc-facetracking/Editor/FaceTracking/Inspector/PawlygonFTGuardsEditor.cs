@@ -138,22 +138,9 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>Checked layers without a guard, and whether they're in the avatar's own FX, which Bake Guards can copy.</summary>
         List<(string name, bool inFX)> Unguarded()
         {
-            var result = new List<(string, bool)>();
-            foreach (var (_, controller, analysis) in analyses)
-            {
-                var inFX = controller == bakeableFX;
-                if (FaceTrackingGuardsBuilder.GuardsGestures(Component))
-                {
-                    result.AddRange(analysis.GestureLayers.Where(l => !l.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(Component, l))
-                        .Select(l => (FXGuardAnalysis.CleanLayerName(l.Name), inFX)));
-                }
-                if (Component.guardBlinking)
-                {
-                    result.AddRange(analysis.BlinkLayers.Where(l => !l.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(Component, l))
-                        .Select(l => (FXGuardAnalysis.CleanLayerName(l.Name), inFX)));
-                }
-            }
-            return result;
+            return FTGuardSelection.From(Component, analyses).Unguarded
+                .Select(l => (l.CleanName, l.Controller == bakeableFX))
+                .ToList();
         }
 
         void Bake()
@@ -276,11 +263,11 @@ namespace Pawlygon.FaceTracking.Editor
         void UpdateGestures()
         {
             var layers = analyses.SelectMany(a => a.analysis.GestureLayers.Select(l => (a.source, layer: l))).ToList();
-            var status = layers.Select(x => (x.layer.AlreadyGuarded, FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer))).ToList();
+            var status = layers.Select(x => (x.layer.AlreadyGuarded, FTGuardSelection.ShouldGuard(Component, x.layer))).ToList();
             gestureBadge.Update(BadgeKey(status), e => AddBadges(e, status));
 
             var key = string.Join("|", layers.Select(x => x.source + x.layer.Name + x.layer.GestureTransitions + x.layer.AlreadyGuarded
-                                                           + string.Join(",", x.layer.ExpressionBlendshapes) + FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer)));
+                                                           + string.Join(",", x.layer.ExpressionBlendshapes) + FTGuardSelection.ShouldGuard(Component, x.layer)));
             gestureList.Update(key, container =>
             {
                 if (layers.Count == 0)
@@ -291,7 +278,7 @@ namespace Pawlygon.FaceTracking.Editor
 
                 // Guarded layers as chips, layers waiting for Bake Guards as rows, the rest tucked away
                 var guarded = layers.Where(x => x.layer.AlreadyGuarded).ToList();
-                var pending = layers.Where(x => !x.layer.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer)).ToList();
+                var pending = layers.Where(x => !x.layer.AlreadyGuarded && FTGuardSelection.ShouldGuard(Component, x.layer)).ToList();
                 var others = layers.Except(guarded).Except(pending).ToList();
 
                 if (guarded.Count > 0) container.Add(Chips(guarded.Select(x => (FXGuardAnalysis.CleanLayerName(x.layer.Name), GestureTooltip(x.source, x.layer)))));
@@ -330,12 +317,12 @@ namespace Pawlygon.FaceTracking.Editor
         VisualElement GestureRow(string source, FXGuardAnalysis.GestureLayer layer)
         {
             var name = FXGuardAnalysis.CleanLayerName(layer.Name);
-            var automatic = FaceTrackingGuardsBuilder.IsAutomatic(layer);
+            var automatic = FTGuardSelection.IsAutomatic(layer);
             var shapes = layer.ExpressionBlendshapes;
             var details = shapes.Count > 0
                 ? string.Join(", ", shapes.Take(4)) + (shapes.Count > 4 ? $" +{shapes.Count - 4}" : "")
                 : "uses gestures, doesn't animate the face";
-            var selected = FaceTrackingGuardsBuilder.ShouldGuard(Component, layer);
+            var selected = FTGuardSelection.ShouldGuard(Component, layer);
 
             var row = CheckRow(name, details, selected, on =>
             {
@@ -350,10 +337,10 @@ namespace Pawlygon.FaceTracking.Editor
         void UpdateBlinks()
         {
             var layers = analyses.SelectMany(a => a.analysis.BlinkLayers.Select(l => (a.source, layer: l))).ToList();
-            var status = layers.Select(x => (x.layer.AlreadyGuarded, FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer))).ToList();
+            var status = layers.Select(x => (x.layer.AlreadyGuarded, FTGuardSelection.ShouldGuard(Component, x.layer))).ToList();
             blinkBadge.Update(BadgeKey(status), e => AddBadges(e, status));
 
-            var key = string.Join("|", layers.Select(x => x.source + x.layer.Name + x.layer.Score + x.layer.AlreadyGuarded + FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer)));
+            var key = string.Join("|", layers.Select(x => x.source + x.layer.Name + x.layer.Score + x.layer.AlreadyGuarded + FTGuardSelection.ShouldGuard(Component, x.layer)));
             blinkList.Update(key, container =>
             {
                 if (layers.Count == 0)
@@ -364,7 +351,7 @@ namespace Pawlygon.FaceTracking.Editor
 
                 // Guarded layers as chips, layers waiting for Bake Guards as rows, other candidates tucked away
                 var guarded = layers.Where(x => x.layer.AlreadyGuarded).ToList();
-                var pending = layers.Where(x => !x.layer.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(Component, x.layer)).ToList();
+                var pending = layers.Where(x => !x.layer.AlreadyGuarded && FTGuardSelection.ShouldGuard(Component, x.layer)).ToList();
                 var others = layers.Except(guarded).Except(pending).ToList();
 
                 if (guarded.Count > 0) container.Add(Chips(guarded.Select(x => (FXGuardAnalysis.CleanLayerName(x.layer.Name), BlinkTooltip(x.source, x.layer)))));
@@ -389,7 +376,7 @@ namespace Pawlygon.FaceTracking.Editor
         {
             var name = FXGuardAnalysis.CleanLayerName(layer.Name);
             var automatic = layer.Confidence == FXBlinkConfidence.High;
-            var selected = FaceTrackingGuardsBuilder.ShouldGuard(Component, layer);
+            var selected = FTGuardSelection.ShouldGuard(Component, layer);
             var details = $"{layer.Confidence.ToString().ToLowerInvariant()} confidence: {string.Join(", ", layer.Reasons)}";
 
             var row = CheckRow(name, details, selected, on =>
@@ -460,7 +447,7 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>The controllers that end up in FX, each analyzed with the meshes the build will use.</summary>
         static List<(string, AnimatorController, FXGuardAnalysis)> Analyze(VRCAvatarDescriptor avatar)
         {
-            var faceMeshes = FTGuardBaker.FaceMeshes(avatar);
+            var faceMeshes = FTGuardSelection.FaceMeshes(avatar);
 
             return FTAvatarAssets.GetSourceFXControllers(avatar)
                 .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes)))
