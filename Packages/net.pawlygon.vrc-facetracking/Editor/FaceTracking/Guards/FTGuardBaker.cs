@@ -19,16 +19,6 @@ namespace Pawlygon.FaceTracking.Editor
         const string Label = "PawlygonFTGuards";
         const string CopiesFolder = "Assets/Pawlygon Face Tracking";
 
-        public static FXFaceMeshes FaceMeshes(VRCAvatarDescriptor avatar)
-        {
-            // Same meshes the build uses: the setup component's, or the ones already on the descriptor
-            var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
-            var meshes = setup != null
-                ? FaceTrackingSetupPlan.Resolve(setup, avatar).Meshes
-                : avatar.faceTrackingMeshes ?? new List<SkinnedMeshRenderer>();
-            return new FXFaceMeshes(meshes, avatar.transform);
-        }
-
         /// <summary>The avatar's own FX controller, which Bake Guards can copy. Null for none or an override controller.</summary>
         public static AnimatorController BakeableFX(VRCAvatarDescriptor avatar) => FTAvatarAssets.GetFX(avatar) as AnimatorController;
 
@@ -45,17 +35,13 @@ namespace Pawlygon.FaceTracking.Editor
             return string.IsNullOrEmpty(guid) ? null : AssetDatabase.LoadAssetAtPath<AnimatorController>(AssetDatabase.GUIDToAssetPath(guid));
         }
 
-        /// <summary>The layers of the avatar's FX that Bake Guards would guard and that aren't guarded yet.</summary>
-        public static void Pending(PawlygonFTGuards component, VRCAvatarDescriptor avatar,
-            out List<FXGuardAnalysis.GestureLayer> gestures, out List<FXGuardAnalysis.BlinkLayer> blinks)
+        /// <summary>The selected layers of the avatar's own FX that don't have a guard yet.</summary>
+        public static List<FTGuardSelection.Layer> Pending(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
-            var analysis = FXGuardAnalysis.Analyze(BakeableFX(avatar), FaceMeshes(avatar));
-            gestures = FaceTrackingGuardsBuilder.GuardsGestures(component)
-                ? analysis.GestureLayers.Where(l => !l.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(component, l)).ToList()
-                : new List<FXGuardAnalysis.GestureLayer>();
-            blinks = component.guardBlinking
-                ? analysis.BlinkLayers.Where(l => !l.AlreadyGuarded && FaceTrackingGuardsBuilder.ShouldGuard(component, l)).ToList()
-                : new List<FXGuardAnalysis.BlinkLayer>();
+            var fx = BakeableFX(avatar);
+            if (fx == null) return new List<FTGuardSelection.Layer>();
+            var analysis = FXGuardAnalysis.Analyze(fx, FTGuardSelection.FaceMeshes(avatar));
+            return FTGuardSelection.From(component, new[] { ("FX", fx, analysis) }).Unguarded.ToList();
         }
 
         /// <summary>
@@ -65,10 +51,12 @@ namespace Pawlygon.FaceTracking.Editor
         public static bool Bake(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
             var fx = BakeableFX(avatar);
-            Pending(component, avatar, out var gestures, out var blinks);
-            if (fx == null || gestures.Count + blinks.Count == 0) return false;
+            var pending = Pending(component, avatar);
+            if (fx == null || pending.Count == 0) return false;
 
-            var names = gestures.Select(l => l.Name).Concat(blinks.Select(l => l.Name)).Select(FXGuardAnalysis.CleanLayerName);
+            var gestures = pending.Where(l => l.Kind == FTGuardKind.Gesture).ToList();
+            var blinks = pending.Where(l => l.Kind == FTGuardKind.Blink).ToList();
+            var names = pending.Select(l => l.CleanName);
             var inPlace = IsBakedCopy(fx);
             var message = $"Adds guards to {Count(gestures.Count, "gesture layer")}{(blinks.Count > 0 ? $" and {Count(blinks.Count, "blink layer")}" : "")}:\n" +
                           string.Join(", ", names) + "\n\n" +
@@ -86,15 +74,15 @@ namespace Pawlygon.FaceTracking.Editor
         internal static AnimatorController Apply(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
             var fx = BakeableFX(avatar);
-            Pending(component, avatar, out var gestures, out var blinks);
-            if (fx == null || gestures.Count + blinks.Count == 0) return null;
+            var pending = Pending(component, avatar);
+            if (fx == null || pending.Count == 0) return null;
 
             var inPlace = IsBakedCopy(fx);
             var target = inPlace ? fx : CreateCopy(fx);
             var path = AssetDatabase.GetAssetPath(target);
-            var analysis = FXGuardAnalysis.Analyze(target, FaceMeshes(avatar));
-            var gestureIndices = analysis.GestureLayers.Where(l => gestures.Any(g => g.Index == l.Index)).Select(l => l.Index).ToList();
-            var blinkIndices = analysis.BlinkLayers.Where(l => blinks.Any(b => b.Index == l.Index)).Select(l => l.Index).ToList();
+            // A copy keeps the original's layer order, so the indices still match
+            var gestureIndices = pending.Where(l => l.Kind == FTGuardKind.Gesture).Select(l => l.Index).ToList();
+            var blinkIndices = pending.Where(l => l.Kind == FTGuardKind.Blink).Select(l => l.Index).ToList();
 
             // A layer whose objects live in another file would change that file too
             foreach (var index in gestureIndices.Concat(blinkIndices).Distinct())

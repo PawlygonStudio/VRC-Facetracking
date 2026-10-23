@@ -33,13 +33,17 @@ The prefab contains these components. Each one shows what it will do in its insp
 ### Upgrading from 1.x
 The old OSC face tracking prefab can't be used together with native face tracking. When it's still on the avatar, the Face Tracking inspector shows it with a **Disable** button, and each build asks whether to remove it from that upload.
 
+FX controllers already guarded with Pawlygon Unity Tools' FX Gesture Checker keep working as they are: Face Tracking Guards drives the same parameters. For layers without guards, use [Bake Guards](#face-tracking-guards).
+
 ### Generated files
-Builds save the assets they generate (FX copy, menu, parameters) in a `Packages/net.pawlygon.facetracking.temp` package in your project. It's safe to delete, and you can leave it out of version control.
+Builds save the assets they generate (the animator layers, menu and parameters the components add) in a `Packages/net.pawlygon.facetracking.temp` package in your project. It's safe to delete, and you can leave it out of version control.
+
+FX controllers made by **Bake Guards** (`<name> (FT Guards).controller`) aren't build files: they're saved next to the original FX controller and used by the avatar, so keep them.
 
 ## Components
 
 ### Face Tracking
-Sets up native face tracking on the avatar descriptor when the avatar is built: which meshes are tracked, which blendshape each tracking key drives, lip sync, eyelids and eye gaze. It replaces any face tracking setup already on the descriptor. The inspector shows how many tracking keys were mapped and lists the ones the avatar has no blendshape for.
+Sets up native face tracking on the avatar descriptor when the avatar is built: which meshes are tracked, which blendshape each tracking key drives, lip sync, eyelids and eye gaze. It replaces any face tracking setup already on the descriptor. The inspector shows what every tracking key is mapped to, and lets you change it (see below).
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -57,7 +61,7 @@ Keeps animators made for OSC face tracking working, such as Pawlygon Unity Tools
 
 | Setting | Default | What it does |
 |---|---|---|
-| Auto-detect | On | Forwards every known face tracking parameter (`FT/v2/...`, `OSCm/Proxy/FT/v2/...`) the avatar's animators use, including the controllers VRCFury and Modular Avatar merge. |
+| Auto-detect | On | Forwards every known face tracking parameter (`FT/v2/...`, `OSCm/Proxy/FT/v2/...`) an animator layer reads, including in the controllers VRCFury and Modular Avatar merge. Parameters a controller declares but never uses aren't forwarded; the inspector lists them. |
 | Manual | Empty | Extra parameters to forward: an animator parameter and an expression of tracking keys, combined with `+ - * /`, `abs()`, `min()`, `max()` and `clamp()` (e.g. `JawRight - JawLeft`). The result is clamped to -1..1. An entry with the same name as a detected parameter replaces it. The **+** button inserts a tracking key at the cursor: type to search, also by ARKit and other names (e.g. `MouthSmile` finds `MouthCornerPull`). **ƒ** inserts a function or operator. |
 
 Each forwarded parameter counts toward the avatar's face tracking performance; the inspector shows a rank (Excellent up to 10, Good up to 20, Medium up to 30, Poor up to 40). No synced parameters are added.
@@ -133,6 +137,12 @@ Limits:
 | Lip Suck Relaxed by Closed Mouth | Off | A closed mouth relaxes the lip suck. |
 
 Rules whose blendshapes the avatar doesn't have are skipped. Needs All Tracking Keys. The expressions count toward VRChat's per-avatar face tracking expression budget; with every rule on it stays within it.
+
+## Known issues
+* **Gesture Manager** 3.9.9 and older doesn't compile with the face tracking beta SDK, and while it has compile errors Unity doesn't load any other scripts, including this package's. Remove it while you're on the beta SDK, or use Av3Emulator instead.
+* **Blendshape optimizers** that don't know about native face tracking would remove its blendshapes, so the build stops when one is on the avatar:
+  * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1-beta.2 or newer, which keeps them.
+  * AAO Trace And Optimize with Optimize BlendShape on isn't supported yet. Turn that option off.
 
 ## Legacy (1.x, OSC face tracking with VRCFaceTracking)
 The 1.x prefabs are still included for avatars that keep using [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking) over OSC. They need VRCFT v5 or newer, VRCFury or Modular Avatar, and the face mesh named `Body`. Add the prefab from `Packages/Pawlygon - VRC Facetracking/Deprecated/Prefabs` that matches your avatar's blendshapes (_"VF" is VRCFury and "MA" is Modular Avatar_).
