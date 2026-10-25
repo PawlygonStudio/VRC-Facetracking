@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using ParameterBehavior = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.FaceTrackingParameterBehavior;
@@ -33,9 +34,14 @@ namespace Pawlygon.FaceTracking.Editor
                                                "face tracking can't forward to it.");
                 }
 
-                // A later component, or this one, replaces an existing forward to the same parameter
-                context.Behaviors.RemoveAll(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
-                                                 && b.outputParameterName == entry.Parameter);
+                bool ForwardsHere(ParameterBehavior b) => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
+                                                         && b.outputParameterName == entry.Parameter;
+
+                // A forward that's already there (a VRCFury Full Controller's, or the avatar's own) was made for that
+                // animator, so a detected parameter keeps it. A manual entry is a deliberate choice and replaces it.
+                if (!entry.IsManual && context.Behaviors.Any(ForwardsHere)) continue;
+
+                context.Behaviors.RemoveAll(ForwardsHere);
                 context.Behaviors.Add(CreateForward(entry.Parameter, entry.Expression));
             }
         }

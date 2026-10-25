@@ -185,17 +185,24 @@ namespace Pawlygon.FaceTracking.Editor
             meshBadge.Update($"{names.Count}", e => e.Add(FTUI.Badge(names.Count == 1 ? "1 mesh" : $"{names.Count} meshes",
                 names.Count == 0 ? FTKind.Error : FTKind.Muted)));
 
-            var key = Component.meshMode + string.Join("|", names);
+            var left = plan.LeftToFullControllers.Where(x => x.mesh != null).ToList();
+            var key = Component.meshMode + string.Join("|", names) + "|" + string.Join("|", left.Select(x => x.mesh.name + x.holder));
             meshList.Update(key, e =>
             {
                 if (Component.meshMode == FTMeshMode.Manual) return;
-                if (plan.Meshes.Count == 0)
+                if (plan.Meshes.Count == 0 && left.Count == 0)
                 {
                     e.Add(FTUI.Text("No mesh with face tracking blendshapes found.", "ft-muted"));
                     return;
                 }
                 var meshes = plan.Meshes.ToList();
-                e.Add(FTUI.Chips(names, name => Select(meshes.FirstOrDefault(m => m != null && m.name == name)), "Click to select"));
+                if (meshes.Count > 0) e.Add(FTUI.Chips(names, name => Select(meshes.FirstOrDefault(m => m != null && m.name == name)), "Click to select"));
+                if (left.Count > 0)
+                {
+                    // VRCFury sets these up itself, and stops the build if they're configured here too
+                    e.Add(FTUI.Text("Left to VRCFury: " + string.Join(", ", left.Select(x => $"{x.mesh.name} (Full Controller on {x.holder})")) + ".",
+                        "ft-muted", "ft-card__note"));
+                }
             });
         }
 

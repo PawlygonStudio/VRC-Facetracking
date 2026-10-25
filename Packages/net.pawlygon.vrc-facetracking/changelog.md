@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0-beta.8] - 2026-10-25
+- Works with VRCFury's new rule that a mesh can be configured for face tracking in only one place (the avatar descriptor or one Full Controller). Auto mesh mode leaves meshes a VRCFury Full Controller configures to VRCFury, and the inspector lists them. A Manual mesh that a Full Controller also configures stops the build with a message naming the Full Controller.
+- Tested with VRChat Avatars SDK 3.10.6-beta.3 and VRCFury 1.1434.1-beta.13.
+
+## [2.0.0-beta.7] - 2026-10-23
+- Fixed Face Tracking Parameters replacing the forwarded parameters of VRCFury Full Controllers. When a Full Controller forwards a face tracking parameter its own animator reads, its expression is kept; manual entries still replace it.
+- Internal: one place decides which layers Face Tracking Guards guards, used by Bake Guards and the inspector. No change in behavior.
+
 ## [2.0.0-beta.6] - 2026-10-20
 - Face Tracking Guards only drives `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive`, like 1.x, and no longer adds guards to the merged FX controller during the build. VRCFury and Modular Avatar don't always clone animators fully, so editing their layers could reach the originals. Guards baked by Unity Tools' FX Gesture Checker or other add-ons keep working, and each parameter is only driven when an animator reads it.
 - New **Bake Guards** in the Face Tracking Guards inspector: writes the guards into a copy of the FX controller and makes it the avatar's FX controller, without changing the original. **Restore Original** switches back.
