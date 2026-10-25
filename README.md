@@ -47,7 +47,7 @@ Sets up native face tracking on the avatar descriptor when the avatar is built: 
 
 | Setting | Default | What it does |
 |---|---|---|
-| Mesh Mode | Auto | **Auto** picks every mesh with face tracking blendshapes. **Manual** uses the Meshes list (up to 16). |
+| Mesh Mode | Auto | **Auto** picks every mesh with face tracking blendshapes, except the ones a VRCFury Full Controller configures for face tracking, which VRCFury sets up itself. **Manual** uses the Meshes list (up to 16). |
 | All Tracking Keys | On | Maps every tracking key. Off limits the avatar to eye look and eyelids. Pupil Emulation's real pupil tracking and mood reactions, and Face Tracking Emulation, need it. |
 | Lip Sync | Face Tracking Visemes | **Face Tracking Visemes** switches lip sync to the face tracking viseme mode, reusing the avatar's viseme blendshapes. **Keep Existing** leaves lip sync as it is. |
 | Eyelids | Face Tracking | **Face Tracking** drives the eyelids with the `EyeClosed` blendshapes. **Keep Existing** leaves the descriptor's eyelid setup. |
@@ -143,6 +143,7 @@ Rules whose blendshapes the avatar doesn't have are skipped. Needs All Tracking 
 * **Blendshape optimizers** that don't know about native face tracking would remove its blendshapes, so the build stops when one is on the avatar:
   * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1-beta.2 or newer, which keeps them.
   * AAO Trace And Optimize with Optimize BlendShape on isn't supported yet. Turn that option off.
+* **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 betas): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
 
 ## Legacy (1.x, OSC face tracking with VRCFaceTracking)
 The 1.x prefabs are still included for avatars that keep using [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking) over OSC. They need VRCFT v5 or newer, VRCFury or Modular Avatar, and the face mesh named `Body`. Add the prefab from `Packages/Pawlygon - VRC Facetracking/Deprecated/Prefabs` that matches your avatar's blendshapes (_"VF" is VRCFury and "MA" is Modular Avatar_).

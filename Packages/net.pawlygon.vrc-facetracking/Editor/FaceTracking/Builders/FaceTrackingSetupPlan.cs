@@ -17,6 +17,11 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<SkinnedMeshRenderer> Meshes = new List<SkinnedMeshRenderer>();
         public BlendshapesSet Set;
 
+        // Meshes VRCFury Full Controllers configure for face tracking, with where. Auto mode leaves them to VRCFury,
+        // which stops the build when a mesh is configured in more than one place.
+        public readonly List<(SkinnedMeshRenderer mesh, string holder)> LeftToFullControllers = new List<(SkinnedMeshRenderer, string)>();
+        Dictionary<SkinnedMeshRenderer, string> claimed;
+
         // Keys considered for mapping (all keys, or only the basic ones)
         public readonly List<int> MappedKeys = new List<int>();
         public readonly List<int> UnmappedKeys = new List<int>();
@@ -41,12 +46,13 @@ namespace Pawlygon.FaceTracking.Editor
             var plan = new FaceTrackingSetupPlan();
             var avatarRoot = descriptor.transform;
 
+            plan.claimed = FTFullControllerMeshes.Find(descriptor.gameObject);
             plan.ResolveMeshes(component, descriptor);
             if (plan.Meshes.Count == 0)
             {
-                plan.Errors.Add(component.meshMode == FTMeshMode.Auto
-                    ? "No mesh with face tracking blendshapes was found on the avatar."
-                    : "No face tracking meshes are assigned.");
+                plan.Errors.Add(component.meshMode == FTMeshMode.Manual ? "No face tracking meshes are assigned."
+                    : plan.LeftToFullControllers.Count > 0 ? "Every mesh with face tracking blendshapes is configured by a VRCFury Full Controller, so there's nothing left to set up."
+                    : "No mesh with face tracking blendshapes was found on the avatar.");
                 return plan;
             }
             var blendshapes = GetBlendshapeNames(plan.Meshes);
@@ -56,7 +62,15 @@ namespace Pawlygon.FaceTracking.Editor
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
 
-            // After visemes, which can add the avatar's viseme mesh
+            // After visemes, which can add the avatar's viseme mesh. VRCFury stops the build when a mesh is configured
+            // both here and in a Full Controller, so it's reported here with the reason.
+            foreach (var mesh in plan.Meshes.Where(m => plan.claimed.ContainsKey(m)))
+            {
+                plan.Errors.Add($"'{mesh.name}' is also configured for face tracking by the VRCFury Full Controller on '{plan.claimed[mesh]}'. " +
+                                "VRCFury only allows one of them per mesh: remove it from " +
+                                (component.meshMode == FTMeshMode.Manual ? "the Meshes list" : "the descriptor's lip sync") + " or from that Full Controller.");
+            }
+
             if (plan.Meshes.Count > FTBuildContext.MaxMeshes)
             {
                 plan.Errors.Add($"{plan.Meshes.Count} meshes were found, but face tracking supports up to {FTBuildContext.MaxMeshes}. " +
@@ -90,7 +104,9 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var names = GetBlendshapeNames(new[] { mesh });
                 if (names.Length == 0) continue;
-                if (Enumerable.Range(0, FTKeys.KeyCount).Any(key => FTKeys.FindKey(names, key) >= 0)) Meshes.Add(mesh);
+                if (!Enumerable.Range(0, FTKeys.KeyCount).Any(key => FTKeys.FindKey(names, key) >= 0)) continue;
+                if (claimed.TryGetValue(mesh, out var holder)) LeftToFullControllers.Add((mesh, holder));
+                else Meshes.Add(mesh);
             }
         }
 
