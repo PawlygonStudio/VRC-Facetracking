@@ -138,6 +138,8 @@ namespace Pawlygon.FaceTracking.Editor
                 var actions = onRoot
                     ? new[] { ("Select", (System.Action)(() => Select(holder))) }
                     : new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => LegacyOscDetector.Disable(holder)) };
+                // Our own 1.x setups get the step by step upgrade window
+                if (finding.IsPawlygonLegacy) actions = actions.Append(("Guide", (System.Action)FTUpgradeWindow.Open)).ToArray();
                 if (finding.IsBlendshapeFixes)
                 {
                     issues.Error($"1.x Blendshape Fixes on '{finding.Path}'.",

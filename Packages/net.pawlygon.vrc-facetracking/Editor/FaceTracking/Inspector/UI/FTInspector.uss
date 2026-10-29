@@ -163,6 +163,17 @@
     background-color: var(--ft-info-bg);
 }
 
+.ft-issue--ok {
+    border-left-color: var(--ft-ok);
+    background-color: var(--ft-ok-bg);
+}
+
+/* Upgrade window */
+
+.ft-window {
+    padding: 8px;
+}
+
 .ft-issue__icon {
     width: 16px;
     height: 16px;

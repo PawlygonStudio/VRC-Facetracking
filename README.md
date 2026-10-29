@@ -45,6 +45,8 @@ The prefab contains these components. Each one shows what it will do in its insp
    * **Pupil Emulation**: Face Tracking Extras and Pawlygon Custom Animations prefabs bring fake pupil layers it replaces. Click **Remove Fake Pupils**, and untick Fake Pupil Dilation in Face Tracking Extras before generating it again.
 6. **Right-click the avatar > !Pawlygon > Face Tracking > Build Test Copy** to check the result, then upload.
 
+When a scene with a 1.x setup is opened after updating, an **Upgrade to 2.0** window opens with these steps for each avatar in it, with buttons for each one (also under **Tools > !Pawlygon > Face Tracking > Upgrade from 1.x**).
+
 Steps 2 and 3 don't have to be done by hand: while either 1.x prefab is still on the avatar, the Face Tracking inspector lists it with a **Disable** button (it's tagged EditorOnly, undoable), and each build asks whether to remove it from that upload.
 
 **What keeps working:** Face Tracking Extras (ears, tail and the rest), Pawlygon Custom Animations, and your own animations made for 1.x. [Face Tracking Parameters](#face-tracking-parameters) feeds their `FT/v2/...` parameters from native face tracking, and Face Tracking Guards keeps driving `EyeTrackingActive` and `LipTrackingActive` for them.
