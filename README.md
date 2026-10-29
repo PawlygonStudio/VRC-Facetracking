@@ -4,14 +4,16 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 [![Build Release](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml/badge.svg)](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml)
 
 ## Requisites
-* Unity 2022.3 with a VRChat Avatars SDK that supports native face tracking (3.10.6 beta or newer)
+* Unity 2022.3 with the VRChat Avatars SDK 3.10.6 or newer, which has native face tracking
 * Avatar with [Unified Expression Blendshapes](https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes) (ARKit names are matched too)  
   → See the full list of [Supported UE Blendshapes](./UEBlendshapes.md)
 * [VRCFury](https://vrcfury.com) (1.935.0 or newer) or [Modular Avatar](https://modular-avatar.nadena.dev) (1.9.0 or newer) for Face Tracking Guards and Pupil Emulation: they merge the animator layers, parameters and menu toggle those components add. The rest works without either.
 
 ## How to use it
 > [!NOTE]
-> 2.0 is in beta, like VRChat's native face tracking. In the Creator Companion, turn on **Show Pre-Release Packages** in Settings to see it. Manual downloads are on the [Releases](https://github.com/PawlygonStudio/VRC-Facetracking/releases) page, marked Pre-release.
+> Native face tracking needs the VRChat Avatars SDK 3.10.6 or newer. Until VRChat releases it as a stable version, it's a pre-release: turn on **Show Pre-Release Packages** in the Creator Companion's Settings to install it.
+
+Coming from 1.x? Follow [Upgrading from 1.x](#upgrading-from-1x).
 
 1. Import Pawlygon VRC Facetracking using [VRChat Creator Companion](https://vcc.pawlygon.net/) or import the [unity package manually](https://github.com/PawlygonStudio/VRC-Facetracking/releases/latest).
 2. Drag `Packages/Pawlygon - VRC Facetracking/Prefabs/!Pawlygon - Face Tracking` anywhere inside your avatar.
