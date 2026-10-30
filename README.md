@@ -154,11 +154,10 @@ Limits:
 Rules whose blendshapes the avatar doesn't have are skipped. Needs All Tracking Keys. The expressions count toward VRChat's per-avatar face tracking expression budget; with every rule on it stays within it.
 
 ## Known issues
-* **Gesture Manager** 3.9.9 and older doesn't compile with the face tracking beta SDK, and while it has compile errors Unity doesn't load any other scripts, including this package's. Remove it while you're on the beta SDK, or use Av3Emulator instead.
 * **Blendshape optimizers** that don't know about native face tracking would remove its blendshapes, so the build stops when one is on the avatar:
-  * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1-beta.2 or newer, which keeps them.
+  * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1 or newer, which keeps them.
   * AAO Trace And Optimize with Optimize BlendShape on isn't supported yet. Turn that option off.
-* **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 betas): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
+* **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 or newer): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
 
 ## Legacy (1.x, OSC face tracking with VRCFaceTracking)
 The 1.x prefabs are still included for avatars that keep using [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking) over OSC. They need VRCFT v5 or newer, VRCFury or Modular Avatar, and the face mesh named `Body`. Add the prefab from `Packages/Pawlygon - VRC Facetracking/Deprecated/Prefabs` that matches your avatar's blendshapes (_"VF" is VRCFury and "MA" is Modular Avatar_).
