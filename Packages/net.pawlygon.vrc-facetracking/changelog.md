@@ -1,10 +1,16 @@
 # Changelog
 
+## [2.0.0] - 2026-10-30
+Native face tracking for the VRChat Avatars SDK 3.10.6. Everything is applied to the uploaded copy of the avatar, without changing it in the scene. See the betas below for the details.
+- The `!Pawlygon - Face Tracking` prefab: Face Tracking, Face Tracking Parameters, Face Tracking Guards, Blendshape Fixes, Pupil Emulation and Face Tracking Emulation.
+- Upgrading from 1.x: an Upgrade to 2.0 window and a step by step guide in the README.
+- New: the Face Tracking inspector warns when one of the 1.x controllers is set directly in the avatar descriptor's layers, like the Eye Rotation controller in Additive. It hands the eyes over to animation while eye tracking is on, which stops native eye tracking from rotating them. **Clear** sets the layer back to VRChat's default.
+- The 1.x OSC prefabs, animators and animations are still included in `Deprecated/` for avatars that keep using VRCFaceTracking.
+
 ## [2.0.0-beta.9] - 2026-10-29
 - New: the 1.x Blendshape Fixes from Pawlygon Unity Tools is detected like the 1.x face tracking prefab. The Face Tracking and Blendshape Fixes inspectors show it with a Disable button, and builds ask to remove it.
 - New: a step by step guide for upgrading from 1.x in the README.
 - New: an **Upgrade to 2.0** window opens when a scene with a 1.x setup is open, listing what's left on each avatar: removing the 1.x prefabs, adding the new prefab and building a test copy. It opens once per scene and session, can be turned off for the project, and is also under Tools > !Pawlygon > Face Tracking > Upgrade from 1.x.
-- New: the Face Tracking inspector warns when one of the 1.x controllers is set directly in the avatar descriptor's layers, like the Eye Rotation controller in Additive. It hands the eyes over to animation while eye tracking is on, which stops native eye tracking from rotating them. **Clear** sets the layer back to VRChat's default.
 - Fixed: an empty **In Menu** in Face Tracking Guards put the Disable Gestures toggle in a Face Tracking submenu anyway. It now goes in the main menu.
 
 ## [2.0.0-beta.8] - 2026-10-25
