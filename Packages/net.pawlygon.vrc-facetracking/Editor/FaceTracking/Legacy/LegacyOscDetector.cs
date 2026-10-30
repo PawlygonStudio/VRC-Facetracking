@@ -9,11 +9,15 @@ namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
     /// Finds OSC based face tracking setups (Pawlygon VRCFT 1.x and similar templates) merged by
-    /// VRCFury or Modular Avatar components. They can't run alongside native face tracking.
+    /// VRCFury or Modular Avatar components. They can't run alongside native face tracking. Also finds the 1.x
+    /// Blendshape Fixes from Pawlygon Unity Tools, which the Blendshape Fixes component replaces.
     /// </summary>
     internal static class LegacyOscDetector
     {
         const string LegacyAnimatorsFolder = "Packages/net.pawlygon.vrc-facetracking/Deprecated/Animators";
+
+        // Every controller Pawlygon Unity Tools' Blendshape Fixes (1.7.1, for VRCFT 1.x) generates declares it
+        const string LegacyFixesMarker = "Pawlygon/FTFixes/One";
 
         static HashSet<string> legacyControllerGuids;
 
@@ -27,11 +31,15 @@ namespace Pawlygon.FaceTracking.Editor
             // so they're reported but never removed automatically.
             public bool IsPawlygonLegacy;
 
+            // Pawlygon Unity Tools' 1.x Blendshape Fixes, replaced by the Blendshape Fixes component
+            public bool IsBlendshapeFixes;
+
             public GameObject Holder => Component != null ? Component.gameObject : null;
 
             public string Describe()
             {
-                var source = IsPawlygonLegacy ? "Pawlygon VRCFT 1.x" : "OSC face tracking controller";
+                var source = IsBlendshapeFixes ? "Pawlygon VRCFT 1.x Blendshape Fixes"
+                    : IsPawlygonLegacy ? "Pawlygon VRCFT 1.x" : "OSC face tracking controller";
                 return $"{Path} ({source}: {(Controller != null ? Controller.name : "?")})";
             }
         }
@@ -60,6 +68,7 @@ namespace Pawlygon.FaceTracking.Editor
                         Controller = controller,
                         Path = FTAvatarUtils.GetPath(behaviour.transform, root),
                         IsPawlygonLegacy = isPawlygonLegacy,
+                        IsBlendshapeFixes = IsLegacyBlendshapeFixes(controller),
                     });
                     break;
                 }
@@ -87,13 +96,43 @@ namespace Pawlygon.FaceTracking.Editor
             else Object.DestroyImmediate(finding.Component);
         }
 
+        /// <summary>
+        /// Tags the object EditorOnly and deactivates it. VRCFury also processes inactive objects,
+        /// so the tag is what keeps it out of the build. Reversible with Undo.
+        /// </summary>
+        public static void Disable(GameObject holder)
+        {
+            if (holder == null) return;
+            Undo.RecordObject(holder, "Disable legacy face tracking");
+            holder.tag = "EditorOnly";
+            holder.SetActive(false);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(holder);
+        }
+
         static bool IsMergeTool(Component component)
         {
             var ns = component != null ? component.GetType().Namespace ?? "" : "";
             return ns.StartsWith("VF") || ns.StartsWith("nadena");
         }
 
+        /// <summary>Our own 1.x controllers: the OSC face tracking ones in Deprecated/Animators, and Unity Tools' 1.x Blendshape Fixes.</summary>
         public static bool IsPawlygonLegacyController(RuntimeAnimatorController controller)
+        {
+            return IsLegacyOscController(controller) || IsLegacyBlendshapeFixes(controller);
+        }
+
+        /// <summary>
+        /// The FX controller Pawlygon Unity Tools' Blendshape Fixes generates for VRCFT 1.x: it drives fix shapes from the
+        /// 1.x face tracking parameters, which the Blendshape Fixes component now drives from native face tracking.
+        /// </summary>
+        public static bool IsLegacyBlendshapeFixes(RuntimeAnimatorController controller)
+        {
+            return FTAvatarUtils.BaseController(controller) is AnimatorController animator
+                   && animator.parameters.Any(p => p.name == LegacyFixesMarker)
+                   && animator.layers.SelectMany(FTFakePupilLayers.ReadParameters).Any(p => FTParameterCatalog.GetExpression(p) != null);
+        }
+
+        static bool IsLegacyOscController(RuntimeAnimatorController controller)
         {
             // Not cached while empty, in case the asset database wasn't ready the first time
             if (legacyControllerGuids == null || legacyControllerGuids.Count == 0)

@@ -137,8 +137,16 @@ namespace Pawlygon.FaceTracking.Editor
                 var onRoot = holder == avatar.gameObject;
                 var actions = onRoot
                     ? new[] { ("Select", (System.Action)(() => Select(holder))) }
-                    : new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => DisableLegacy(holder)) };
-                if (finding.IsPawlygonLegacy)
+                    : new[] { ("Select", (System.Action)(() => Select(holder))), ("Disable", () => LegacyOscDetector.Disable(holder)) };
+                // Our own 1.x setups get the step by step upgrade window
+                if (finding.IsPawlygonLegacy) actions = actions.Append(("Guide", (System.Action)FTUpgradeWindow.Open)).ToArray();
+                if (finding.IsBlendshapeFixes)
+                {
+                    issues.Error($"1.x Blendshape Fixes on '{finding.Path}'.",
+                        "The Blendshape Fixes component replaces it: both would drive the fix shapes, and it would cost extra forwarded parameters. " +
+                        "Disable tags it EditorOnly (undoable). If you keep it, every build asks to remove it.", actions);
+                }
+                else if (finding.IsPawlygonLegacy)
                 {
                     issues.Error($"Legacy OSC face tracking on '{finding.Path}'.",
                         "It can't run together with native face tracking: both drive the same blendshapes. " +
@@ -444,19 +452,6 @@ namespace Pawlygon.FaceTracking.Editor
             lipSyncResult.tooltip = plan.VisemesFromDescriptor ? "Taken from the avatar's existing viseme setup." : "Matched by blendshape name.";
             eyelidsResult.text = plan.UseFaceTrackingEyelids ? "→ EyeClosed" : unchanged;
             gazeResult.text = plan.GazeMode.HasValue ? "→ " + ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : unchanged;
-        }
-
-        /// <summary>
-        /// Tags the object EditorOnly and deactivates it. VRCFury also processes inactive objects,
-        /// so the tag is what keeps it out of the build. Reversible with Undo.
-        /// </summary>
-        static void DisableLegacy(GameObject holder)
-        {
-            if (holder == null) return;
-            Undo.RecordObject(holder, "Disable legacy face tracking");
-            holder.tag = "EditorOnly";
-            holder.SetActive(false);
-            PrefabUtility.RecordPrefabInstancePropertyModifications(holder);
         }
 
     }

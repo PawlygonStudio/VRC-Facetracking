@@ -15,6 +15,11 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic detectedList = new FTDynamic();
         readonly FTDynamic manualBadge = new FTDynamic();
         readonly List<Image> manualStates = new List<Image>();
+
+        // Scanning every component on the avatar is slow on big avatars, so it's cached briefly
+        const double LegacyScanSeconds = 4;
+        double nextLegacyScan;
+        List<LegacyOscDetector.Finding> legacyFixes = new List<LegacyOscDetector.Finding>();
         VisualElement manualRows;
         int renderedManualCount = -1;
 
@@ -51,6 +56,20 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
         {
+            if (EditorApplication.timeSinceStartup >= nextLegacyScan)
+            {
+                nextLegacyScan = EditorApplication.timeSinceStartup + LegacyScanSeconds;
+                legacyFixes = LegacyOscDetector.Find(avatar.gameObject).Where(f => f.IsBlendshapeFixes).ToList();
+            }
+            foreach (var finding in legacyFixes.Where(f => f.Holder != null))
+            {
+                var holder = finding.Holder;
+                issues.Error($"1.x Blendshape Fixes on '{finding.Path}'.",
+                    "This component replaces it: both would drive the fix shapes. Disable tags it EditorOnly (undoable). " +
+                    "If you keep it, every build asks to remove it.",
+                    ("Select", () => Select(holder)), ("Disable", () => LegacyOscDetector.Disable(holder)));
+            }
+
             // Same meshes and mapping the build uses: the setup component's, or what's already on the descriptor
             var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
             FTFixPlan plan;

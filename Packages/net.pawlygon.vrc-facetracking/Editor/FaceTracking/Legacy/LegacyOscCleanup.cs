@@ -31,21 +31,21 @@ namespace Pawlygon.FaceTracking.Editor
             // Play mode (Av3Emulator, Gesture Manager) and batch builds can't prompt, and only touch a copy anyway
             if (Application.isPlaying || Application.isBatchMode)
             {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] Removed the legacy OSC face tracking setup from this build copy:\n{list}");
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] Removed the Pawlygon VRCFT 1.x setups from this build copy:\n{list}");
             }
             else
             {
                 var remove = EditorUtility.DisplayDialog(
                     FTErrorBoundary.Title,
-                    "This avatar still has the legacy OSC face tracking setup:\n\n" + list +
-                    "\n\nYou can't use it together with native face tracking: both would drive the same blendshapes." +
+                    "This avatar still has Pawlygon VRCFT 1.x setups:\n\n" + list +
+                    "\n\nThey can't be used together with native face tracking: both would drive the same blendshapes." +
                     "\n\nRemove it from this build? Your scene isn't changed. " +
                     "Disable it from the Pawlygon Face Tracking inspector to stop this prompt.",
                     "Remove from this build", "Cancel build");
 
                 if (!remove)
                 {
-                    throw new FTBuildCancelledException("Build cancelled: the legacy OSC face tracking setup is still on the avatar.");
+                    throw new FTBuildCancelledException("Build cancelled: a Pawlygon VRCFT 1.x setup is still on the avatar.");
                 }
             }
 

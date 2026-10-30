@@ -25,7 +25,7 @@ namespace Pawlygon.FaceTracking
         [Tooltip("The Disable Gestures menu toggle starts on, so gestures stay paused until it's turned off. Its state is saved.")]
         public bool gesturesDisabledByDefault = true;
 
-        [Tooltip("Submenu of the avatar's main menu that gets the toggle. Created if missing.")]
+        [Tooltip("Submenu of the avatar's main menu that gets the toggle. Created if missing. Leave empty to put the toggle in the main menu.")]
         public string menuName = "Face Tracking";
 
         [Tooltip("Include blink layers when baking guards. EyeTrackingActive is driven whenever an animator reads it.")]
