@@ -41,6 +41,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         double nextSlowScan;
         List<LegacyOscDetector.Finding> legacyFindings = new List<LegacyOscDetector.Finding>();
+        List<VRCAvatarDescriptor.CustomAnimLayer> legacyLayers = new List<VRCAvatarDescriptor.CustomAnimLayer>();
         List<FTBlendshapeOptimizers.Finding> blendshapeOptimizers = new List<FTBlendshapeOptimizers.Finding>();
 
         protected override string Title => "Face Tracking";
@@ -127,6 +128,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 nextSlowScan = EditorApplication.timeSinceStartup + SlowScanSeconds;
                 legacyFindings = LegacyOscDetector.Find(avatar.gameObject);
+                legacyLayers = LegacyOscDetector.FindInDescriptor(avatar);
                 blendshapeOptimizers = FTBlendshapeOptimizers.Find(avatar.gameObject);
             }
 
@@ -157,6 +159,21 @@ namespace Pawlygon.FaceTracking.Editor
                     issues.Warning($"'{finding.Path}' looks like OSC face tracking.",
                         $"It merges '{finding.Controller.name}', which uses FT/v2 parameters. It can't run together with native face tracking.", actions);
                 }
+            }
+
+            foreach (var layer in legacyLayers)
+            {
+                var type = layer.type;
+                var name = layer.animatorController.name;
+                // The Additive slot only ever held our Eye Rotation controller; an FX slot may hold the avatar's own layers too
+                var actions = type == VRCAvatarDescriptor.AnimLayerType.FX
+                    ? new[] { ("Select", (System.Action)(() => Select(avatar.gameObject))) }
+                    : new[] { ("Select", (System.Action)(() => Select(avatar.gameObject))), ("Clear", () => LegacyOscDetector.ClearDescriptorLayer(avatar, type)) };
+                issues.Error($"The descriptor's {type} layer uses the 1.x controller '{name}'.",
+                    "It hands the eyes over to animation while eye tracking is on, which stops native eye tracking from rotating them. " +
+                    (type == VRCAvatarDescriptor.AnimLayerType.FX
+                        ? "Replace it with the avatar's own FX controller."
+                        : "Clear sets the layer back to VRChat's default (undoable)."), actions);
             }
 
             if (avatar.enableFaceTracking || avatar.faceTrackingBlendshapesSetList?.Count > 0 || avatar.faceTrackingParameterBehaviors?.Count > 0)

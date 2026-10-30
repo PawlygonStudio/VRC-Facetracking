@@ -4,15 +4,12 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 [![Build Release](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml/badge.svg)](https://github.com/PawlygonStudio/VRC-Facetracking/actions/workflows/release.yml)
 
 ## Requisites
-* Unity 2022.3 with a VRChat Avatars SDK that supports native face tracking (3.10.6 beta or newer)
+* Unity 2022.3 with the VRChat Avatars SDK 3.10.6 or newer, which has native face tracking
 * Avatar with [Unified Expression Blendshapes](https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes) (ARKit names are matched too)  
   → See the full list of [Supported UE Blendshapes](./UEBlendshapes.md)
 * [VRCFury](https://vrcfury.com) (1.935.0 or newer) or [Modular Avatar](https://modular-avatar.nadena.dev) (1.9.0 or newer) for Face Tracking Guards and Pupil Emulation: they merge the animator layers, parameters and menu toggle those components add. The rest works without either.
 
 ## How to use it
-> [!NOTE]
-> 2.0 is in beta, like VRChat's native face tracking. In the Creator Companion, turn on **Show Pre-Release Packages** in Settings to see it. Manual downloads are on the [Releases](https://github.com/PawlygonStudio/VRC-Facetracking/releases) page, marked Pre-release.
-
 Coming from 1.x? Follow [Upgrading from 1.x](#upgrading-from-1x).
 
 1. Import Pawlygon VRC Facetracking using [VRChat Creator Companion](https://vcc.pawlygon.net/) or import the [unity package manually](https://github.com/PawlygonStudio/VRC-Facetracking/releases/latest).
@@ -157,11 +154,10 @@ Limits:
 Rules whose blendshapes the avatar doesn't have are skipped. Needs All Tracking Keys. The expressions count toward VRChat's per-avatar face tracking expression budget; with every rule on it stays within it.
 
 ## Known issues
-* **Gesture Manager** 3.9.9 and older doesn't compile with the face tracking beta SDK, and while it has compile errors Unity doesn't load any other scripts, including this package's. Remove it while you're on the beta SDK, or use Av3Emulator instead.
 * **Blendshape optimizers** that don't know about native face tracking would remove its blendshapes, so the build stops when one is on the avatar:
-  * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1-beta.2 or newer, which keeps them.
+  * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1 or newer, which keeps them.
   * AAO Trace And Optimize with Optimize BlendShape on isn't supported yet. Turn that option off.
-* **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 betas): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
+* **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 or newer): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
 
 ## Legacy (1.x, OSC face tracking with VRCFaceTracking)
 The 1.x prefabs are still included for avatars that keep using [VRCFaceTracking](https://github.com/benaclejames/VRCFaceTracking) over OSC. They need VRCFT v5 or newer, VRCFury or Modular Avatar, and the face mesh named `Body`. Add the prefab from `Packages/Pawlygon - VRC Facetracking/Deprecated/Prefabs` that matches your avatar's blendshapes (_"VF" is VRCFury and "MA" is Modular Avatar_).

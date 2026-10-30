@@ -21,7 +21,7 @@
     "versionDefines": [
         {
             "name": "com.vrchat.avatars",
-            "expression": "3.10.6-beta.1",
+            "expression": "3.10.6",
             "define": "PAWLYGON_FT_NATIVE"
         }
     ],

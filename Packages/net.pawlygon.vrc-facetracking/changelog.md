@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0] - 2026-10-30
+Native face tracking for the VRChat Avatars SDK 3.10.6. Everything is applied to the uploaded copy of the avatar, without changing it in the scene. See the betas below for the details.
+- Requires the VRChat Avatars SDK 3.10.6 or newer (the release, no longer the beta). Tested with VRChat Avatars SDK 3.10.6 and VRCFury 1.1436.0.
+- The `!Pawlygon - Face Tracking` prefab: Face Tracking, Face Tracking Parameters, Face Tracking Guards, Blendshape Fixes, Pupil Emulation and Face Tracking Emulation.
+- Upgrading from 1.x: an Upgrade to 2.0 window and a step by step guide in the README.
+- New: the Face Tracking inspector warns when one of the 1.x controllers is set directly in the avatar descriptor's layers, like the Eye Rotation controller in Additive. It hands the eyes over to animation while eye tracking is on, which stops native eye tracking from rotating them. **Clear** sets the layer back to VRChat's default.
+- The 1.x OSC prefabs, animators and animations are still included in `Deprecated/` for avatars that keep using VRCFaceTracking.
+
 ## [2.0.0-beta.9] - 2026-10-29
 - New: the 1.x Blendshape Fixes from Pawlygon Unity Tools is detected like the 1.x face tracking prefab. The Face Tracking and Blendshape Fixes inspectors show it with a Disable button, and builds ask to remove it.
 - New: a step by step guide for upgrading from 1.x in the README.

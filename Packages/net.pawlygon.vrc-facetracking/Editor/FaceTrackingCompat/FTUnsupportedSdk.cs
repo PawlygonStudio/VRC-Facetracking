@@ -10,7 +10,7 @@ namespace Pawlygon.FaceTracking.Editor
     static class FTUnsupportedSdk
     {
         public const string Message =
-            "Pawlygon Face Tracking needs a VRChat Avatars SDK with native face tracking (3.10.6 beta or newer). " +
+            "Pawlygon Face Tracking needs a VRChat Avatars SDK with native face tracking (3.10.6 or newer). " +
             "With the SDK installed in this project, this component does nothing.";
     }
 

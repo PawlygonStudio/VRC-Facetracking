@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
 namespace Pawlygon.FaceTracking.Editor
@@ -79,6 +80,30 @@ namespace Pawlygon.FaceTracking.Editor
         // OSC face tracking templates use more than a handful of these. Animators that only read a few,
         // like Face Tracking Extras, are what the Parameters component supports, not something to remove.
         const int MinOscParameters = 10;
+
+        /// <summary>
+        /// Descriptor layers set to one of our 1.x controllers by hand, like the Eye Rotation controller in Additive.
+        /// Only reported: they aren't merged by anything we could remove, and an FX slot may hold the avatar's own layers too.
+        /// </summary>
+        public static List<VRCAvatarDescriptor.CustomAnimLayer> FindInDescriptor(VRCAvatarDescriptor descriptor)
+        {
+            return descriptor.baseAnimationLayers
+                .Where(l => !l.isDefault && l.animatorController != null && IsLegacyOscController(l.animatorController))
+                .ToList();
+        }
+
+        /// <summary>Sets a descriptor layer back to VRChat's default controller. Reversible with Undo.</summary>
+        public static void ClearDescriptorLayer(VRCAvatarDescriptor descriptor, VRCAvatarDescriptor.AnimLayerType type)
+        {
+            Undo.RecordObject(descriptor, "Clear 1.x face tracking layer");
+            for (var i = 0; i < descriptor.baseAnimationLayers.Length; i++)
+            {
+                if (descriptor.baseAnimationLayers[i].type != type) continue;
+                descriptor.baseAnimationLayers[i].isDefault = true;
+                descriptor.baseAnimationLayers[i].animatorController = null;
+            }
+            PrefabUtility.RecordPrefabInstancePropertyModifications(descriptor);
+        }
 
         /// <summary>
         /// Removes a finding from a build copy. The whole GameObject goes when it's just a merge prefab (no
