@@ -98,10 +98,13 @@ namespace Pawlygon.FaceTracking.Editor
 
         static void AddMenuToggle(PawlygonFTGuards component, FTBuildContext context)
         {
-            var menuName = string.IsNullOrWhiteSpace(component.menuName) ? "Face Tracking" : component.menuName.Trim();
+            // Empty puts the toggle in the main menu
+            var menuName = component.menuName?.Trim() ?? "";
             var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "FaceTrackingIcon.png");
-            // The avatar's own submenu of that name may have one already
-            var existing = FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
+            // The avatar's own menu may have one already
+            var existing = menuName.Length == 0
+                ? context.Descriptor.expressionsMenu
+                : FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
             if (existing != null && existing.controls.Any(c => c.parameter?.name == FTGuardDriver.DisableGesturesParameter)) return;
 
             var submenu = context.Generated.GetSubmenu(menuName, icon);

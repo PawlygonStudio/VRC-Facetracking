@@ -94,7 +94,7 @@ The guards themselves are part of the controller. Avatars set up with Pawlygon U
 | Gestures | On | Drives `FacialExpressionsDisabled` to pause guarded gesture layers. |
 | Disable With Face Tracking | On | Also pauses gestures while VRChat's `UserFaceTracking` is on, whatever the toggle says. |
 | Disabled By Default | On | The **Disable Gestures** menu toggle starts on, so gestures stay paused until it's turned off, like 1.x. Its state is saved. |
-| In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the **Disable Gestures** toggle. Created if missing. |
+| In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the **Disable Gestures** toggle. Created if missing. Leave empty to put the toggle in the main menu. |
 | Blinking | On | Includes blink layers when baking guards. |
 | Layer lists | Empty | Which layers Bake Guards guards: expression layers left out, gesture layers added anyway, and blink layers left out or added, by name. Set from the inspector's layer list. |
 

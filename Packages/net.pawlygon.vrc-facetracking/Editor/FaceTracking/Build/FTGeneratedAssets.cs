@@ -61,12 +61,13 @@ namespace Pawlygon.FaceTracking.Editor
 
         /// <summary>
         /// The submenu of the main menu named <paramref name="name"/>, to add controls to. Merged with an existing
-        /// one of that name.
+        /// one of that name. An empty name is the main menu itself.
         /// </summary>
         public VRCExpressionsMenu GetSubmenu(string name, Texture2D icon)
         {
             RequireMerger();
             if (menu == null) menu = FTAvatarAssets.CreateMenu(context.BuildFolder, "Face Tracking Menu");
+            if (string.IsNullOrEmpty(name)) return menu;
             var control = FTAvatarAssets.FindSubmenu(menu, name);
             if (control == null)
             {
