@@ -44,7 +44,10 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var token = match.Value;
                 if (token == "(") depth++;
-                else if (token == ")" && --depth < 0) return "Unbalanced parentheses.";
+                else if (token == ")")
+                {
+                    if (--depth < 0) return "Unbalanced parentheses.";
+                }
                 else if (char.IsLetter(token[0]) || token[0] == '_')
                 {
                     if (Functions.Contains(token)) continue;
