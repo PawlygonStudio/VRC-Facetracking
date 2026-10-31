@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.0.1] - 2026-10-31
+- Fixed: the Face Tracking Parameters inspector flagged every closing parenthesis in a manual expression as "Unexpected ')'". Only the inspector was affected: the expressions were uploaded and worked in VRChat.
+
 ## [2.0.0] - 2026-10-30
 Native face tracking for the VRChat Avatars SDK 3.10.6. Everything is applied to the uploaded copy of the avatar, without changing it in the scene. See the betas below for the details.
 - Requires the VRChat Avatars SDK 3.10.6 or newer (the release, no longer the beta). Tested with VRChat Avatars SDK 3.10.6 and VRCFury 1.1436.0.
