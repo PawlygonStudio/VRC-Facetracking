@@ -20,6 +20,7 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic keysDetails = new FTDynamic();
         readonly FTDynamic keysList = new FTDynamic();
         PropertyField manualMeshes;
+        PropertyField tongueMode;
         VisualElement keysTools;
         Button[] filterButtons;
 
@@ -65,6 +66,10 @@ namespace Pawlygon.FaceTracking.Editor
             var keys = FTUI.Card(body, "Tracking Keys", out var keysExtras);
             keysExtras.Add(keysBadge.Element);
             keys.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
+            // Only shown for avatars with tongue steps, see Refresh
+            tongueMode = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.tongueMode)), "Tongue Mode");
+            tongueMode.style.display = DisplayStyle.None;
+            keys.Add(tongueMode);
             keys.Add(keysDetails.Element);
             keys.Add(BuildKeysTools());
             keys.Add(keysList.Element);
@@ -107,11 +112,23 @@ namespace Pawlygon.FaceTracking.Editor
 
             var plan = FaceTrackingSetupPlan.Resolve(Component, avatar);
             foreach (var error in plan.Errors) issues.Error(error);
-            foreach (var warning in plan.Warnings) issues.Warning(warning);
+            foreach (var warning in plan.Warnings.Where(w => w != plan.TongueConflict)) issues.Warning(warning);
+            if (plan.TongueConflict != null)
+            {
+                issues.Warning("TongueOut is used, the tongue steps aren't.", plan.TongueConflict, ("Use Steps", () => SetTongueMode(FTTongueMode.Steps)));
+            }
+            tongueMode.style.display = plan.FoundTongueSteps != null || Component.tongueMode != FTTongueMode.Auto ? DisplayStyle.Flex : DisplayStyle.None;
 
             UpdateMeshes(plan);
             UpdateKeys(plan, issues);
             UpdateResults(plan);
+        }
+
+        void SetTongueMode(FTTongueMode mode)
+        {
+            serializedObject.FindProperty(nameof(PawlygonFaceTracking.tongueMode)).enumValueIndex = (int)mode;
+            serializedObject.ApplyModifiedProperties();
+            RefreshNow();
         }
 
         void AddAvatarIssues(VRCAvatarDescriptor avatar, FTIssues issues)
@@ -297,6 +314,16 @@ namespace Pawlygon.FaceTracking.Editor
                     ("Use", () => { foreach (var x in suggestions.ToList()) SetOverride(FTKeys.KeyName(x.Key), x.Value, plan); }));
             }
 
+            if (plan.ArkitOverlaps.Count > 0)
+            {
+                var count = plan.ArkitOverlaps.Count;
+                issues.Info($"{(count == 1 ? "1 key is" : $"{count} keys are")} left unmapped so blendshapes don't play twice.",
+                    "This avatar has Unified Expressions and ARKit blendshapes. Unified Expressions comes first, and these keys' only match is an " +
+                    "ARKit blendshape that also moves a key it already drives:\n" +
+                    string.Join("\n", plan.ArkitOverlaps.OrderBy(x => x.Key).Select(x => $"{FTKeys.KeyName(x.Key)}: {x.Value.Arkit} (moves {FTKeys.KeyName(x.Value.Covered)})")) +
+                    "\nMap them by hand if you want the ARKit blendshape anyway.");
+            }
+
             // Filter buttons show their counts
             var counts = new[] { total, plan.UnmappedKeys.Count, plan.OverriddenKeys.Count };
             for (var i = 0; i < filterButtons.Length; i++)
@@ -311,8 +338,9 @@ namespace Pawlygon.FaceTracking.Editor
             var filtering = keyFilter != KeyFilter.All || !string.IsNullOrWhiteSpace(keySearch);
 
             var listKey = string.Join("|", visible.Select(k => k + ":" + plan.Set.faceTrackingBlendshapeNames[k] + (plan.OverriddenKeys.Contains(k) ? "*" : "")
-                                                              + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")))
-                          + filtering + string.Join(",", openGroups);
+                                                              + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")
+                                                              + (plan.ArkitOverlaps.TryGetValue(k, out var skip) ? "!" + skip.Arkit : "")))
+                          + filtering + string.Join(",", openGroups) + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "");
             keysList.Update(listKey, container =>
             {
                 if (visible.Count == 0)
@@ -351,6 +379,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             var search = keySearch.Trim();
             var blendshape = plan.Set.faceTrackingBlendshapeNames[key] ?? "";
+            if (plan.TongueSteps != null && FTKeys.KeyName(key) == FTTongueSteps.Key) blendshape = string.Join(" ", plan.TongueSteps.Names);
             return FTKeys.KeyName(key).IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0
                    || blendshape.IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
@@ -367,6 +396,15 @@ namespace Pawlygon.FaceTracking.Editor
             row.AddToClassList("ft-key");
             row.Add(FTUI.Text(keyName, "ft-key__name"));
 
+            if (plan.TongueSteps != null && keyName == FTTongueSteps.Key)
+            {
+                var steps = FTUI.Text($"{plan.TongueSteps.Step1} → {plan.TongueSteps.Step2}", "ft-key__value");
+                steps.tooltip = $"Tongue steps: {plan.TongueSteps.Step1} over the first half of TongueOut, {plan.TongueSteps.Step2} over the second. " +
+                                "Set Tongue Mode to TongueOut to map a single blendshape instead.";
+                row.Add(steps);
+                return row;
+            }
+
             var value = new Button { text = mapped ? blendshape : "unmapped" };
             value.AddToClassList("ft-key__value");
             value.EnableInClassList("ft-key__value--unmapped", !mapped);
@@ -375,13 +413,22 @@ namespace Pawlygon.FaceTracking.Editor
                 ? $"Mapped by hand. Automatic match: {auto ?? "none"}."
                 : mapped
                     ? (string.Equals(blendshape, keyName, System.StringComparison.OrdinalIgnoreCase) ? "Matched by name." : $"Matched by alias: {blendshape}.") + " Click to change."
-                    : "No blendshape matches this key. Click to pick one.";
+                    : plan.ArkitOverlaps.TryGetValue(key, out var overlap)
+                        ? $"Its only match is the ARKit blendshape '{overlap.Arkit}', which also moves {FTKeys.KeyName(overlap.Covered)}. " +
+                          "That key already has a Unified Expressions blendshape, so it would play twice. Click to map it by hand anyway."
+                        : "No blendshape matches this key. Click to pick one.";
             value.clicked += () =>
             {
                 new FTBlendshapePicker(keyName, plan.Blendshapes, picked => SetOverride(keyName, picked, plan)).Show(value.worldBound);
             };
             row.Add(value);
 
+            if (!mapped && !edited && plan.ArkitOverlaps.TryGetValue(key, out var skipped))
+            {
+                var note = FTUI.Text($"skips {skipped.Arkit}", "ft-key__note");
+                note.tooltip = value.tooltip;
+                row.Add(note);
+            }
             if (!mapped && suggestions.TryGetValue(key, out var suggestion))
             {
                 var use = new Button(() => SetOverride(keyName, suggestion, plan)) { text = suggestion + "?", tooltip = $"'{suggestion}' looks like a misspelling of {keyName}. Click to use it." };
@@ -435,7 +482,7 @@ namespace Pawlygon.FaceTracking.Editor
             foreach (var unmapped in plan.UnmappedKeys)
             {
                 // Keys left unmapped on purpose don't get suggestions
-                if (plan.OverriddenKeys.Contains(unmapped)) continue;
+                if (plan.OverriddenKeys.Contains(unmapped) || plan.ArkitOverlaps.ContainsKey(unmapped)) continue;
                 var suggestion = FTKeys.SuggestFor(unmapped, plan.Blendshapes, used);
                 if (suggestion == null) continue;
                 suggestions[unmapped] = suggestion;

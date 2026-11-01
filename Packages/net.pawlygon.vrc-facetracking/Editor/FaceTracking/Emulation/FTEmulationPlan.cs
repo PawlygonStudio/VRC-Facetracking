@@ -23,7 +23,19 @@ namespace Pawlygon.FaceTracking.Editor
             public readonly List<string> Limits = new List<string>();
             public readonly List<string> Rules = new List<string>();
 
+            /// <summary>1 or 2 for a tongue step, which plays its half of the tongue value. 0 otherwise.</summary>
+            public int TongueStep;
+
             public string Expression
+            {
+                get
+                {
+                    if (TongueStep > 0) return FTTongueSteps.Remap(TongueStep, Value);
+                    return Value;
+                }
+            }
+
+            string Value
             {
                 get
                 {
@@ -56,7 +68,9 @@ namespace Pawlygon.FaceTracking.Editor
         const string MouthLeft = "(MouthUpperLeft + MouthLowerLeft - MouthUpperRight - MouthLowerRight) / 2";
         static readonly string[] Sides = { "Left", "Right" };
 
-        public static FTEmulationPlan Resolve(PawlygonFTEmulation component, IEnumerable<BlendshapesSet> sets, bool useAllTrackingKeys)
+        /// <param name="tongueSteps">The tongue steps Face Tracking drives instead of mapping TongueOut, if any.</param>
+        public static FTEmulationPlan Resolve(PawlygonFTEmulation component, IEnumerable<BlendshapesSet> sets, bool useAllTrackingKeys,
+            FTTongueSteps tongueSteps = null)
         {
             var plan = new FTEmulationPlan();
             if (!useAllTrackingKeys)
@@ -66,7 +80,7 @@ namespace Pawlygon.FaceTracking.Editor
                 return plan;
             }
 
-            var builder = new Builder(plan, sets.Where(s => s?.faceTrackingBlendshapeNames != null).ToList());
+            var builder = new Builder(plan, sets.Where(s => s?.faceTrackingBlendshapeNames != null).ToList(), tongueSteps);
 
             if (component.tongueOpensJaw)
             {
@@ -160,29 +174,55 @@ namespace Pawlygon.FaceTracking.Editor
         {
             readonly FTEmulationPlan plan;
             readonly List<BlendshapesSet> sets;
+            readonly FTTongueSteps tongueSteps;
             readonly Dictionary<string, int> keysByName;
 
-            public Builder(FTEmulationPlan plan, List<BlendshapesSet> sets)
+            public Builder(FTEmulationPlan plan, List<BlendshapesSet> sets, FTTongueSteps tongueSteps)
             {
                 this.plan = plan;
                 this.sets = sets;
+                this.tongueSteps = tongueSteps;
                 keysByName = Enumerable.Range(0, FTKeys.KeyCount).ToDictionary(FTKeys.KeyName, k => k);
             }
 
             public void Emulate(string rule, string targetKey, string term)
             {
-                var shape = ShapeFor(rule, targetKey);
-                if (shape == null) return;
-                shape.Emulations.Add(term);
-                if (!shape.Rules.Contains(rule)) shape.Rules.Add(rule);
+                foreach (var shape in ShapesFor(rule, targetKey))
+                {
+                    shape.Emulations.Add(term);
+                    if (!shape.Rules.Contains(rule)) shape.Rules.Add(rule);
+                }
             }
 
             public void Limit(string rule, string targetKey, string factor)
             {
-                var shape = ShapeFor(rule, targetKey);
-                if (shape == null) return;
-                if (!shape.Limits.Contains(factor)) shape.Limits.Add(factor);
-                if (!shape.Rules.Contains(rule)) shape.Rules.Add(rule);
+                foreach (var shape in ShapesFor(rule, targetKey))
+                {
+                    if (!shape.Limits.Contains(factor)) shape.Limits.Add(factor);
+                    if (!shape.Rules.Contains(rule)) shape.Rules.Add(rule);
+                }
+            }
+
+            /// <summary>The shape the key drives, or both tongue steps for TongueOut when Face Tracking drives them instead.</summary>
+            IEnumerable<Shape> ShapesFor(string rule, string keyName)
+            {
+                if (tongueSteps != null && keyName == FTTongueSteps.Key && keysByName.TryGetValue(keyName, out var key)
+                    && !sets.Any(s => key < s.faceTrackingBlendshapeNames.Length && !string.IsNullOrEmpty(s.faceTrackingBlendshapeNames[key])))
+                {
+                    return new[] { StepShape(1, tongueSteps.Step1, key), StepShape(2, tongueSteps.Step2, key) };
+                }
+                var shape = ShapeFor(rule, keyName);
+                return shape != null ? new[] { shape } : new Shape[0];
+            }
+
+            Shape StepShape(int step, string blendshape, int key)
+            {
+                var shape = plan.Shapes.FirstOrDefault(s => s.Blendshape == blendshape);
+                if (shape != null) return shape;
+                shape = new Shape { Blendshape = blendshape, Set = PawlygonFaceTracking.BaseSetName, TongueStep = step };
+                shape.Keys.Add((key, 1f));
+                plan.Shapes.Add(shape);
+                return shape;
             }
 
             /// <summary>

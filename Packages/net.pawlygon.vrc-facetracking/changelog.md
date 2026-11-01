@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.2] - 2026-10-31
+- New: tongue steps. Avatars with two tongue step blendshapes (like SRanipal's `Tongue_LongStep1` and `Tongue_LongStep2`, or `TongueOutStep1` / `TongueOutStep2`) now play both as the tongue comes out: the first step over the first half, the second over the rest. Before, TongueOut drove only one of them. The steps are driven by native face tracking expressions, with no animator or parameters.
+- New: **Tongue Mode** on the Face Tracking component, shown for avatars with tongue steps. When the avatar also has a `TongueOut` blendshape, Auto keeps TongueOut, and the inspector offers to switch to the steps.
+- Face Tracking Emulation's Tongue Pulled In by Funnel works on tongue steps too.
+- Fixed: avatars with both Unified Expressions and ARKit blendshapes got a mix of the two. Keys matched through a shared name picked whichever came first on the mesh, so an avatar with its ARKit shapes listed first smiled with `mouthSmileRight` and lowered its brows with `browDownRight` instead of its Unified Expressions `MouthSmileRight` and `BrowDownRight`, and fix shapes made for the Unified Expressions ones played on top. Unified Expressions now always comes first. ARKit blendshapes only fill in keys with no Unified Expressions match, and not when they'd also move a key that already has one (like `mouthSmileRight` for MouthCornerSlantRight next to `MouthCornerPullRight`): those keys are left unmapped, with a note in the inspector. Mapping an ARKit blendshape by hand still works.
+
 ## [2.0.1] - 2026-10-31
 - Fixed: the Face Tracking Parameters inspector flagged every closing parenthesis in a manual expression as "Unexpected ')'". Only the inspector was affected: the expressions were uploaded and worked in VRChat.
 

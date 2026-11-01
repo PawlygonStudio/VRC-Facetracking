@@ -64,6 +64,7 @@ Sets up native face tracking on the avatar descriptor when the avatar is built: 
 |---|---|---|
 | Mesh Mode | Auto | **Auto** picks every mesh with face tracking blendshapes, except the ones a VRCFury Full Controller configures for face tracking, which VRCFury sets up itself. **Manual** uses the Meshes list (up to 16). |
 | All Tracking Keys | On | Maps every tracking key. Off limits the avatar to eye look and eyelids. Pupil Emulation's real pupil tracking and mood reactions, and Face Tracking Emulation, need it. |
+| Tongue Mode | Auto | Only shown for avatars with tongue step blendshapes, like `Tongue_LongStep1` and `Tongue_LongStep2`. **Steps** plays them one after the other as the tongue comes out: the first step over the first half, the second over the rest. **TongueOut** maps a single `TongueOut` blendshape. **Auto** uses TongueOut when the avatar has that blendshape, and the steps otherwise. |
 | Lip Sync | Face Tracking Visemes | **Face Tracking Visemes** switches lip sync to the face tracking viseme mode, reusing the avatar's viseme blendshapes. **Keep Existing** leaves lip sync as it is. |
 | Eyelids | Face Tracking | **Face Tracking** drives the eyelids with the `EyeClosed` blendshapes. **Keep Existing** leaves the descriptor's eyelid setup. |
 | Eye Gaze | Auto | **Auto** uses **Both** with `EyeLook` blendshapes and eye bones set up in the descriptor's Eye Look, **Face Tracking** with only the blendshapes, **Bone Rotation** with only the bones, and leaves it unchanged with neither. |

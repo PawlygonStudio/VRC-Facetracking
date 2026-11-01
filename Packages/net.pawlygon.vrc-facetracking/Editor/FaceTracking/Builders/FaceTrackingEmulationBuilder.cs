@@ -1,7 +1,6 @@
 using System.Linq;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
-using ParameterBehavior = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.FaceTrackingParameterBehavior;
 
 namespace Pawlygon.FaceTracking.Editor
 {
@@ -22,7 +21,7 @@ namespace Pawlygon.FaceTracking.Editor
                                            "or enable face tracking on the avatar descriptor.");
             }
 
-            var plan = FTEmulationPlan.Resolve(component, context.Sets, context.UseAllTrackingKeys);
+            var plan = FTEmulationPlan.Resolve(component, context.Sets, context.UseAllTrackingKeys, context.TongueSteps);
             if (plan.NeedsAllTrackingKeys)
             {
                 Debug.LogWarning($"[{FTErrorBoundary.Title}] Face Tracking Emulation needs All Tracking Keys, so it was skipped.", component);
@@ -38,20 +37,8 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 context.Behaviors.RemoveAll(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyToBlendshape
                                                  && b.targetBlendshapeName == shape.Blendshape);
-                context.Behaviors.Add(new ParameterBehavior
-                {
-                    targetMode = VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyToBlendshape,
-                    targetBlendshapeName = shape.Blendshape,
-                    // Fades with the set the shape came from, like its mapping did
-                    weightBlendSetName = shape.Set ?? "",
-                    outputParameterName = "",
-                    targetBlendSetName = "",
-                    inputTrackingKeys = new int[0],
-                    inputTrackingKeyNames = new string[0],
-                    inputInverted = new bool[0],
-                    combineMode = VRCAvatarDescriptor.ParameterBehaviorCombineMode.Custom,
-                    customExpression = shape.Expression,
-                });
+                // Fades with the set the shape came from, like its mapping did
+                context.Behaviors.Add(FaceTrackingSetupBuilder.CreateBlendshapeBehavior(shape.Blendshape, shape.Expression, shape.Set));
             }
         }
     }

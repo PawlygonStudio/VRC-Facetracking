@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using ParameterBehavior = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.FaceTrackingParameterBehavior;
 
 namespace Pawlygon.FaceTracking.Editor
 {
@@ -32,6 +33,14 @@ namespace Pawlygon.FaceTracking.Editor
             context.VisemeDampenAmount = component.visemeDampenAmount;
             context.Meshes.AddRange(plan.Meshes);
             context.Sets.Add(plan.Set);
+            if (plan.TongueSteps != null)
+            {
+                context.TongueSteps = plan.TongueSteps;
+                foreach (var (blendshape, expression) in plan.TongueSteps.Expressions())
+                {
+                    context.Behaviors.Add(CreateBlendshapeBehavior(blendshape, expression, PawlygonFaceTracking.BaseSetName));
+                }
+            }
 
             ApplyAvatarSettings(plan, descriptor);
             plans.Remove(component);
@@ -45,6 +54,24 @@ namespace Pawlygon.FaceTracking.Editor
         protected override void BuildAnimator(PawlygonFaceTracking component, FTBuildContext context)
         {
             if (plans.TryGetValue(component, out var plan)) ApplyAvatarSettings(plan, context.Descriptor);
+        }
+
+        /// <summary>Drives a blendshape with an expression, fading with the given set like a mapping in it would.</summary>
+        internal static ParameterBehavior CreateBlendshapeBehavior(string blendshape, string expression, string setName)
+        {
+            return new ParameterBehavior
+            {
+                targetMode = VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyToBlendshape,
+                targetBlendshapeName = blendshape,
+                weightBlendSetName = setName ?? "",
+                outputParameterName = "",
+                targetBlendSetName = "",
+                inputTrackingKeys = new int[0],
+                inputTrackingKeyNames = new string[0],
+                inputInverted = new bool[0],
+                combineMode = VRCAvatarDescriptor.ParameterBehaviorCombineMode.Custom,
+                customExpression = expression,
+            };
         }
 
         static void ApplyAvatarSettings(FaceTrackingSetupPlan plan, VRCAvatarDescriptor descriptor)
