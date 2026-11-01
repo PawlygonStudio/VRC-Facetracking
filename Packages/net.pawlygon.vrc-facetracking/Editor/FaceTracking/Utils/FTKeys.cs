@@ -22,6 +22,19 @@ namespace Pawlygon.FaceTracking.Editor
         static readonly MethodInfo NamesForKeyMethod;
         static Dictionary<string, List<int>> keysByName;
 
+        // ARKit's blendshapes in its own camelCase spelling. The SDK matches them case-insensitively, as aliases.
+        static readonly HashSet<string> ArkitNames = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "eyeBlinkLeft", "eyeLookDownLeft", "eyeLookInLeft", "eyeLookOutLeft", "eyeLookUpLeft", "eyeSquintLeft", "eyeWideLeft",
+            "eyeBlinkRight", "eyeLookDownRight", "eyeLookInRight", "eyeLookOutRight", "eyeLookUpRight", "eyeSquintRight", "eyeWideRight",
+            "jawForward", "jawLeft", "jawRight", "jawOpen", "mouthClose", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight",
+            "mouthSmileLeft", "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight", "mouthDimpleLeft", "mouthDimpleRight",
+            "mouthStretchLeft", "mouthStretchRight", "mouthRollLower", "mouthRollUpper", "mouthShrugLower", "mouthShrugUpper",
+            "mouthPressLeft", "mouthPressRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthUpperUpLeft", "mouthUpperUpRight",
+            "browDownLeft", "browDownRight", "browInnerUp", "browOuterUpLeft", "browOuterUpRight", "cheekPuff", "cheekSquintLeft",
+            "cheekSquintRight", "noseSneerLeft", "noseSneerRight", "tongueOut",
+        };
+
         static FTKeys()
         {
             const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
@@ -49,6 +62,9 @@ namespace Pawlygon.FaceTracking.Editor
         public static string VisemeName(int viseme) => ((VRC_AvatarDescriptor.Viseme)viseme).ToString();
 
         public static bool IsBasic(int key) => VRCAvatarDescriptor.IsBasicFaceTrackingKey(key);
+
+        /// <summary>An ARKit blendshape in ARKit's own spelling (mouthSmileLeft, not the Unified Expressions MouthSmileLeft).</summary>
+        public static bool IsArkitName(string name) => name != null && ArkitNames.Contains(name);
 
         /// <summary>The pupil keys: EyeDilation and EyeConstrict, left and right.</summary>
         public static bool IsPupilKey(int key)

@@ -80,7 +80,8 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var setupPlan = FaceTrackingSetupPlan.Resolve(setup, avatar);
                 plan = FTEmulationPlan.Resolve(Component,
-                    setupPlan.Set != null ? new[] { setupPlan.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0], setup.useAllTrackingKeys);
+                    setupPlan.Set != null ? new[] { setupPlan.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0], setup.useAllTrackingKeys,
+                    setupPlan.TongueSteps);
             }
             else if (avatar.enableFaceTracking)
             {

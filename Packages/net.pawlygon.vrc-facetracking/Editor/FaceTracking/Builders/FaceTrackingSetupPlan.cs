@@ -33,6 +33,15 @@ namespace Pawlygon.FaceTracking.Editor
         public int MappedVisemes;
         public bool VisemesFromDescriptor;
 
+        // The avatar's tongue step pair, if any, and whether TongueOut drives it. Steps take TongueOut out of the set.
+        public FTTongueSteps FoundTongueSteps;
+        public FTTongueSteps TongueSteps;
+        public string TongueConflict;
+
+        // Keys left unmapped because their only match was an ARKit blendshape that also moves a key driven by a Unified
+        // Expressions one: the ARKit blendshape, and that other key
+        public readonly Dictionary<int, (string Arkit, int Covered)> ArkitOverlaps = new Dictionary<int, (string, int)>();
+
         public bool UseFaceTrackingLipSync;
         public bool UseFaceTrackingEyelids;
         public EyeGazeMode? GazeMode;
@@ -59,6 +68,7 @@ namespace Pawlygon.FaceTracking.Editor
             plan.Blendshapes = blendshapes;
             plan.Set = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
             plan.MapKeys(component, blendshapes);
+            plan.ResolveTongue(component, blendshapes);
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
 
@@ -112,14 +122,21 @@ namespace Pawlygon.FaceTracking.Editor
 
         void MapKeys(PawlygonFaceTracking component, string[] blendshapes)
         {
+            // Unified Expressions always comes first: ARKit blendshapes only fill in keys nothing else matches
+            var withoutArkit = blendshapes.Where(b => !FTKeys.IsArkitName(b)).ToArray();
             for (var key = 0; key < FTKeys.KeyCount; key++)
             {
                 if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) continue;
 
-                var index = FTKeys.FindKey(blendshapes, key);
-                if (index >= 0) AutoMatches[key] = blendshapes[index];
+                var index = FTKeys.FindKey(withoutArkit, key);
+                var name = index >= 0 ? withoutArkit[index] : null;
+                if (name == null && withoutArkit.Length < blendshapes.Length)
+                {
+                    index = FTKeys.FindKey(blendshapes, key);
+                    name = index >= 0 ? blendshapes[index] : null;
+                }
+                if (name != null) AutoMatches[key] = name;
 
-                var name = index >= 0 ? blendshapes[index] : null;
                 var manual = component.keyOverrides?.LastOrDefault(o => o != null && o.key == FTKeys.KeyName(key));
                 if (manual != null)
                 {
@@ -149,6 +166,7 @@ namespace Pawlygon.FaceTracking.Editor
                     UnmappedKeys.Add(key);
                 }
             }
+            DropArkitOverlaps();
 
             foreach (var manual in component.keyOverrides ?? new List<FTKeyOverride>())
             {
@@ -157,6 +175,93 @@ namespace Pawlygon.FaceTracking.Editor
                 if (key < 0) Warnings.Add($"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
                 else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warnings.Add($"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
             }
+        }
+
+        /// <summary>
+        /// An ARKit fill-in that also moves a key driven by a Unified Expressions blendshape would play on top of it, like
+        /// mouthSmileRight for MouthCornerSlantRight next to MouthCornerPullRight, so it's left unmapped. Mapping it by hand still works.
+        /// </summary>
+        void DropArkitOverlaps()
+        {
+            foreach (var key in MappedKeys.ToList())
+            {
+                if (OverriddenKeys.Contains(key)) continue;
+                var name = Set.faceTrackingBlendshapeNames[key];
+                if (!FTKeys.IsArkitName(name)) continue;
+
+                var covered = FTKeys.KeysForName(name)
+                    .Where(other => other != key && MappedKeys.Contains(other) && !FTKeys.IsArkitName(Set.faceTrackingBlendshapeNames[other]))
+                    .DefaultIfEmpty(-1).First();
+                if (covered < 0) continue;
+
+                Set.faceTrackingBlendshapeNames[key] = "";
+                MappedKeys.Remove(key);
+                UnmappedKeys.Add(key);
+                AutoMatches.Remove(key);
+                ArkitOverlaps[key] = (name, covered);
+            }
+        }
+
+        /// <summary>
+        /// Tongue steps: TongueOut matches either step on its own (the SDK lists both as aliases), so a pair is played
+        /// in sequence instead. An avatar that also has a TongueOut blendshape keeps TongueOut unless Tongue Mode is Steps.
+        /// </summary>
+        void ResolveTongue(PawlygonFaceTracking component, string[] blendshapes)
+        {
+            var key = FTKeys.KeyByName(FTTongueSteps.Key);
+            if (key < 0 || (!component.useAllTrackingKeys && !FTKeys.IsBasic(key))) return;
+
+            FoundTongueSteps = FTTongueSteps.Find(blendshapes);
+            if (FoundTongueSteps == null)
+            {
+                if (component.tongueMode == FTTongueMode.Steps)
+                {
+                    Warnings.Add("Tongue Mode is Steps, but no tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2) were found, " +
+                                 "so TongueOut is mapped as usual.");
+                }
+                return;
+            }
+
+            // The blendshape TongueOut maps to besides the steps: the one picked by hand, or the automatic match without them
+            string single;
+            if (OverriddenKeys.Contains(key)) single = Set.faceTrackingBlendshapeNames[key];
+            else
+            {
+                var others = blendshapes.Where(b => !FoundTongueSteps.Contains(b)).ToArray();
+                var index = FTKeys.FindKey(others, key);
+                single = index >= 0 ? others[index] : null;
+            }
+            if (string.IsNullOrEmpty(single) || FoundTongueSteps.Contains(single)) single = null;
+
+            var mode = component.tongueMode;
+            if (mode == FTTongueMode.Auto)
+            {
+                // Left unmapped by hand on purpose
+                if (OverriddenKeys.Contains(key) && string.IsNullOrEmpty(Set.faceTrackingBlendshapeNames[key])) return;
+                // TongueOut is what most avatars and trackers are made for, so the steps have to be picked by hand
+                if (single != null)
+                {
+                    TongueConflict = $"This avatar has both a TongueOut blendshape ('{single}') and tongue steps ('{FoundTongueSteps.Step1}', " +
+                                     $"'{FoundTongueSteps.Step2}'), so TongueOut is used. Set Tongue Mode to Steps to use the steps instead.";
+                    Warnings.Add(TongueConflict);
+                    mode = FTTongueMode.TongueOut;
+                }
+                else mode = FTTongueMode.Steps;
+            }
+
+            if (mode == FTTongueMode.TongueOut)
+            {
+                // Without a TongueOut blendshape, the key keeps whichever step it matched, like before tongue steps
+                if (single == null) return;
+                Set.faceTrackingBlendshapeNames[key] = single;
+            }
+            else
+            {
+                TongueSteps = FoundTongueSteps;
+                Set.faceTrackingBlendshapeNames[key] = "";
+            }
+            if (!MappedKeys.Contains(key)) MappedKeys.Add(key);
+            UnmappedKeys.Remove(key);
         }
 
         void MapVisemes(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)

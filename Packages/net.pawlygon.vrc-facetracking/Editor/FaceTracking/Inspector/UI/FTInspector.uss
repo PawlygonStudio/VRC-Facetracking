@@ -573,6 +573,16 @@
     border-width: 0;
 }
 
+.ft-key__note {
+    margin: 0 0 0 4px;
+    padding: 0 6px;
+    flex-shrink: 1;
+    font-size: 11px;
+    color: var(--ft-muted);
+    -unity-text-align: middle-left;
+    overflow: hidden;
+}
+
 .ft-key__reset {
     width: 20px;
     height: 18px;

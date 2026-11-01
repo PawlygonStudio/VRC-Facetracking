@@ -31,6 +31,9 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<BlendshapesSet> Sets = new List<BlendshapesSet>();
         public readonly List<ParameterBehavior> Behaviors = new List<ParameterBehavior>();
 
+        /// <summary>The tongue steps Face Tracking drives instead of mapping TongueOut, for Face Tracking Emulation's tongue rules.</summary>
+        public FTTongueSteps TongueSteps;
+
         public FTPass Pass { get; }
 
         string buildFolder;
@@ -84,6 +87,7 @@ namespace Pawlygon.FaceTracking.Editor
             Meshes.Clear();
             Sets.Clear();
             Behaviors.Clear();
+            TongueSteps = null;
         }
 
         /// <summary>
