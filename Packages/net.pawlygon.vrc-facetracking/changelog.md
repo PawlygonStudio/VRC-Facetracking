@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.3] - 2026-11-01
+- Fixed: the 1.x `!Pawlygon - Facetracking Blendshapes Overrides` prefab some Pawlygon avatars come with wasn't detected. It drives the avatar's fix shapes (like `MouthSmileLeft-MouthUpperUpLeft`) from 1.x face tracking parameters, so it played on top of the Blendshape Fixes component. It's now handled like the 1.x Blendshape Fixes: listed in the Upgrade to 2.0 window and the Face Tracking inspector with a Disable button, and each build asks to remove it.
+- The Upgrade to 2.0 window no longer offers to build a test copy. Its last step now points to the new components' inspectors.
+
 ## [2.0.2] - 2026-10-31
 - New: tongue steps. Avatars with two tongue step blendshapes (like SRanipal's `Tongue_LongStep1` and `Tongue_LongStep2`, or `TongueOutStep1` / `TongueOutStep2`) now play both as the tongue comes out: the first step over the first half, the second over the rest. Before, TongueOut drove only one of them. The steps are driven by native face tracking expressions, with no animator or parameters.
 - New: **Tongue Mode** on the Face Tracking component, shown for avatars with tongue steps. When the avatar also has a `TongueOut` blendshape, Auto keeps TongueOut, and the inspector offers to switch to the steps.

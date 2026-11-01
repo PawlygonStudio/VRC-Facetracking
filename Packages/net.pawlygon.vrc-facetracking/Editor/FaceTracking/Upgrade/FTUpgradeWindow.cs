@@ -10,7 +10,7 @@ using VRC.SDK3.Avatars.Components;
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// Walks an avatar from Pawlygon VRCFT 1.x to 2.0: removing the 1.x prefabs, adding the new one, and testing. Opens
+    /// Walks an avatar from Pawlygon VRCFT 1.x to 2.0: removing the 1.x prefabs and adding the new one. Opens
     /// by itself when a scene with a 1.x setup is open, once per scene and session, unless it's turned off for the
     /// project. Also under Tools > !Pawlygon > Face Tracking.
     /// </summary>
@@ -186,13 +186,12 @@ namespace Pawlygon.FaceTracking.Editor
                     new[] { ("Add Prefab", (System.Action)(() => AddPrefab(avatar))) }));
             }
 
-            // 4. Check and test
+            // 4. Check
             if (status.Done)
             {
-                body.Add(FTUI.Issue(FTKind.Info, "Check the new components' inspectors, then build a test copy.",
+                body.Add(FTUI.Issue(FTKind.Info, "Check the new components' inspectors.",
                     "Face Tracking shows every tracking key's mapping, Face Tracking Guards lists unguarded layers (Bake Guards), " +
-                    "and Pupil Emulation offers Remove Fake Pupils for Face Tracking Extras and Custom Animations.",
-                    new[] { ("Build Test Copy", (System.Action)(() => FTTestCopy.Build(avatar))) }));
+                    "and Pupil Emulation offers Remove Fake Pupils for Face Tracking Extras and Custom Animations.", null));
             }
         }
 
