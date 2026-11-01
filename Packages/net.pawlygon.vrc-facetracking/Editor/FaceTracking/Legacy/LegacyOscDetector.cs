@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -19,6 +20,10 @@ namespace Pawlygon.FaceTracking.Editor
 
         // Every controller Pawlygon Unity Tools' Blendshape Fixes (1.7.1, for VRCFT 1.x) generates declares it
         const string LegacyFixesMarker = "Pawlygon/FTFixes/One";
+
+        // Pawlygon avatars' own 1.x fix prefab, '!Pawlygon - Facetracking Blendshapes Overrides' with its 'FX - Blendshapes
+        // Overrides' controller. Each avatar ships its own copy, so it's known by name.
+        static readonly Regex LegacyOverridesName = new Regex(@"Blendshapes? Overrides", RegexOptions.IgnoreCase);
 
         static HashSet<string> legacyControllerGuids;
 
@@ -60,7 +65,8 @@ namespace Pawlygon.FaceTracking.Editor
 
                 foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour))
                 {
-                    var isPawlygonLegacy = IsPawlygonLegacyController(controller);
+                    var isOverrides = IsLegacyBlendshapeOverrides(behaviour.gameObject, controller);
+                    var isPawlygonLegacy = isOverrides || IsPawlygonLegacyController(controller);
                     if (!isPawlygonLegacy && !UsesOscParameters(controller)) continue;
 
                     findings.Add(new Finding
@@ -69,7 +75,7 @@ namespace Pawlygon.FaceTracking.Editor
                         Controller = controller,
                         Path = FTAvatarUtils.GetPath(behaviour.transform, root),
                         IsPawlygonLegacy = isPawlygonLegacy,
-                        IsBlendshapeFixes = IsLegacyBlendshapeFixes(controller),
+                        IsBlendshapeFixes = isOverrides || IsLegacyBlendshapeFixes(controller),
                     });
                     break;
                 }
@@ -155,6 +161,17 @@ namespace Pawlygon.FaceTracking.Editor
             return FTAvatarUtils.BaseController(controller) is AnimatorController animator
                    && animator.parameters.Any(p => p.name == LegacyFixesMarker)
                    && animator.layers.SelectMany(FTFakePupilLayers.ReadParameters).Any(p => FTParameterCatalog.GetExpression(p) != null);
+        }
+
+        /// <summary>
+        /// A Pawlygon avatar's 1.x Blendshapes Overrides prefab: its own fix shapes (like MouthSmileLeft-MouthUpperUpLeft) driven
+        /// from a few 1.x face tracking parameters, which the Blendshape Fixes component now drives from native face tracking.
+        /// </summary>
+        static bool IsLegacyBlendshapeOverrides(GameObject holder, RuntimeAnimatorController controller)
+        {
+            return (LegacyOverridesName.IsMatch(holder.name) || LegacyOverridesName.IsMatch(controller.name))
+                   && FTAvatarUtils.BaseController(controller) is AnimatorController animator
+                   && animator.parameters.Any(p => FTParameterCatalog.GetExpression(p.name) != null);
         }
 
         static bool IsLegacyOscController(RuntimeAnimatorController controller)

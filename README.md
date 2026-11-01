@@ -34,13 +34,13 @@ The prefab contains these components. Each one shows what it will do in its insp
 
 1. **Update your packages** in the VRChat Creator Companion: the VRChat Avatars SDK (with native face tracking), Pawlygon VRC Facetracking 2.x, VRCFury or Modular Avatar, and Pawlygon Unity Tools if you use it.
 2. **Remove the 1.x face tracking prefab**, `!Pawlygon - VF Facetracking Controller - …` or `!Pawlygon - MA Facetracking Controller - …`. It can't run together with native face tracking.
-3. **Remove the 1.x Blendshape Fixes prefab**, `!Pawlygon - Blendshape Fixes`, if the avatar has one. The [Blendshape Fixes](#blendshape-fixes) component replaces it.
+3. **Remove the 1.x Blendshape Fixes prefab**, `!Pawlygon - Blendshape Fixes` or the avatar's own `!Pawlygon - Facetracking Blendshapes Overrides`, if the avatar has one. The [Blendshape Fixes](#blendshape-fixes) component replaces it.
 4. **Add** `Packages/Pawlygon - VRC Facetracking/Prefabs/!Pawlygon - Face Tracking` anywhere inside the avatar.
 5. **Check the inspectors** of the new prefab's components. Each one tells you what's left to do:
    * **Face Tracking**: the Tracking Keys list shows what every key is mapped to. Fix any key that's mapped wrong or missing.
    * **Face Tracking Guards**: FX controllers already guarded with Unity Tools' FX Gesture Checker keep working as they are. For layers without guards, use [Bake Guards](#face-tracking-guards).
    * **Pupil Emulation**: Face Tracking Extras and Pawlygon Custom Animations prefabs bring fake pupil layers it replaces. Click **Remove Fake Pupils**, and untick Fake Pupil Dilation in Face Tracking Extras before generating it again.
-6. **Right-click the avatar > !Pawlygon > Face Tracking > Build Test Copy** to check the result, then upload.
+6. **Upload.** Everything is applied to the uploaded copy, so the avatar in the scene doesn't change.
 
 When a scene with a 1.x setup is opened after updating, an **Upgrade to 2.0** window opens with these steps for each avatar in it, with buttons for each one (also under **Tools > !Pawlygon > Face Tracking > Upgrade from 1.x**).
 
