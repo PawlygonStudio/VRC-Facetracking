@@ -292,6 +292,46 @@
     color: var(--ft-muted);
 }
 
+/* Eye rotation: where the range comes from, then hold an arrow to turn the eyes */
+
+.ft-eye-detail {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 0 4px 3px;
+}
+
+.ft-eye-detail__note {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 11px;
+    white-space: normal;
+}
+
+.ft-eye-preview {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ft-eye-preview__label {
+    font-size: 11px;
+    color: var(--ft-muted);
+    margin-right: 4px;
+}
+
+.ft-eye-preview__button {
+    width: 24px;
+    height: 18px;
+    margin: 0 0 0 2px;
+    padding: 0;
+}
+
+/* A field that only applies with the one above it */
+
+.ft-sub-field {
+    margin-left: 12px;
+}
+
 .ft-progress {
     height: 4px;
     margin: 2px 0 4px 0;
@@ -492,10 +532,6 @@
 .ft-add-button {
     height: 20px;
     margin: 4px 0 0 0;
-}
-
-.ft-advanced {
-    margin-top: 2px;
 }
 
 /* Tracking keys: search and filter, then one row per key */

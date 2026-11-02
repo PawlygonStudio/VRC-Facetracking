@@ -5,6 +5,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VRC.SDK3.Avatars.Components;
+using EyeGazeMode = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode;
 
 namespace Pawlygon.FaceTracking.Editor
 {
@@ -38,7 +39,13 @@ namespace Pawlygon.FaceTracking.Editor
         // Suggestions only change with the blendshapes and the unmapped keys, and are slow to find
         string suggestionsKey;
         Dictionary<int, string> suggestions = new Dictionary<int, string>();
-        Label lipSyncResult, eyelidsResult, gazeResult;
+        Label lipSyncResult, dampenResult, eyelidsResult, gazeResult, eyeRangeResult, eyeRangeNote;
+        VisualElement eyeRangeRow;
+
+        // The eye preview turns the eyes to what the build will write, from the last refresh
+        readonly FTEyePreview eyePreview = new FTEyePreview();
+        VRCAvatarDescriptor previewAvatar;
+        FaceTrackingSetupPlan previewPlan;
 
         double nextSlowScan;
         List<LegacyOscDetector.Finding> legacyFindings = new List<LegacyOscDetector.Finding>();
@@ -74,18 +81,26 @@ namespace Pawlygon.FaceTracking.Editor
             keys.Add(BuildKeysTools());
             keys.Add(keysList.Element);
 
-            var face = FTUI.Card(body, "Lip Sync & Eyes", out _);
-            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Lip Sync", out lipSyncResult));
-            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
-            face.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Eye Gaze", out gazeResult));
+            var lipSync = FTUI.Card(body, "Lip Sync", out _);
+            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Mode", out lipSyncResult));
+            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.visemeDampenMode), "Dampening", out dampenResult));
+            var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Amount");
+            dampenAmount.AddToClassList("ft-sub-field");
+            lipSync.Add(dampenAmount);
 
-            var advanced = FTUI.Collapsible("Advanced");
-            advanced.AddToClassList("ft-advanced");
-            var dampenMode = serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenMode));
-            var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Dampen Amount");
-            advanced.Add(new PropertyField(dampenMode, "Viseme Dampening"));
-            advanced.Add(dampenAmount);
-            face.Add(advanced);
+            var eyes = FTUI.Card(body, "Eyes", out _);
+            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
+            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Gaze", out gazeResult));
+            // Only shown when eye gaze rotates the bones, see UpdateEyeRange
+            eyeRangeRow = new VisualElement();
+            eyeRangeRow.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeRotationRange), "Rotation", out eyeRangeResult));
+            var detail = new VisualElement();
+            detail.AddToClassList("ft-eye-detail");
+            eyeRangeNote = FTUI.Text("", "ft-muted", "ft-eye-detail__note");
+            detail.Add(eyeRangeNote);
+            detail.Add(BuildEyePreview());
+            eyeRangeRow.Add(detail);
+            eyes.Add(eyeRangeRow);
 
             void UpdateVisibility()
             {
@@ -95,6 +110,35 @@ namespace Pawlygon.FaceTracking.Editor
             UpdateVisibility();
             body.TrackSerializedObjectValue(serializedObject, _ => UpdateVisibility());
         }
+
+        VisualElement BuildEyePreview()
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ft-eye-preview");
+            row.Add(FTUI.Text("Hold to preview", "ft-eye-preview__label"));
+            foreach (var (direction, arrow) in new[]
+                     {
+                         (FTLegacyEyeRange.Direction.Up, "↑"), (FTLegacyEyeRange.Direction.Down, "↓"),
+                         (FTLegacyEyeRange.Direction.Left, "←"), (FTLegacyEyeRange.Direction.Right, "→"),
+                     })
+            {
+                row.Add(eyePreview.HoldButton(arrow, $"Hold to look {direction.ToString().ToLowerInvariant()} in the Scene view.", () => PreviewRotations(direction)));
+            }
+            return row;
+        }
+
+        (Transform, Transform, VRCAvatarDescriptor.CustomEyeLookSettings.EyeRotations)? PreviewRotations(FTLegacyEyeRange.Direction direction)
+        {
+            if (previewAvatar == null || previewPlan == null) return null;
+            var settings = previewAvatar.customEyeLookSettings;
+            if (settings.leftEye == null || settings.rightEye == null) return null;
+            var rotations = previewPlan.EyeRange != null
+                ? FTLegacyEyeRange.Apply(previewAvatar, previewPlan.EyeRange, direction)
+                : FTLegacyEyeRange.FromDescriptor(previewAvatar, direction);
+            return (settings.leftEye, settings.rightEye, rotations);
+        }
+
+        void OnDisable() => eyePreview.Stop();
 
         VisualElement FieldWithResult(string property, string label, out Label result)
         {
@@ -121,7 +165,9 @@ namespace Pawlygon.FaceTracking.Editor
 
             UpdateMeshes(plan);
             UpdateKeys(plan, issues);
-            UpdateResults(plan);
+            previewAvatar = avatar;
+            previewPlan = plan;
+            UpdateResults(plan, avatar);
         }
 
         void SetTongueMode(FTTongueMode mode)
@@ -503,19 +549,61 @@ namespace Pawlygon.FaceTracking.Editor
             return "Neck & Throat";
         }
 
-        void UpdateResults(FaceTrackingSetupPlan plan)
+        void UpdateResults(FaceTrackingSetupPlan plan, VRCAvatarDescriptor avatar)
         {
             const string unchanged = "unchanged";
             if (plan.Set == null)
             {
-                lipSyncResult.text = eyelidsResult.text = gazeResult.text = "";
+                lipSyncResult.text = dampenResult.text = eyelidsResult.text = gazeResult.text = eyeRangeResult.text = eyeRangeNote.text = "";
                 return;
             }
 
             lipSyncResult.text = plan.UseFaceTrackingLipSync ? $"→ {plan.MappedVisemes}/{FTKeys.VisemeCount} visemes" : unchanged;
             lipSyncResult.tooltip = plan.VisemesFromDescriptor ? "Taken from the avatar's existing viseme setup." : "Matched by blendshape name.";
+            dampenResult.text = Component.visemeDampenMode == FTVisemeDampenMode.None ? "off" : $"→ {Mathf.RoundToInt(Component.visemeDampenAmount * 100)}%";
             eyelidsResult.text = plan.UseFaceTrackingEyelids ? "→ EyeClosed" : unchanged;
             gazeResult.text = plan.GazeMode.HasValue ? "→ " + ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : unchanged;
+            UpdateEyeRange(plan, avatar);
+        }
+
+        void UpdateEyeRange(FaceTrackingSetupPlan plan, VRCAvatarDescriptor avatar)
+        {
+            var settings = avatar.customEyeLookSettings;
+            var rotatesBones = plan.GazeMode == EyeGazeMode.Both || plan.GazeMode == EyeGazeMode.BoneRotation;
+            var hasEyeBones = settings.leftEye != null && settings.rightEye != null;
+            var fromRig = Component.eyeRotationRange == FTEyeRotationRange.HumanoidRig;
+            eyeRangeRow.style.display = rotatesBones || fromRig ? DisplayStyle.Flex : DisplayStyle.None;
+
+            // Keep Existing reads the descriptor; Humanoid Rig only shows a result once it could be worked out
+            var shown = hasEyeBones && (!fromRig || plan.EyeRange != null);
+            eyeRangeResult.text = shown ? EyeRangeText(avatar, plan) : "";
+            eyeRangeResult.tooltip = shown ? "How far the eyes turn from Looking Straight: up, down, and to the sides." : "";
+            if (!shown) eyePreview.Stop();
+            eyeRangeRow.Q(className: "ft-eye-detail").style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (!fromRig)
+            {
+                eyeRangeNote.text = "From the descriptor's Eye Look section. Edit it there.";
+            }
+            else
+            {
+                eyeRangeNote.text = plan.EyeRange != null
+                    ? "From the rig's humanoid eye limits. Only the upload gets it."
+                    : "";
+            }
+        }
+
+        static string EyeRangeText(VRCAvatarDescriptor avatar, FaceTrackingSetupPlan plan)
+        {
+            int Degrees(FTLegacyEyeRange.Direction direction)
+            {
+                var rotations = plan.EyeRange != null
+                    ? FTLegacyEyeRange.Apply(avatar, plan.EyeRange, direction)
+                    : FTLegacyEyeRange.FromDescriptor(avatar, direction);
+                return Mathf.RoundToInt(FTLegacyEyeRange.Degrees(avatar, rotations));
+            }
+            var sides = (Degrees(FTLegacyEyeRange.Direction.Left) + Degrees(FTLegacyEyeRange.Direction.Right)) / 2;
+            return $"{(plan.EyeRange != null ? "→ " : "")}↑{Degrees(FTLegacyEyeRange.Direction.Up)}° ↓{Degrees(FTLegacyEyeRange.Direction.Down)}° ↔{sides}°";
         }
 
     }

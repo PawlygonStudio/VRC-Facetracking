@@ -47,6 +47,9 @@ namespace Pawlygon.FaceTracking.Editor
         public EyeGazeMode? GazeMode;
         public bool EnableEyeLook => UseFaceTrackingEyelids || GazeMode.HasValue;
 
+        // The 1.x eye rotation range for the rig, when Eye Rotation is Humanoid Rig and eye gaze rotates the bones
+        public FTLegacyEyeRange.Range EyeRange;
+
         public readonly List<string> Errors = new List<string>();
         public readonly List<string> Warnings = new List<string>();
 
@@ -345,6 +348,20 @@ namespace Pawlygon.FaceTracking.Editor
             if ((GazeMode == EyeGazeMode.Both || GazeMode == EyeGazeMode.BoneRotation) && !hasEyeBones)
             {
                 Warnings.Add("Eye gaze rotates the eye bones, but they aren't set up in the descriptor's Eye Look section.");
+            }
+
+            if (component.eyeRotationRange == FTEyeRotationRange.HumanoidRig)
+            {
+                var gaze = GazeMode ?? settings.eyeGazeMode;
+                if (gaze != EyeGazeMode.Both && gaze != EyeGazeMode.BoneRotation)
+                {
+                    Warnings.Add("Eye Rotation is Humanoid Rig, but eye gaze doesn't rotate the eye bones, so it's not used.");
+                }
+                else if (hasEyeBones)
+                {
+                    EyeRange = FTLegacyEyeRange.Find(descriptor, out var problem);
+                    if (EyeRange == null) Warnings.Add(problem + " The descriptor's eye rotations are left unchanged.");
+                }
             }
         }
 

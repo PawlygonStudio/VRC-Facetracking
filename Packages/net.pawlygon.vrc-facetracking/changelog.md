@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.4] - 2026-11-01
+- New: **Eyes > Rotation** on the Face Tracking component, for avatars whose eye gaze rotates the eye bones. **Humanoid Rig** sets the uploaded avatar's Looking Up/Down/Left/Right from the rig's humanoid eye limits, times the multipliers 1.x's Eye Rotation layer used (up x2.8, down x3.5, in and out x2), so the eyes turn as far as they did with 1.x. **Keep Existing**, the default, uses the descriptor's own. The inspector shows the range in degrees, and holding the arrows next to it turns the eyes in the Scene view.
+- New: the Upgrade to 2.0 window offers **Use Humanoid Rig**, since 1.x usually turned the eyes further than the descriptor does.
+- The Face Tracking inspector's Lip Sync & Eyes card is split into **Lip Sync** and **Eyes**. Viseme Dampening is no longer under Advanced: it's **Dampening** in the Lip Sync card, with its amount right below.
+
 ## [2.0.3] - 2026-11-01
 - Fixed: the 1.x `!Pawlygon - Facetracking Blendshapes Overrides` prefab some Pawlygon avatars come with wasn't detected. It drives the avatar's fix shapes (like `MouthSmileLeft-MouthUpperUpLeft`) from 1.x face tracking parameters, so it played on top of the Blendshape Fixes component. It's now handled like the 1.x Blendshape Fixes: listed in the Upgrade to 2.0 window and the Face Tracking inspector with a Disable button, and each build asks to remove it.
 - The Upgrade to 2.0 window no longer offers to build a test copy. Its last step now points to the new components' inspectors.
