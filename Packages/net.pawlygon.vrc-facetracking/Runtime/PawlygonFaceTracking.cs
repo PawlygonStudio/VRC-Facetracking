@@ -31,6 +31,12 @@ namespace Pawlygon.FaceTracking
         KeepExisting,
     }
 
+    public enum FTEyeRotationRange
+    {
+        KeepExisting,
+        HumanoidRig,
+    }
+
     public enum FTTongueMode
     {
         Auto,
@@ -94,6 +100,11 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("Auto: Both with EyeLook blendshapes and eye bones set up in the descriptor's Eye Look, Face Tracking with only the blendshapes, Bone Rotation with only the bones, unchanged with neither.")]
         public FTGazeMode eyeGaze = FTGazeMode.Auto;
+
+        [Tooltip("How far the eye bones turn. Keep Existing uses the descriptor's Looking Up/Down/Left/Right. Humanoid Rig works them out from " +
+                 "the rig's humanoid eye limits, times the multipliers Pawlygon VRCFT 1.x used: up x2.8, down x3.5, in and out x2. " +
+                 "Only used when eye gaze rotates the eye bones. Also changes how far the eyes turn for people without eye tracking.")]
+        public FTEyeRotationRange eyeRotationRange = FTEyeRotationRange.KeepExisting;
 
         [Tooltip("How visemes and mouth tracking are blended. Needs face tracking visemes and all tracking keys.")]
         public FTVisemeDampenMode visemeDampenMode = FTVisemeDampenMode.None;

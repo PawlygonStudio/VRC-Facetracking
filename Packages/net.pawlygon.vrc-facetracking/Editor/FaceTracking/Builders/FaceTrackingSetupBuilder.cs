@@ -92,6 +92,16 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 descriptor.customEyeLookSettings.eyeGazeMode = plan.GazeMode.Value;
             }
+            if (plan.EyeRange != null)
+            {
+                var range = plan.EyeRange;
+                var settings = descriptor.customEyeLookSettings;
+                settings.eyesLookingUp = FTLegacyEyeRange.Apply(descriptor, range, FTLegacyEyeRange.Direction.Up);
+                settings.eyesLookingDown = FTLegacyEyeRange.Apply(descriptor, range, FTLegacyEyeRange.Direction.Down);
+                settings.eyesLookingLeft = FTLegacyEyeRange.Apply(descriptor, range, FTLegacyEyeRange.Direction.Left);
+                settings.eyesLookingRight = FTLegacyEyeRange.Apply(descriptor, range, FTLegacyEyeRange.Direction.Right);
+                descriptor.customEyeLookSettings = settings;
+            }
         }
     }
 }

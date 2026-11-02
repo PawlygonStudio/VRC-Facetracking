@@ -186,7 +186,20 @@ namespace Pawlygon.FaceTracking.Editor
                     new[] { ("Add Prefab", (System.Action)(() => AddPrefab(avatar))) }));
             }
 
-            // 4. Check
+            // 4. 1.x turned the eyes further than most descriptors do
+            if (status.HasNewPrefab)
+            {
+                var faceTracking = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
+                if (faceTracking != null && faceTracking.eyeRotationRange == FTEyeRotationRange.KeepExisting)
+                {
+                    body.Add(FTUI.Issue(FTKind.Info, "Keep the 1.x eye rotation range?",
+                        "1.x turned the eye bones further than the descriptor's Eye Look section usually does. Use Humanoid Rig sets Face Tracking's " +
+                        "Eye Rotation to the same range for this rig. Undoable.",
+                        new[] { ("Use Humanoid Rig", (System.Action)(() => UseRigEyeRange(faceTracking))) }));
+                }
+            }
+
+            // 5. Check
             if (status.Done)
             {
                 body.Add(FTUI.Issue(FTKind.Info, "Check the new components' inspectors.",
@@ -222,6 +235,14 @@ namespace Pawlygon.FaceTracking.Editor
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, avatar.transform);
             Undo.RegisterCreatedObjectUndo(instance, "Add Pawlygon Face Tracking");
             Select(instance);
+        }
+
+        void UseRigEyeRange(PawlygonFaceTracking component)
+        {
+            Undo.RecordObject(component, "Use Humanoid Rig Eye Rotation");
+            component.eyeRotationRange = FTEyeRotationRange.HumanoidRig;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(component);
+            Rebuild();
         }
 
         static void Select(Object target)
