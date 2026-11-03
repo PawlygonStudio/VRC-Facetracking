@@ -70,15 +70,24 @@ namespace Pawlygon.FaceTracking.Editor
             var name = Regex.Replace(avatar.name.Replace("(Clone)", "").Trim(), @"[^\w\- ]", "_").Trim();
             if (name.Length > MaxNameLength) name = name.Substring(0, MaxNameLength).Trim();
             if (string.IsNullOrEmpty(name)) name = "Avatar";
+            // Windows can't create folders with these names, and Unity ignores folders named cvs
+            if (Regex.IsMatch(name, @"^(con|prn|aux|nul|com\d|lpt\d|cvs)$", RegexOptions.IgnoreCase)) name += "_";
 
-            var avatarFolder = BuildsFolder + "/" + name;
-            if (!AssetDatabase.IsValidFolder(avatarFolder)) AssetDatabase.CreateFolder(BuildsFolder, name);
+            // One folder per build, straight in Builds, and never a reused path: recreating an asset at a path
+            // deleted in the same session can make Unity reload the old file over the new object, and a folder
+            // recreated inside StartAssetEditing (some play mode tools) isn't valid until it ends
+            var build = name + " " + DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var buildFolder = BuildsFolder + "/" + build;
+            AssetDatabase.CreateFolder(BuildsFolder, build);
 
-            // Never reuse a path: recreating an asset at a path deleted in the same session can make
-            // Unity reload the old file over the new object
-            var build = DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N").Substring(0, 6);
-            AssetDatabase.CreateFolder(avatarFolder, build);
-            return avatarFolder + "/" + build;
+            // Otherwise every generated asset fails with Unity's "Can't create asset because path is empty"
+            if (!AssetDatabase.IsValidFolder(buildFolder))
+            {
+                throw new FTBuildException($"Couldn't create the folder '{buildFolder}' for this build's generated files. " +
+                                           $"Check that the project folder isn't read-only or synced by OneDrive, and that its path isn't too long " +
+                                           $"for Windows ({Path.GetFullPath(".").Length} characters now, try under 100).");
+            }
+            return buildFolder;
         }
 
         /// <summary>
@@ -100,14 +109,10 @@ namespace Pawlygon.FaceTracking.Editor
                 }
             }
 
-            foreach (var avatarFolder in AssetDatabase.GetSubFolders(BuildsFolder))
+            foreach (var entry in Directory.GetFileSystemEntries(BuildsFolder).Where(e => !e.EndsWith(".meta")))
             {
-                foreach (var entry in Directory.GetFileSystemEntries(avatarFolder).Where(e => !e.EndsWith(".meta")))
-                {
-                    var path = entry.Replace('\\', '/');
-                    if (!used.Contains(path)) AssetDatabase.DeleteAsset(path);
-                }
-                if (Directory.GetFileSystemEntries(avatarFolder).All(e => e.EndsWith(".meta"))) AssetDatabase.DeleteAsset(avatarFolder);
+                var path = entry.Replace('\\', '/');
+                if (!used.Contains(path)) AssetDatabase.DeleteAsset(path);
             }
         }
 
@@ -138,12 +143,15 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
-        /// <summary>Builds/{avatar}/{build} for an asset inside one, otherwise null.</summary>
+        /// <summary>
+        /// Builds/{build} for an asset inside one, otherwise null. Before 2.0.6 builds were in Builds/{avatar}/{build},
+        /// so those avatar folders are kept whole while one of their builds is used.
+        /// </summary>
         static string BuildFolderOf(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath) || !assetPath.StartsWith(BuildsFolder + "/")) return null;
             var parts = assetPath.Substring(BuildsFolder.Length + 1).Split('/');
-            return parts.Length >= 3 ? $"{BuildsFolder}/{parts[0]}/{parts[1]}" : null;
+            return parts.Length >= 2 ? $"{BuildsFolder}/{parts[0]}" : null;
         }
     }
 }
