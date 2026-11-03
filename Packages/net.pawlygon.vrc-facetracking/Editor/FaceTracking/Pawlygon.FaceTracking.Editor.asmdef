@@ -32,6 +32,11 @@
             "name": "com.vrcfury.vrcfury",
             "expression": "1.1434.1-beta.2",
             "define": "PAWLYGON_VRCFURY_KEEPS_FT"
+        },
+        {
+            "name": "com.anatawa12.avatar-optimizer",
+            "expression": "1.9.21",
+            "define": "PAWLYGON_AAO_KEEPS_FT"
         }
     ],
     "noEngineReferences": false

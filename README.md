@@ -158,7 +158,7 @@ Rules whose blendshapes the avatar doesn't have are skipped. Needs All Tracking 
 ## Known issues
 * **Blendshape optimizers** that don't know about native face tracking would remove its blendshapes, so the build stops when one is on the avatar:
   * VRCFury's Blendshape Optimizer needs VRCFury 1.1434.1 or newer, which keeps them.
-  * AAO Trace And Optimize with Optimize BlendShape on isn't supported yet. Turn that option off.
+  * AAO Trace And Optimize with Optimize BlendShape on needs Avatar Optimizer 1.9.21 or newer, which keeps them. It still removes blendshapes that don't move anything, like an empty `vrc.v_sil`, and clears them from the descriptor.
 * **VRCFury Full Controllers with face tracking** (VRCFury 1.1434.1 or newer): VRCFury allows a mesh to be configured for face tracking in only one place, on the avatar descriptor or in one Full Controller. Auto mesh mode leaves those meshes to VRCFury; a mesh in the Manual list that a Full Controller also configures stops the build with a message naming it.
 
 ## Legacy (1.x, OSC face tracking with VRCFaceTracking)
