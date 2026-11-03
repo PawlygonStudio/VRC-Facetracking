@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.0.5] - 2026-11-02
+- AAO Trace And Optimize with Optimize BlendShape on works from Avatar Optimizer 1.9.21, which reads native face tracking from the avatar descriptor and keeps its blendshapes, including the ones Blendshape Fixes, Face Tracking Emulation and tongue steps drive. With older versions the build still stops. Blendshapes that don't move anything, like an empty `vrc.v_sil`, are still removed and cleared from the descriptor, which doesn't change how the avatar looks.
+
 ## [2.0.4] - 2026-11-01
 - New: **Eyes > Rotation** on the Face Tracking component, for avatars whose eye gaze rotates the eye bones. **Humanoid Rig** sets the uploaded avatar's Looking Up/Down/Left/Right from the rig's humanoid eye limits, times the multipliers 1.x's Eye Rotation layer used (up x2.8, down x3.5, in and out x2), so the eyes turn as far as they did with 1.x. **Keep Existing**, the default, uses the descriptor's own. The inspector shows the range in degrees, and holding the arrows next to it turns the eyes in the Scene view.
 - New: the Upgrade to 2.0 window offers **Use Humanoid Rig**, since 1.x usually turned the eyes further than the descriptor does.

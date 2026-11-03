@@ -22,14 +22,19 @@ namespace Pawlygon.FaceTracking.Editor
         // VRCFury's optimizer runs at -10000, after the descriptor pass, so it sees the whole setup, and the Pupil
         // Emulation layer it merges. AAO's runs in NDMF's optimizing phase (-1025), after both passes. The versions
         // come from asmdef version defines rather than the Package Manager, which isn't safe to query during a build.
-        // Shown in the fix message; keep it equal to the PAWLYGON_VRCFURY_KEEPS_FT expression in the asmdef
+        // Shown in the fix messages; keep them equal to the PAWLYGON_*_KEEPS_FT expressions in the asmdef
         const string VrcfuryKeepsFaceTrackingFrom = "1.1434.1-beta.2";
+        const string AaoKeepsFaceTrackingFrom = "1.9.21";
 #if PAWLYGON_VRCFURY_KEEPS_FT
         static readonly bool VrcfuryKeepsFaceTracking = true;
 #else
         static readonly bool VrcfuryKeepsFaceTracking = false;
 #endif
+#if PAWLYGON_AAO_KEEPS_FT
+        static readonly bool AaoKeepsFaceTracking = true;
+#else
         static readonly bool AaoKeepsFaceTracking = false;
+#endif
 
         public static List<Finding> Find(GameObject avatarRoot)
         {
@@ -55,7 +60,12 @@ namespace Pawlygon.FaceTracking.Editor
                     case "Anatawa12.AvatarOptimizer.TraceAndOptimize" when behaviour.gameObject == avatarRoot:
                         if (!AaoKeepsFaceTracking && AaoOptimizesBlendshapes(behaviour))
                         {
-                            findings.Add(new Finding { Holder = behaviour.gameObject, Name = "AAO Trace And Optimize", Fix = "Turn off its Optimize BlendShape option." });
+                            findings.Add(new Finding
+                            {
+                                Holder = behaviour.gameObject,
+                                Name = "AAO Trace And Optimize",
+                                Fix = $"Update Avatar Optimizer to {AaoKeepsFaceTrackingFrom} or newer, which keeps them, or turn off its Optimize BlendShape option.",
+                            });
                         }
                         break;
                 }
