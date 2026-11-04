@@ -31,6 +31,8 @@ namespace Pawlygon.FaceTracking.Editor
             // gestures, like a blink layer that pauses during gestures.
             public readonly List<string> ExpressionBlendshapes = new List<string>();
             public bool DrivesExpressions => ExpressionBlendshapes.Count > 0;
+            // A Gesture layer that also poses the body: VRCFury keeps a copy of it in Gesture, and a guard pauses both
+            public bool AlsoPosesBody;
         }
 
         internal sealed class BlinkLayer
@@ -70,7 +72,11 @@ namespace Pawlygon.FaceTracking.Editor
         public readonly List<BlinkLayer> BlinkLayers = new List<BlinkLayer>();
 
         /// <param name="faceMeshes">Meshes whose blendshapes count as facial expressions.</param>
-        public static FXGuardAnalysis Analyze(AnimatorController controller, FXFaceMeshes faceMeshes)
+        /// <param name="gesture">
+        /// A Gesture controller whose layers VRCFury moves to FX. Only the layers it moves count: the ones that animate
+        /// more than transforms, like VRCFury's FixGestureFxConflict decides.
+        /// </param>
+        public static FXGuardAnalysis Analyze(AnimatorController controller, FXFaceMeshes faceMeshes, bool gesture = false)
         {
             var analysis = new FXGuardAnalysis();
             if (controller == null) return analysis;
@@ -83,6 +89,14 @@ namespace Pawlygon.FaceTracking.Editor
                 // Layers added by this package's own builders (drivers, Pupil Emulation) are never guarded
                 if (IsOwnLayer(layers[i].name)) continue;
 
+                var posesBody = false;
+                if (gesture)
+                {
+                    var bindings = AllStates(stateMachine).SelectMany(s => Bindings(s.motion)).ToList();
+                    if (!bindings.Any(b => !IsBodyBinding(b))) continue;
+                    posesBody = bindings.Any(IsBodyBinding);
+                }
+
                 var gestureTransitions = AllTransitions(stateMachine).Where(UsesGesture).ToList();
                 if (gestureTransitions.Count > 0)
                 {
@@ -92,6 +106,7 @@ namespace Pawlygon.FaceTracking.Editor
                         Name = layers[i].name,
                         GestureTransitions = gestureTransitions.Count,
                         AlreadyGuarded = FXGuardWriter.HasGuard(stateMachine, FXGuardWriter.GestureGuardState),
+                        AlsoPosesBody = posesBody,
                     };
                     var reached = gestureTransitions.Where(t => !IsReturnToNeutral(t, stateMachine)).SelectMany(Destinations).Distinct();
                     layer.ExpressionBlendshapes.AddRange(reached
@@ -150,6 +165,23 @@ namespace Pawlygon.FaceTracking.Editor
             result.AlreadyGuarded = FXGuardWriter.HasGuard(layer.stateMachine, FXGuardWriter.BlinkGuardState);
             return result;
         }
+
+        /// <summary>Every binding the motion animates, object reference curves (material swaps) included.</summary>
+        static IEnumerable<EditorCurveBinding> Bindings(Motion motion)
+        {
+            switch (motion)
+            {
+                case AnimationClip clip:
+                    return AnimationUtility.GetCurveBindings(clip).Concat(AnimationUtility.GetObjectReferenceCurveBindings(clip));
+                case BlendTree tree:
+                    return tree.children.SelectMany(c => Bindings(c.motion));
+                default:
+                    return Enumerable.Empty<EditorCurveBinding>();
+            }
+        }
+
+        /// <summary>A transform or humanoid muscle binding, which stays in Gesture. VRChat's hand proxy clips are muscle clips.</summary>
+        static bool IsBodyBinding(EditorCurveBinding binding) => binding.type == typeof(Transform) || binding.type == typeof(Animator);
 
         static bool AnimatesBlinkBlendshape(Motion motion)
         {

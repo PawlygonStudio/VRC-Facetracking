@@ -120,6 +120,12 @@ namespace Pawlygon.FaceTracking.Editor
         public abstract string Name { get; }
         public abstract int Priority { get; }
 
+        /// <summary>
+        /// Whether the tool moves the Gesture layers that animate more than transforms (blendshapes, materials) to FX,
+        /// where VRChat wants them. VRCFury does when it builds the avatar, including what Modular Avatar merged into Gesture.
+        /// </summary>
+        public virtual bool MovesGestureLayersToFX => false;
+
         /// <summary>Adds the components that merge the assets. Any of them can be null.</summary>
         public abstract void Install(GameObject avatarRoot, AnimatorController fx, VRCExpressionParameters parameters, VRCExpressionsMenu menu);
 

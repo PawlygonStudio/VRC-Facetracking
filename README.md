@@ -53,7 +53,7 @@ Steps 2 and 3 don't have to be done by hand: while either 1.x prefab is still on
 ### Generated files
 Builds save the assets they generate (the animator layers, menu and parameters the components add) in a `Packages/net.pawlygon.facetracking.temp` package in your project. It's safe to delete, and you can leave it out of version control.
 
-FX controllers made by **Bake Guards** (`<name> (FT Guards).controller`) aren't build files: they're saved next to the original FX controller and used by the avatar, so keep them.
+Controllers made by **Bake Guards** (`<name> (FT Guards).controller`) aren't build files: they're saved next to the original controller and used by the avatar, so keep them.
 
 ## Components
 
@@ -86,7 +86,9 @@ Each forwarded parameter counts toward the avatar's face tracking performance; t
 ### Face Tracking Guards
 Stops hand gestures and blink animations in the FX controller from fighting face tracking, the same way 1.x did. Guards in the FX controller pause gesture-driven expression layers while `FacialExpressionsDisabled` is on, and blink layers while `EyeTrackingActive` is on. This component drives those parameters from native face tracking and the **Disable Gestures** toggle. Building the avatar never changes its animators.
 
-The guards themselves are part of the controller. Avatars set up with Pawlygon Unity Tools' FX Gesture Checker, or with face tracking add-ons using the same parameters, already have them. The inspector lists the gesture and blink layers it finds and whether each one is guarded. For the ones that aren't, **Bake Guards** writes the guards into a copy of the FX controller (`<name> (FT Guards).controller`) and makes the copy the avatar's FX controller. The original file isn't changed, and **Restore Original** switches back to it. Layers merged in by VRCFury or Modular Avatar prefabs need guards in their own controller.
+The guards themselves are part of the controller. Avatars set up with Pawlygon Unity Tools' FX Gesture Checker, or with face tracking add-ons using the same parameters, already have them. The inspector lists the gesture and blink layers it finds and whether each one is guarded. For the ones that aren't, **Bake Guards** writes the guards into a copy of each controller that has them (`<name> (FT Guards).controller`) and makes the avatar use the copy: in its descriptor, or in the VRCFury Full Controller or Modular Avatar Merge Animator that merges it. The original files aren't changed, and **Restore Original** switches back to them. A controller used through an override controller can't be copied, so it needs guards added by hand.
+
+With VRCFury, gesture layers in a Gesture controller count too when they animate the face: VRCFury moves layers that animate more than bones to FX when it builds the avatar. VRChat recommends FX for face animations, so setting those controllers to FX is cleaner. A layer that also poses the hands is kept in Gesture as well, and its guard pauses the hand pose while face tracking is on.
 
 | Setting | Default | What it does |
 |---|---|---|

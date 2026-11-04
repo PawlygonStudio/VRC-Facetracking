@@ -46,7 +46,7 @@ namespace Pawlygon.FaceTracking.Editor
         {
             var faceMeshes = FaceMeshes(avatar);
             return From(component, FTAvatarAssets.GetSourceFXControllers(avatar)
-                .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes))));
+                .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes, s.fromGesture))));
         }
 
         /// <summary>The selection in controllers that were already analyzed.</summary>
