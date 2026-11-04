@@ -14,6 +14,7 @@ namespace Pawlygon.FaceTracking.Editor
     {
         public override string Name => "VRCFury";
         public override int Priority => 0;
+        public override bool MovesGestureLayersToFX => true;
 
         public override void Install(GameObject avatarRoot, AnimatorController fx, VRCExpressionParameters parameters, VRCExpressionsMenu menu)
         {

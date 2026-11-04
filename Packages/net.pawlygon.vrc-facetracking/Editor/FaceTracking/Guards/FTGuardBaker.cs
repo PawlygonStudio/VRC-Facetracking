@@ -9,18 +9,16 @@ using VRC.SDK3.Avatars.Components;
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// Bake Guards: writes the gesture and blink guards into a copy of the avatar's FX controller and switches the
-    /// descriptor to it, like Unity Tools' FX Gesture Checker. The original file is never changed, so restoring it
-    /// is just switching back. Face Tracking Guards then drives the guards when the avatar is built.
+    /// Bake Guards: writes the gesture and blink guards into copies of the controllers that have the layers, like Unity
+    /// Tools' FX Gesture Checker, and switches the avatar to them: the descriptor's FX or Gesture, or the reference in the
+    /// VRCFury Full Controller or Modular Avatar Merge Animator that merges it. The original files are never changed, so
+    /// restoring is just switching back. Face Tracking Guards then drives the guards when the avatar is built.
     /// </summary>
     internal static class FTGuardBaker
     {
         // Marks controllers made by Bake Guards. The importer's user data holds the original's GUID.
         const string Label = "PawlygonFTGuards";
         const string CopiesFolder = "Assets/Pawlygon Face Tracking";
-
-        /// <summary>The avatar's own FX controller, which Bake Guards can copy. Null for none or an override controller.</summary>
-        public static AnimatorController BakeableFX(VRCAvatarDescriptor avatar) => FTAvatarAssets.GetFX(avatar) as AnimatorController;
 
         public static bool IsBakedCopy(AnimatorController controller)
         {
@@ -35,88 +33,115 @@ namespace Pawlygon.FaceTracking.Editor
             return string.IsNullOrEmpty(guid) ? null : AssetDatabase.LoadAssetAtPath<AnimatorController>(AssetDatabase.GUIDToAssetPath(guid));
         }
 
-        /// <summary>The selected layers of the avatar's own FX that don't have a guard yet.</summary>
+        /// <summary>
+        /// The controllers Bake Guards can switch to a copy: the ones the descriptor or a component in the avatar references
+        /// directly. One used through an override controller can't be, as the override would still point at the original.
+        /// </summary>
+        public static HashSet<AnimatorController> Bakeable(VRCAvatarDescriptor avatar)
+        {
+            var result = new HashSet<AnimatorController>();
+            foreach (var behaviour in Holders(avatar))
+            {
+                using (var serialized = new SerializedObject(behaviour))
+                {
+                    var property = serialized.GetIterator();
+                    while (property.Next(true))
+                    {
+                        if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is AnimatorController controller)
+                        {
+                            result.Add(controller);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>The baked copies the avatar uses, with the controllers they were made from.</summary>
+        public static List<(AnimatorController copy, AnimatorController original)> BakedCopies(VRCAvatarDescriptor avatar)
+        {
+            return Bakeable(avatar).Where(IsBakedCopy).Select(c => (c, OriginalOf(c))).Where(x => x.Item2 != null).ToList();
+        }
+
+        /// <summary>The selected layers without a guard yet, in controllers Bake Guards can copy.</summary>
         public static List<FTGuardSelection.Layer> Pending(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
-            var fx = BakeableFX(avatar);
-            if (fx == null) return new List<FTGuardSelection.Layer>();
-            var analysis = FXGuardAnalysis.Analyze(fx, FTGuardSelection.FaceMeshes(avatar));
-            return FTGuardSelection.From(component, new[] { ("FX", fx, analysis) }).Unguarded.ToList();
+            var bakeable = Bakeable(avatar);
+            return FTGuardSelection.Resolve(component, avatar).Unguarded.Where(l => bakeable.Contains(l.Controller)).ToList();
         }
 
         /// <summary>
-        /// Asks first, then guards the pending layers: in place when the FX is already a baked copy, otherwise in a new
-        /// copy the descriptor switches to.
+        /// Asks first, then guards the pending layers: in place in controllers that are already baked copies, otherwise in
+        /// new copies the avatar switches to.
         /// </summary>
         public static bool Bake(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
-            var fx = BakeableFX(avatar);
             var pending = Pending(component, avatar);
-            if (fx == null || pending.Count == 0) return false;
+            if (pending.Count == 0) return false;
 
-            var gestures = pending.Where(l => l.Kind == FTGuardKind.Gesture).ToList();
-            var blinks = pending.Where(l => l.Kind == FTGuardKind.Blink).ToList();
-            var names = pending.Select(l => l.CleanName);
-            var inPlace = IsBakedCopy(fx);
-            var message = $"Adds guards to {Count(gestures.Count, "gesture layer")}{(blinks.Count > 0 ? $" and {Count(blinks.Count, "blink layer")}" : "")}:\n" +
-                          string.Join(", ", names) + "\n\n" +
-                          (inPlace
-                              ? $"'{fx.name}' is already a copy made by Bake Guards, so the guards are added to it."
-                              : $"A copy of '{fx.name}' gets the guards and becomes the avatar's FX controller. The original file isn't changed, " +
-                                "and Restore Original switches back to it.");
+            var gestures = pending.Count(l => l.Kind == FTGuardKind.Gesture);
+            var blinks = pending.Count(l => l.Kind == FTGuardKind.Blink);
+            var controllers = pending.GroupBy(l => l.Controller).ToList();
+            var message = $"Adds guards to {Count(gestures, "gesture layer")}{(blinks > 0 ? $" and {Count(blinks, "blink layer")}" : "")}:\n" +
+                          string.Join("\n", controllers.Select(g => $"{g.Key.name}: {string.Join(", ", g.Select(l => l.CleanName))}")) + "\n\n" +
+                          (controllers.All(g => IsBakedCopy(g.Key))
+                              ? "They're already copies made by Bake Guards, so the guards are added to them."
+                              : "A copy of each controller gets the guards, and the avatar uses the copy instead. The original files aren't " +
+                                "changed, and Restore Originals switches back to them.");
             if (!EditorUtility.DisplayDialog("Bake Face Tracking Guards", message, "Bake Guards", "Cancel")) return false;
 
             Apply(component, avatar);
             return true;
         }
 
-        /// <summary>Bakes the pending guards without asking. Returns the controller that got them.</summary>
-        internal static AnimatorController Apply(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
+        /// <summary>Bakes the pending guards without asking. Returns the controllers that got them.</summary>
+        internal static List<AnimatorController> Apply(PawlygonFTGuards component, VRCAvatarDescriptor avatar)
         {
-            var fx = BakeableFX(avatar);
-            var pending = Pending(component, avatar);
-            if (fx == null || pending.Count == 0) return null;
-
-            var inPlace = IsBakedCopy(fx);
-            var target = inPlace ? fx : CreateCopy(fx);
-            var path = AssetDatabase.GetAssetPath(target);
-            // A copy keeps the original's layer order, so the indices still match
-            var gestureIndices = pending.Where(l => l.Kind == FTGuardKind.Gesture).Select(l => l.Index).ToList();
-            var blinkIndices = pending.Where(l => l.Kind == FTGuardKind.Blink).Select(l => l.Index).ToList();
-
-            // A layer whose objects live in another file would change that file too
-            foreach (var index in gestureIndices.Concat(blinkIndices).Distinct())
+            var result = new List<AnimatorController>();
+            foreach (var group in Pending(component, avatar).GroupBy(l => l.Controller))
             {
-                if (!FTLayerCloner.IsStoredIn(target.layers[index].stateMachine, path)) FTLayerCloner.CloneStateMachine(target, index);
-            }
+                var original = group.Key;
+                var inPlace = IsBakedCopy(original);
+                var target = inPlace ? original : CreateCopy(original);
+                var path = AssetDatabase.GetAssetPath(target);
+                // A copy keeps the original's layer order, so the indices still match
+                var gestureIndices = group.Where(l => l.Kind == FTGuardKind.Gesture).Select(l => l.Index).ToList();
+                var blinkIndices = group.Where(l => l.Kind == FTGuardKind.Blink).Select(l => l.Index).ToList();
 
-            // Blink guards first: the gesture guard then gates their Any State transitions, so it wins on layers
-            // that have both, like the Unity Tools FX Check does
-            if (blinkIndices.Count > 0)
-            {
-                var spec = FXGuardWriter.CreateSpec(target, FXGuardWriter.BlinkGuardState, FXGuardWriter.BlinkGuardParameter,
-                    AnimatorControllerParameterType.Float, new Vector3(30, -140), FXGuardWriter.GestureGuardState);
-                foreach (var index in blinkIndices) FXGuardWriter.EnsureGuard(target, index, spec);
-            }
-            if (gestureIndices.Count > 0)
-            {
-                var spec = FXGuardWriter.CreateSpec(target, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
-                    AnimatorControllerParameterType.Bool, new Vector3(30, -80));
-                foreach (var index in gestureIndices) FXGuardWriter.EnsureGuard(target, index, spec);
-            }
+                // A layer whose objects live in another file would change that file too
+                foreach (var index in gestureIndices.Concat(blinkIndices).Distinct())
+                {
+                    if (!FTLayerCloner.IsStoredIn(target.layers[index].stateMachine, path)) FTLayerCloner.CloneStateMachine(target, index);
+                }
 
-            EditorUtility.SetDirty(target);
-            AssetDatabase.SaveAssets();
-            if (!inPlace) SetFX(avatar, target, "Bake Face Tracking Guards");
-            Debug.Log($"[{FTErrorBoundary.Title}] Baked face tracking guards into '{path}'.", target);
-            return target;
+                // Blink guards first: the gesture guard then gates their Any State transitions, so it wins on layers
+                // that have both, like the Unity Tools FX Check does
+                if (blinkIndices.Count > 0)
+                {
+                    var spec = FXGuardWriter.CreateSpec(target, FXGuardWriter.BlinkGuardState, FXGuardWriter.BlinkGuardParameter,
+                        AnimatorControllerParameterType.Float, new Vector3(30, -140), FXGuardWriter.GestureGuardState);
+                    foreach (var index in blinkIndices) FXGuardWriter.EnsureGuard(target, index, spec);
+                }
+                if (gestureIndices.Count > 0)
+                {
+                    var spec = FXGuardWriter.CreateSpec(target, FXGuardWriter.GestureGuardState, FXGuardWriter.GestureGuardParameter,
+                        AnimatorControllerParameterType.Bool, new Vector3(30, -80));
+                    foreach (var index in gestureIndices) FXGuardWriter.EnsureGuard(target, index, spec);
+                }
+
+                EditorUtility.SetDirty(target);
+                AssetDatabase.SaveAssets();
+                if (!inPlace) Switch(avatar, original, target, "Bake Face Tracking Guards");
+                Debug.Log($"[{FTErrorBoundary.Title}] Baked face tracking guards into '{path}'.", target);
+                result.Add(target);
+            }
+            return result;
         }
 
-        /// <summary>Switches the avatar back to the controller the baked copy was made from. The copy is kept.</summary>
+        /// <summary>Switches the avatar back to the controllers the baked copies were made from. The copies are kept.</summary>
         public static void Restore(VRCAvatarDescriptor avatar)
         {
-            var original = OriginalOf(BakeableFX(avatar));
-            if (original != null) SetFX(avatar, original, "Restore Original FX");
+            foreach (var (copy, original) in BakedCopies(avatar)) Switch(avatar, copy, original, "Restore Original Controllers");
         }
 
         static AnimatorController CreateCopy(AnimatorController original)
@@ -137,16 +162,40 @@ namespace Pawlygon.FaceTracking.Editor
             return AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
         }
 
-        static void SetFX(VRCAvatarDescriptor avatar, AnimatorController controller, string undoName)
+        /// <summary>
+        /// Points every reference to <paramref name="from"/> in the avatar's descriptor and components at <paramref name="to"/>.
+        /// Only this avatar changes: other avatars and prefab assets using the controller keep it.
+        /// </summary>
+        static void Switch(VRCAvatarDescriptor avatar, AnimatorController from, AnimatorController to, string undoName)
         {
-            Undo.RecordObject(avatar, undoName);
-            var layers = avatar.baseAnimationLayers;
-            var index = System.Array.FindIndex(layers, l => l.type == VRCAvatarDescriptor.AnimLayerType.FX);
-            layers[index].animatorController = controller;
-            layers[index].isDefault = false;
-            avatar.baseAnimationLayers = layers;
-            PrefabUtility.RecordPrefabInstancePropertyModifications(avatar);
-            EditorUtility.SetDirty(avatar);
+            Undo.SetCurrentGroupName(undoName);
+            foreach (var behaviour in Holders(avatar))
+            {
+                using (var serialized = new SerializedObject(behaviour))
+                {
+                    var changed = false;
+                    var property = serialized.GetIterator();
+                    while (property.Next(true))
+                    {
+                        if (property.propertyType != SerializedPropertyType.ObjectReference || property.objectReferenceValue != from) continue;
+                        property.objectReferenceValue = to;
+                        // VRCFury keeps a GUID id next to the reference; empty, it's rebuilt from the reference like its own setter does
+                        var cut = property.propertyPath.LastIndexOf('.');
+                        var id = cut > 0 ? serialized.FindProperty(property.propertyPath.Substring(0, cut) + ".id") : null;
+                        if (id != null && id.propertyType == SerializedPropertyType.String) id.stringValue = "";
+                        changed = true;
+                    }
+                    if (!changed) continue;
+                    serialized.ApplyModifiedProperties();
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(behaviour);
+                }
+            }
+        }
+
+        /// <summary>The descriptor and the components that may reference the controllers: VRCFury, Modular Avatar and the like.</summary>
+        static IEnumerable<MonoBehaviour> Holders(VRCAvatarDescriptor avatar)
+        {
+            return avatar.GetComponentsInChildren<MonoBehaviour>(true).Where(b => b != null && !(b is PawlygonFTComponent));
         }
 
         static string Count(int count, string noun) => $"{count} {noun}{(count == 1 ? "" : "s")}";

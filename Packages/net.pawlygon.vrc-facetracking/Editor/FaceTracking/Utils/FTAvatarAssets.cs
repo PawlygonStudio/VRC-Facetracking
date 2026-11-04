@@ -14,29 +14,37 @@ namespace Pawlygon.FaceTracking.Editor
     /// </summary>
     internal static class FTAvatarAssets
     {
-        public static RuntimeAnimatorController GetFX(VRCAvatarDescriptor descriptor)
+        public static RuntimeAnimatorController GetFX(VRCAvatarDescriptor descriptor) => GetLayer(descriptor, VRCAvatarDescriptor.AnimLayerType.FX);
+
+        static RuntimeAnimatorController GetLayer(VRCAvatarDescriptor descriptor, VRCAvatarDescriptor.AnimLayerType type)
         {
             if (!descriptor.customizeAnimationLayers || descriptor.baseAnimationLayers == null) return null;
-            var layer = descriptor.baseAnimationLayers.FirstOrDefault(l => l.type == VRCAvatarDescriptor.AnimLayerType.FX);
+            var layer = descriptor.baseAnimationLayers.FirstOrDefault(l => l.type == type);
             return layer.isDefault ? null : layer.animatorController;
         }
 
         /// <summary>
         /// The controllers that end up in FX before VRCFury and Modular Avatar run: the descriptor's own, and the ones
-        /// their components will merge into FX. Legacy face tracking controllers are left out.
+        /// their components will merge into FX. With VRCFury, also the Gesture ones (<paramref name="fromGesture"/>), as
+        /// it moves their layers that animate more than transforms to FX. Legacy face tracking controllers are left out.
         /// </summary>
-        public static List<(string source, AnimatorController controller)> GetSourceFXControllers(VRCAvatarDescriptor descriptor)
+        public static List<(string source, AnimatorController controller, bool fromGesture)> GetSourceFXControllers(VRCAvatarDescriptor descriptor)
         {
-            var result = new List<(string, AnimatorController)>();
+            var result = new List<(string, AnimatorController, bool)>();
             var seen = new HashSet<AnimatorController>();
 
-            void Add(string source, RuntimeAnimatorController runtime)
+            void Add(string source, RuntimeAnimatorController runtime, bool fromGesture)
             {
-                if (FTAvatarUtils.BaseController(runtime) is AnimatorController controller && seen.Add(controller)) result.Add((source, controller));
+                if (FTAvatarUtils.BaseController(runtime) is AnimatorController controller && seen.Add(controller)) result.Add((source, controller, fromGesture));
             }
 
+            const string Moved = ", Gesture layers moved to FX by VRCFury";
+            var gestureToFX = FTMerger.Find()?.MovesGestureLayersToFX == true;
+
             var fx = GetFX(descriptor);
-            if (fx != null) Add($"FX ({fx.name})", fx);
+            if (fx != null) Add($"FX ({fx.name})", fx, false);
+            var gesture = gestureToFX ? GetLayer(descriptor, VRCAvatarDescriptor.AnimLayerType.Gesture) : null;
+            if (gesture != null) Add($"Gesture ({gesture.name}{Moved})", gesture, true);
 
             var root = descriptor.transform;
             foreach (var behaviour in descriptor.GetComponentsInChildren<MonoBehaviour>(true))
@@ -44,10 +52,17 @@ namespace Pawlygon.FaceTracking.Editor
                 if (behaviour == null || behaviour is VRC.SDKBase.VRC_AvatarDescriptor || behaviour is PawlygonFTComponent) continue;
                 if (FTAvatarUtils.IsEditorOnly(behaviour.transform, root)) continue;
 
+                var path = FTAvatarUtils.GetPath(behaviour.transform, root);
                 foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour, (int)VRCAvatarDescriptor.AnimLayerType.FX))
                 {
                     if (LegacyOscDetector.IsPawlygonLegacyController(controller)) continue;
-                    Add(FTAvatarUtils.GetPath(behaviour.transform, root), controller);
+                    Add(path, controller, false);
+                }
+                if (!gestureToFX) continue;
+                foreach (var controller in FTAvatarUtils.GetReferencedControllers(behaviour, (int)VRCAvatarDescriptor.AnimLayerType.Gesture))
+                {
+                    if (LegacyOscDetector.IsPawlygonLegacyController(controller)) continue;
+                    Add($"{path} (Gesture{Moved})", controller, true);
                 }
             }
             return result;

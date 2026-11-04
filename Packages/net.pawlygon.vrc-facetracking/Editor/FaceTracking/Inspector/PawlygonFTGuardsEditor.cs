@@ -21,13 +21,17 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic drivenList = new FTDynamic();
         readonly FTDynamic bakeView = new FTDynamic();
         VisualElement gestureBody, blinkBody, bakeCard;
-        AnimatorController bakeableFX;
         VRCAvatarDescriptor currentAvatar;
         Label gestureNote;
 
         double nextAnalysis;
         List<(string source, AnimatorController controller, FXGuardAnalysis analysis)> analyses =
             new List<(string, AnimatorController, FXGuardAnalysis)>();
+        // Gesture controllers whose face layers VRCFury moves to FX
+        HashSet<AnimatorController> gestureControllers = new HashSet<AnimatorController>();
+        // Controllers Bake Guards can copy, and the baked copies the avatar uses
+        HashSet<AnimatorController> bakeable = new HashSet<AnimatorController>();
+        List<(AnimatorController copy, AnimatorController original)> bakedCopies = new List<(AnimatorController, AnimatorController)>();
 
         protected override string Title => "Face Tracking Guards";
         protected override string Subtitle => "Pauses gesture expressions and blinking while tracking is active.";
@@ -36,7 +40,7 @@ namespace Pawlygon.FaceTracking.Editor
             "Drives the FacialExpressionsDisabled and EyeTrackingActive parameters that guards in the FX controller wait for, like " +
             "Pawlygon VRCFT 1.x: gesture layers pause while UserFaceTracking is on or Disable Gestures is toggled, and blink layers " +
             "pause while UserEyeTracking is on. The guards themselves are part of the controller: added by Unity Tools' FX Gesture " +
-            "Checker, by other face tracking add-ons, or by Bake Guards below, which writes them into a copy of the FX controller. " +
+            "Checker, by other face tracking add-ons, or by Bake Guards below, which writes them into copies of the controllers. " +
             "Nothing in the avatar's animators is changed when it's built.";
 
         protected override void BuildBody(VisualElement body)
@@ -86,7 +90,6 @@ namespace Pawlygon.FaceTracking.Editor
                 nextAnalysis = EditorApplication.timeSinceStartup + AnalysisSeconds;
                 analyses = Analyze(avatar);
             }
-            bakeableFX = FTGuardBaker.BakeableFX(avatar);
 
             gestureBody.SetEnabled(Component.guardGestures);
             blinkBody.SetEnabled(Component.guardBlinking);
@@ -111,13 +114,18 @@ namespace Pawlygon.FaceTracking.Editor
             var unguarded = Unguarded();
             if (unguarded.Count > 0)
             {
-                var bakeable = unguarded.Count(x => x.inFX);
+                var bakeableCount = unguarded.Count(x => x.bakeable);
                 var title = $"{Count(unguarded.Count, "layer")} {(unguarded.Count == 1 ? "isn't" : "aren't")} guarded.";
                 var detail = "They keep running while tracking is active, so gestures and blinks fight face tracking. " +
-                             (bakeable == unguarded.Count
-                                 ? "Bake Guards adds the guards to a copy of the FX controller."
-                                 : "Layers merged by VRCFury or Modular Avatar need guards in their own controller, e.g. with Unity Tools' FX Gesture Checker.");
-                if (bakeable > 0) issues.Warning(title, detail, ("Bake Guards", Bake));
+                             (bakeableCount == unguarded.Count
+                                 ? "Bake Guards adds the guards to copies of their controllers."
+                                 : "Some are in a controller used through an override controller, which Bake Guards can't copy. Add guards " +
+                                   "to it yourself, e.g. with Unity Tools' FX Gesture Checker.") +
+                             (unguarded.Any(x => x.inGesture)
+                                 ? " Some are in a Gesture controller, which VRCFury moves to FX when building. VRChat recommends FX for face " +
+                                   "animations, so putting them there is cleaner."
+                                 : "");
+                if (bakeableCount > 0) issues.Warning(title, detail, ("Bake Guards", Bake));
                 else issues.Warning(title, detail);
             }
 
@@ -135,11 +143,14 @@ namespace Pawlygon.FaceTracking.Editor
             UpdateBake(avatar);
         }
 
-        /// <summary>Checked layers without a guard, and whether they're in the avatar's own FX, which Bake Guards can copy.</summary>
-        List<(string name, bool inFX)> Unguarded()
+        /// <summary>
+        /// Checked layers without a guard, whether Bake Guards can copy their controller, and whether it's a Gesture
+        /// controller VRCFury moves to FX.
+        /// </summary>
+        List<(string name, AnimatorController controller, bool bakeable, bool inGesture)> Unguarded()
         {
             return FTGuardSelection.From(Component, analyses).Unguarded
-                .Select(l => (l.CleanName, l.Controller == bakeableFX))
+                .Select(l => (l.CleanName, l.Controller, bakeable.Contains(l.Controller), gestureControllers.Contains(l.Controller)))
                 .ToList();
         }
 
@@ -156,56 +167,61 @@ namespace Pawlygon.FaceTracking.Editor
 
         void UpdateBake(VRCAvatarDescriptor avatar)
         {
-            var original = FTGuardBaker.OriginalOf(bakeableFX);
-            var pending = Unguarded().Where(x => x.inFX).Select(x => x.name).ToList();
-            bakeCard.style.display = pending.Count > 0 || original != null ? DisplayStyle.Flex : DisplayStyle.None;
+            var unguarded = Unguarded();
+            var pending = unguarded.Where(x => x.bakeable).ToList();
+            var blocked = unguarded.Where(x => !x.bakeable).Select(x => x.controller.name).Distinct().ToList();
+            var copies = bakedCopies;
+            bakeCard.style.display = pending.Count + blocked.Count + copies.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
 
-            var key = (bakeableFX != null ? bakeableFX.GetInstanceID() : 0) + "|" + (original != null ? original.GetInstanceID() : 0) + "|" + string.Join(",", pending);
+            var key = string.Join(",", copies.Select(c => c.copy.GetInstanceID())) + "|" + string.Join(",", pending.Select(x => x.controller.name + x.name)) +
+                      "|" + string.Join(",", blocked);
             bakeView.Update(key, container =>
             {
-                if (bakeableFX == null)
-                {
-                    container.Add(FTUI.Text("The FX layer uses an override controller, which Bake Guards can't copy.", "ft-muted"));
-                    return;
-                }
-
                 if (pending.Count > 0)
                 {
-                    container.Add(FTUI.Text("Writes the guards into a copy of the FX controller and makes the copy the avatar's FX controller. " +
-                                            "The original file isn't changed.", "ft-muted", "ft-card__note"));
+                    container.Add(FTUI.Text("Writes the guards into a copy of each controller and makes the avatar use the copy, in its " +
+                                            "descriptor or in the VRCFury or Modular Avatar component that merges it. The original files aren't changed.",
+                        "ft-muted", "ft-card__note"));
+                }
+                if (blocked.Count > 0)
+                {
+                    container.Add(FTUI.Text($"{string.Join(", ", blocked)} {(blocked.Count == 1 ? "is" : "are")} used through an override " +
+                                            "controller, which Bake Guards can't copy.", "ft-muted", "ft-card__note"));
                 }
 
                 var buttons = new VisualElement();
                 buttons.AddToClassList("ft-field-row");
-                if (original != null)
+                if (copies.Count > 0)
                 {
-                    var label = FTUI.Text($"Using a baked copy of {original.name}.", "ft-muted");
-                    label.tooltip = $"The avatar's FX controller is {bakeableFX.name}, made by Bake Guards.";
+                    var names = string.Join(", ", copies.Select(c => c.original.name));
+                    var label = FTUI.Text($"Using baked {(copies.Count == 1 ? "copy" : "copies")} of {names}.", "ft-muted");
+                    label.tooltip = string.Join("\n", copies.Select(c => $"{c.copy.name}, made by Bake Guards from {c.original.name}."));
                     label.style.flexGrow = 1;
                     if (pending.Count == 0) buttons.Add(label);
                     else container.Add(label);
                 }
                 if (pending.Count > 0)
                 {
-                    var bake = new Button(Bake) { text = $"Bake Guards ({pending.Count})", tooltip = string.Join(", ", pending) };
+                    var bake = new Button(Bake) { text = $"Bake Guards ({pending.Count})", tooltip = string.Join(", ", pending.Select(x => x.name)) };
                     bake.AddToClassList("ft-add-button");
                     bake.style.flexGrow = 1;
                     buttons.Add(bake);
                 }
-                if (original != null)
+                if (copies.Count > 0)
                 {
                     var restore = new Button(() =>
                     {
-                        if (!EditorUtility.DisplayDialog("Restore Original FX", $"Switches the avatar's FX controller back to '{original.name}'. " +
-                                                         $"The copy '{bakeableFX.name}' is kept, so you can delete it yourself.", "Restore", "Cancel")) return;
+                        var list = string.Join("\n", copies.Select(c => $"{c.copy.name} → {c.original.name}"));
+                        if (!EditorUtility.DisplayDialog("Restore Original Controllers", $"Switches the avatar back to the original controllers:\n{list}\n\n" +
+                                                         "The copies are kept, so you can delete them yourself.", "Restore", "Cancel")) return;
                         FTGuardBaker.Restore(avatar);
                         Reanalyze();
-                    }) { text = "Restore Original", tooltip = $"Switch back to {original.name}." };
+                    }) { text = copies.Count == 1 ? "Restore Original" : "Restore Originals", tooltip = "Switch back to " + string.Join(", ", copies.Select(c => c.original.name)) + "." };
                     restore.AddToClassList("ft-add-button");
                     restore.style.marginLeft = 4;
                     buttons.Add(restore);
                 }
-                container.Add(buttons);
+                if (buttons.childCount > 0) container.Add(buttons);
             });
         }
 
@@ -311,7 +327,8 @@ namespace Pawlygon.FaceTracking.Editor
         static string GestureTooltip(string source, FXGuardAnalysis.GestureLayer layer)
         {
             var shapes = layer.ExpressionBlendshapes;
-            return "In " + source + (shapes.Count > 0 ? ".\nGestures set: " + string.Join(", ", shapes) : ".\nUses gestures, doesn't animate the face.");
+            return "In " + source + (shapes.Count > 0 ? ".\nGestures set: " + string.Join(", ", shapes) : ".\nUses gestures, doesn't animate the face.") +
+                   (layer.AlsoPosesBody ? "\nIt also poses the body, which VRCFury keeps in Gesture: a guard pauses that too." : "");
         }
 
         VisualElement GestureRow(string source, FXGuardAnalysis.GestureLayer layer)
@@ -445,12 +462,16 @@ namespace Pawlygon.FaceTracking.Editor
         }
 
         /// <summary>The controllers that end up in FX, each analyzed with the meshes the build will use.</summary>
-        static List<(string, AnimatorController, FXGuardAnalysis)> Analyze(VRCAvatarDescriptor avatar)
+        List<(string, AnimatorController, FXGuardAnalysis)> Analyze(VRCAvatarDescriptor avatar)
         {
             var faceMeshes = FTGuardSelection.FaceMeshes(avatar);
+            var sources = FTAvatarAssets.GetSourceFXControllers(avatar);
+            gestureControllers = new HashSet<AnimatorController>(sources.Where(s => s.fromGesture).Select(s => s.controller));
+            bakeable = FTGuardBaker.Bakeable(avatar);
+            bakedCopies = FTGuardBaker.BakedCopies(avatar);
 
-            return FTAvatarAssets.GetSourceFXControllers(avatar)
-                .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes)))
+            return sources
+                .Select(s => (s.source, s.controller, FXGuardAnalysis.Analyze(s.controller, faceMeshes, s.fromGesture)))
                 .ToList();
         }
     }
