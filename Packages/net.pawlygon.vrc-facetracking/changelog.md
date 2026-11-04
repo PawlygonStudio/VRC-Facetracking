@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.6] - 2026-11-04
+- Face Tracking Guards now finds gesture layers in Gesture controllers when VRCFury is installed: the avatar descriptor's Gesture, and the ones a VRCFury Full Controller or Modular Avatar Merge Animator merges into Gesture. VRCFury moves the layers that animate more than bones, like face blendshapes, to FX when it builds the avatar, so they fought face tracking without a guard. Only those layers are listed. One that also poses the hands is kept in Gesture too, and its tooltip says that a guard pauses the hand pose as well. VRChat recommends FX for face animations, so setting those controllers to FX is still cleaner.
+- Bake Guards works on every controller with unguarded layers, not only the avatar's own FX: the descriptor's FX or Gesture, and the controllers VRCFury Full Controllers and Modular Avatar Merge Animators merge. Each gets a `(FT Guards)` copy, and the avatar's reference switches to it. Restore Original switches them all back. A controller used through an override controller still can't be baked.
+- Fixed: entering play mode could stop with "Can't create asset because path is empty" when a play mode tool built the avatar while Unity's asset editing was paused. Each build now gets its own folder that's never reused. Avatars named like `CON` or `AUX`, which Windows doesn't allow as folder names, build too, and a folder that still can't be created stops the build with a clear message.
+
 ## [2.0.5] - 2026-11-02
 - AAO Trace And Optimize with Optimize BlendShape on works from Avatar Optimizer 1.9.21, which reads native face tracking from the avatar descriptor and keeps its blendshapes, including the ones Blendshape Fixes, Face Tracking Emulation and tongue steps drive. With older versions the build still stops. Blendshapes that don't move anything, like an empty `vrc.v_sil`, are still removed and cleared from the descriptor, which doesn't change how the avatar looks.
 
