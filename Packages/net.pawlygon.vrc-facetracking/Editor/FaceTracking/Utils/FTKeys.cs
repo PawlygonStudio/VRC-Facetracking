@@ -126,7 +126,8 @@ namespace Pawlygon.FaceTracking.Editor
 
         /// <summary>
         /// A blendshape that looks like a misspelling of the key's name or one of its aliases (a letter or two off, or
-        /// two letters swapped), for keys nothing matched. Blendshapes in <paramref name="used"/> are skipped.
+        /// two letters swapped), for keys nothing matched. Blendshapes in <paramref name="used"/> are skipped, and so are
+        /// the ones named after another key: TongueOut is two letters off TongueUp, but it's not a misspelling of it.
         /// </summary>
         public static string SuggestFor(int key, string[] blendshapes, ICollection<string> used)
         {
@@ -139,7 +140,7 @@ namespace Pawlygon.FaceTracking.Editor
             var bestDistance = int.MaxValue;
             foreach (var blendshape in blendshapes)
             {
-                if (used.Contains(blendshape)) continue;
+                if (used.Contains(blendshape) || KeysForName(blendshape).Count > 0) continue;
                 var candidate = blendshape.ToLowerInvariant();
                 foreach (var target in targets)
                 {

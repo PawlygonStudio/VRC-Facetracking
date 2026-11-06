@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- Fixed: a key with no blendshape could suggest another key's blendshape as a misspelling, like TongueOut for TongueUp. Blendshapes named after a tracking key aren't suggested anymore.
+
 ## [2.0.6] - 2026-11-04
 - Face Tracking Guards now finds gesture layers in Gesture controllers when VRCFury is installed: the avatar descriptor's Gesture, and the ones a VRCFury Full Controller or Modular Avatar Merge Animator merges into Gesture. VRCFury moves the layers that animate more than bones, like face blendshapes, to FX when it builds the avatar, so they fought face tracking without a guard. Only those layers are listed. One that also poses the hands is kept in Gesture too, and its tooltip says that a guard pauses the hand pose as well. VRChat recommends FX for face animations, so setting those controllers to FX is still cleaner.
 - Bake Guards works on every controller with unguarded layers, not only the avatar's own FX: the descriptor's FX or Gesture, and the controllers VRCFury Full Controllers and Modular Avatar Merge Animators merge. Each gets a `(FT Guards)` copy, and the avatar's reference switches to it. Restore Original switches them all back. A controller used through an override controller still can't be baked.
