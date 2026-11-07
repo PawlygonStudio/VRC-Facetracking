@@ -26,7 +26,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             // Replaces whatever face tracking setup the descriptor had
-            context.Clear();
+            // context.Clear();
             context.EnableFaceTracking = true;
             context.UseAllTrackingKeys = component.useAllTrackingKeys;
             context.VisemeDampenMode = (VRCAvatarDescriptor.VisemeDampenMode)(int)component.visemeDampenMode;
