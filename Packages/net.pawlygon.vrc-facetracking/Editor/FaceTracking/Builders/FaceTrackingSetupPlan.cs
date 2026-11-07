@@ -90,7 +90,7 @@ namespace Pawlygon.FaceTracking.Editor
                                 "Use Manual mesh mode to pick them.");
             }
 
-            if (component.visemeDampenMode != FTVisemeDampenMode.None && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
+            if (component.visemeDampenMode != FTVisemeDampenMode.None && component.visemeDampenMode != FTVisemeDampenMode.KeepExisting && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
             {
                 plan.Warnings.Add("Viseme dampening only works with face tracking visemes and all tracking keys, so it will have no effect.");
             }
