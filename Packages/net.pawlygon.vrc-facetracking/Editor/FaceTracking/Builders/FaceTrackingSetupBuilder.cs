@@ -27,6 +27,8 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             var oldSets = descriptor.faceTrackingBlendshapesSetList?.Count > 0 ? new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>(descriptor.faceTrackingBlendshapesSetList) : null;
+            var oldDumpenMode = descriptor.visemeDampenMode;
+            var oldDumpenAmount = descriptor.visemeDampenAmount;
 
             // Replaces whatever face tracking setup the descriptor had
             context.Clear();
@@ -39,8 +41,8 @@ namespace Pawlygon.FaceTracking.Editor
             }
             context.EnableFaceTracking = true;
             context.UseAllTrackingKeys = component.useAllTrackingKeys;
-            context.VisemeDampenMode = (VRCAvatarDescriptor.VisemeDampenMode)(int)component.visemeDampenMode;
-            context.VisemeDampenAmount = component.visemeDampenAmount;
+            context.VisemeDampenMode = component.visemeDampenMode == FTVisemeDampenMode.KeepExisting ? oldDumpenMode : (VRCAvatarDescriptor.VisemeDampenMode)(int)component.visemeDampenMode;
+            context.VisemeDampenAmount = component.visemeDampenMode == FTVisemeDampenMode.KeepExisting ? oldDumpenAmount : component.visemeDampenAmount;
             context.Meshes.AddRange(plan.Meshes);
             context.Sets.Add(plan.Set);
             if (plan.TongueSteps != null)

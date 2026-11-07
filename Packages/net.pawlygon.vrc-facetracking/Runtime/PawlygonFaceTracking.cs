@@ -50,6 +50,7 @@ namespace Pawlygon.FaceTracking
         None,
         DampenTracking,
         DampenVisemes,
+        KeepExisting
     }
 
     /// <summary>A tracking key mapped by hand.</summary>

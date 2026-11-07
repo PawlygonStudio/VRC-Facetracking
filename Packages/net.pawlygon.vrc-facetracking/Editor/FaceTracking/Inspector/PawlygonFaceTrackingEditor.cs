@@ -110,7 +110,7 @@ namespace Pawlygon.FaceTracking.Editor
             void UpdateVisibility()
             {
                 manualMeshes.style.display = Component.meshMode == FTMeshMode.Manual ? DisplayStyle.Flex : DisplayStyle.None;
-                dampenAmount.style.display = Component.visemeDampenMode != FTVisemeDampenMode.None ? DisplayStyle.Flex : DisplayStyle.None;
+                dampenAmount.style.display = (Component.visemeDampenMode != FTVisemeDampenMode.None && Component.visemeDampenMode != FTVisemeDampenMode.KeepExisting) ? DisplayStyle.Flex : DisplayStyle.None;
             }
             UpdateVisibility();
             body.TrackSerializedObjectValue(serializedObject, _ => UpdateVisibility());
@@ -248,18 +248,17 @@ namespace Pawlygon.FaceTracking.Editor
            var lipSyncChanged = Component.lipSync != FTLipSyncMode.KeepExisting;
            var eyelidsChanged = Component.eyelids != FTEyelidMode.KeepExisting;
            var eyeGazeChanged = Component.eyeGaze != FTGazeMode.KeepExisting;
-           var lipDampChanged = true; // TODO: Add KeepExisting mode
-           var lipDampAmountChanged = true; // TODO: Same as above
+           var lipDampChanged = Component.visemeDampenMode != FTVisemeDampenMode.KeepExisting;
             if (avatar.enableFaceTracking && (lipSyncChanged || eyelidsChanged || eyeGazeChanged))
             {
-                var affectedSettings = new List<string> {lipSyncChanged ? "Lip Sync Mode" : null, eyelidsChanged ? "Eyelids" : null, eyeGazeChanged ? "Gaze" : null, lipDampChanged ? "Dampening" : null, lipDampAmountChanged ? "Dampening Amount" : null};
+                var affectedSettings = new List<string> {lipSyncChanged ? "Lip Sync" : null, eyelidsChanged ? "Eyelids" : null, eyeGazeChanged ? "Gaze" : null, lipDampChanged ? "Dampening" : null};
                 affectedSettings.RemoveAll(item => item == null);
                 var actionsList = new List<(string, System.Action)?>
                 { 
                 lipSyncChanged 
-                ?  ("Keep Lip Sync Mode", () =>
+                ?  ("Keep Lip Sync", () =>
                 {
-                    Undo.RecordObject(Component, "Update Lip Sync Mode Setting");
+                    Undo.RecordObject(Component, "Update Lip Sync Setting");
                     Component.lipSync = FTLipSyncMode.KeepExisting;
                     EditorUtility.SetDirty(Component);
                 }) 
@@ -279,7 +278,15 @@ namespace Pawlygon.FaceTracking.Editor
                     Component.eyeGaze = FTGazeMode.KeepExisting;
                     EditorUtility.SetDirty(Component);
                 }) 
-                : null 
+                : null,
+                lipDampChanged
+                ? ("Keep Dampening", () =>
+                {
+                    Undo.RecordObject(Component, "Update Dampening Setting");
+                    Component.visemeDampenMode = FTVisemeDampenMode.KeepExisting;
+                    EditorUtility.SetDirty(Component);
+                })
+                : null
                 };
                 var actions = actionsList.Where(item => item.HasValue).Select(item => item.Value).ToArray()!;
 
@@ -616,7 +623,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             lipSyncResult.text = plan.UseFaceTrackingLipSync ? $"→ {plan.MappedVisemes}/{FTKeys.VisemeCount} visemes" : unchanged;
             lipSyncResult.tooltip = plan.VisemesFromDescriptor ? "Taken from the avatar's existing viseme setup." : "Matched by blendshape name.";
-            dampenResult.text = Component.visemeDampenMode == FTVisemeDampenMode.None ? "off" : $"→ {Mathf.RoundToInt(Component.visemeDampenAmount * 100)}%";
+            dampenResult.text = Component.visemeDampenMode == FTVisemeDampenMode.None ? "off" : Component.visemeDampenMode == FTVisemeDampenMode.KeepExisting ? "unchanged" : $"→ {Mathf.RoundToInt(Component.visemeDampenAmount * 100)}%";
             eyelidsResult.text = plan.UseFaceTrackingEyelids ? "→ EyeClosed" : unchanged;
             gazeResult.text = plan.GazeMode.HasValue ? "→ " + ObjectNames.NicifyVariableName(plan.GazeMode.Value.ToString()) : unchanged;
             UpdateEyeRange(plan, avatar);
