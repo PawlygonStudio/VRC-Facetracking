@@ -21,6 +21,7 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic keysDetails = new FTDynamic();
         readonly FTDynamic keysList = new FTDynamic();
         PropertyField manualMeshes;
+        PropertyField keepSets;
         PropertyField tongueMode;
         VisualElement keysTools;
         Button[] filterButtons;
@@ -73,9 +74,13 @@ namespace Pawlygon.FaceTracking.Editor
             var keys = FTUI.Card(body, "Tracking Keys", out var keysExtras);
             keysExtras.Add(keysBadge.Element);
             keys.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
+            // Only shown for avatars with existing FT sets, see Refresh
+            keepSets = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.keepSets)), "Keep Existing FT Sets");
+            keepSets.style.display = DisplayStyle.None;
             // Only shown for avatars with tongue steps, see Refresh
             tongueMode = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.tongueMode)), "Tongue Mode");
             tongueMode.style.display = DisplayStyle.None;
+            keys.Add(keepSets);
             keys.Add(tongueMode);
             keys.Add(keysDetails.Element);
             keys.Add(BuildKeysTools());
@@ -161,6 +166,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 issues.Warning("TongueOut is used, the tongue steps aren't.", plan.TongueConflict, ("Use Steps", () => SetTongueMode(FTTongueMode.Steps)));
             }
+            keepSets.style.display = avatar.faceTrackingBlendshapesSetList?.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
             tongueMode.style.display = plan.FoundTongueSteps != null || Component.tongueMode != FTTongueMode.Auto ? DisplayStyle.Flex : DisplayStyle.None;
 
             UpdateMeshes(plan);
@@ -239,10 +245,60 @@ namespace Pawlygon.FaceTracking.Editor
                         : "Clear sets the layer back to VRChat's default (undoable)."), actions);
             }
 
-            if (avatar.enableFaceTracking || avatar.faceTrackingBlendshapesSetList?.Count > 0 || avatar.faceTrackingParameterBehaviors?.Count > 0)
+           var lipSyncChanged = Component.lipSync != FTLipSyncMode.KeepExisting;
+           var eyelidsChanged = Component.eyelids != FTEyelidMode.KeepExisting;
+           var eyeGazeChanged = Component.eyeGaze != FTGazeMode.KeepExisting;
+           var lipDampChanged = true; // TODO: Add KeepExisting mode
+           var lipDampAmountChanged = true; // TODO: Same as above
+            if (avatar.enableFaceTracking && (lipSyncChanged || eyelidsChanged || eyeGazeChanged))
             {
-                issues.Warning("Replaces the descriptor's face tracking setup.",
-                    "The avatar descriptor already has native face tracking configured. This component replaces it at build; the scene isn't changed.");
+                var affectedSettings = new List<string> {lipSyncChanged ? "Lip Sync Mode" : null, eyelidsChanged ? "Eyelids" : null, eyeGazeChanged ? "Gaze" : null, lipDampChanged ? "Dampening" : null, lipDampAmountChanged ? "Dampening Amount" : null};
+                affectedSettings.RemoveAll(item => item == null);
+                var actionsList = new List<(string, System.Action)?>
+                { 
+                lipSyncChanged 
+                ?  ("Keep Lip Sync Mode", () =>
+                {
+                    Undo.RecordObject(Component, "Update Lip Sync Mode Setting");
+                    Component.lipSync = FTLipSyncMode.KeepExisting;
+                    EditorUtility.SetDirty(Component);
+                }) 
+                : null, 
+                eyelidsChanged 
+                ? ("Keep Eyelids", () =>
+                {
+                    Undo.RecordObject(Component, "Update Eyelids Setting");
+                    Component.eyelids = FTEyelidMode.KeepExisting;
+                    EditorUtility.SetDirty(Component);
+                })  
+                : null, 
+                eyeGazeChanged 
+                ? ("Keep Gaze", () =>
+                {
+                    Undo.RecordObject(Component, "Update Eye Gaze Setting");
+                    Component.eyeGaze = FTGazeMode.KeepExisting;
+                    EditorUtility.SetDirty(Component);
+                }) 
+                : null 
+                };
+                var actions = actionsList.Where(item => item.HasValue).Select(item => item.Value).ToArray()!;
+
+                issues.Warning($"Replaces existing descriptor's face tracking setup: {string.Join(", ", affectedSettings)}.",
+                    "The avatar descriptor already has native face tracking configured. This component replaces listed settings at build; the scene isn't changed.",
+                    actions);
+            }
+
+            if (avatar.faceTrackingBlendshapesSetList?.Count > 0 && Component.keepSets != true)
+            {
+                var actions = new[] { ("Keep", (System.Action)(() =>
+                {
+                    Undo.RecordObject(Component, "Update Keep Sets");
+                    Component.keepSets = true;
+                    EditorUtility.SetDirty(Component);
+                })) };
+                issues.Warning("Replaces existing descriptor's face tracking blendshape sets.",
+                    "The avatar descriptor already has face tracking blendshape sets. This component replaces them at build; the scene isn't changed.", 
+                    actions);
             }
 
             if (FTMerger.Find() == null)

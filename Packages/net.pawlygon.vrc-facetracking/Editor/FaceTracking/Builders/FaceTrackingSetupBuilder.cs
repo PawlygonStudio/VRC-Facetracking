@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
@@ -25,8 +26,17 @@ namespace Pawlygon.FaceTracking.Editor
                 Debug.LogWarning($"[{FTErrorBoundary.Title}] {warning}", component);
             }
 
+            var oldSets = descriptor.faceTrackingBlendshapesSetList?.Count > 0 ? new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>(descriptor.faceTrackingBlendshapesSetList) : null;
+
             // Replaces whatever face tracking setup the descriptor had
-            // context.Clear();
+            context.Clear();
+            if (component.keepSets == true && oldSets?.Count > 0)
+            {
+                foreach (var set in oldSets)
+                {
+                    context.Sets.Add(set);
+                }
+            }
             context.EnableFaceTracking = true;
             context.UseAllTrackingKeys = component.useAllTrackingKeys;
             context.VisemeDampenMode = (VRCAvatarDescriptor.VisemeDampenMode)(int)component.visemeDampenMode;

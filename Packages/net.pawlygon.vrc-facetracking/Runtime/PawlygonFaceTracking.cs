@@ -111,5 +111,8 @@ namespace Pawlygon.FaceTracking
 
         [Range(0f, 1f)]
         public float visemeDampenAmount = 0.5f;
+
+        [Tooltip("Add onto the existing FT sets rather than replacing them.")]
+        public bool keepSets = false;
     }
 }
