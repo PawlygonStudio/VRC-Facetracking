@@ -290,7 +290,7 @@ namespace Pawlygon.FaceTracking.Editor
                 };
                 var actions = actionsList.Where(item => item.HasValue).Select(item => item.Value).ToArray()!;
 
-                issues.Warning($"Replaces existing descriptor's face tracking setup: {string.Join(", ", affectedSettings)}.",
+                issues.Info($"Replaces existing descriptor's face tracking setup: {string.Join(", ", affectedSettings)}.",
                     "The avatar descriptor already has native face tracking configured. This component replaces listed settings at build; the scene isn't changed.",
                     actions);
             }
@@ -303,7 +303,7 @@ namespace Pawlygon.FaceTracking.Editor
                     Component.keepSets = true;
                     EditorUtility.SetDirty(Component);
                 })) };
-                issues.Warning("Replaces existing descriptor's face tracking blendshape sets.",
+                issues.Info("Replaces existing descriptor's face tracking blendshape sets.",
                     "The avatar descriptor already has face tracking blendshape sets. This component replaces them at build; the scene isn't changed.", 
                     actions);
             }
