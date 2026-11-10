@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.0.7] - 2026-11-10
 - Fixed: a key with no blendshape could suggest another key's blendshape as a misspelling, like TongueOut for TongueUp. Blendshapes named after a tracking key aren't suggested anymore.
 
 ## [2.0.6] - 2026-11-04
