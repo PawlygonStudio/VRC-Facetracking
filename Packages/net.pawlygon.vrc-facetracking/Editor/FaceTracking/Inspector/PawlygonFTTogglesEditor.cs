@@ -11,8 +11,8 @@ namespace Pawlygon.FaceTracking.Editor
     [CustomEditor(typeof(PawlygonFTToggles))]
     internal sealed class PawlygonFTTogglesEditor : FTComponentEditor<PawlygonFTToggles>
     {
-        readonly FTDynamic visemesBadge = new FTDynamic();
-        readonly FTDynamic visemesResult = new FTDynamic();
+        readonly FTDynamic visemesBadges = new FTDynamic();
+        readonly FTDynamic visemesParameters = new FTDynamic();
         VisualElement visemesBody;
         Label visemesNote;
 
@@ -27,24 +27,23 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
+            // Same layout as the Guards cards: badges and the switch in the header, the settings greyed out while it's off
             var visemes = FTUI.Card(body, "Visemes", out var visemesExtras);
-            visemesExtras.Add(visemesBadge.Element);
+            visemesExtras.Add(visemesBadges.Element);
+            visemesBadges.Element.style.flexDirection = FlexDirection.Row;
 
-            var enabled = serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesToggle));
-            var toggle = new Toggle { tooltip = "Enabled" };
+            var toggle = new Toggle { tooltip = "Add the Visemes toggle to the menu." };
             toggle.AddToClassList("ft-toggle");
-            toggle.BindProperty(enabled);
+            toggle.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesToggle)));
             visemesExtras.Add(toggle);
 
             visemesBody = new VisualElement();
             visemesNote = FTUI.Text("", "ft-muted", "ft-card__note");
             visemesBody.Add(visemesNote);
             visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesOnByDefault)), "On By Default"));
-            visemesBody.Add(visemesResult.Element);
+            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.menuName)), "In Menu"));
+            visemesBody.Add(visemesParameters.Element);
             visemes.Add(visemesBody);
-
-            var menu = FTUI.Card(body, "Menu", out _);
-            menu.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.menuName)), "In Menu"));
         }
 
         protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
@@ -57,32 +56,59 @@ namespace Pawlygon.FaceTracking.Editor
                     ("Select", () => Select(other.gameObject)));
             }
 
-            visemesBody.SetEnabled(Component.visemesToggle);
-            visemesNote.text = "The toggle starts " + (Component.visemesOnByDefault ? "on" : "off") + ". While it's off, visemes are muted while UserFaceTracking is on.";
-
             var plan = ResolvePlan(avatar, issues);
             if (plan.VisemesSkipped != null) issues.Warning("The Visemes toggle won't be added.", plan.VisemesSkipped);
 
-            var kind = plan.AddsVisemesToggle ? FTKind.Ok : FTKind.Muted;
-            var badge = !Component.visemesToggle ? "off" : plan.AddsVisemesToggle ? "1 synced bit" : "not added";
-            visemesBadge.Update(badge, e => e.Add(FTUI.Badge(badge, kind)));
+            visemesBody.SetEnabled(Component.visemesToggle);
+            visemesNote.text = Note();
 
-            var key = string.Join("|", plan.VisemeSets.Select(s => $"{s.Source}>{s.Name}:{s.Visemes}")) + Component.menuName + Component.visemesToggle;
-            visemesResult.Update(key, container =>
+            // The sets are only named when there's more than one: a single one is just the avatar's visemes
+            var count = plan.VisemeSets.Sum(s => s.Visemes);
+            var sources = plan.VisemeSets.Select(s => s.Source).ToList();
+            var bits = plan.SyncedBits;
+            visemesBadges.Update($"{Component.visemesToggle}|{plan.AddsVisemesToggle}|{count}|{bits}|{string.Join(",", sources)}", container =>
+            {
+                if (!Component.visemesToggle)
+                {
+                    container.Add(FTUI.Badge("off", FTKind.Muted));
+                    return;
+                }
+                if (!plan.AddsVisemesToggle)
+                {
+                    container.Add(FTUI.Badge("not added", FTKind.Warning, plan.VisemesSkipped));
+                    return;
+                }
+
+                container.Add(FTUI.Badge($"{count} {(count == 1 ? "viseme" : "visemes")}", FTKind.Muted,
+                    "The avatar's visemes, which the toggle mutes. When the avatar is built they move to a blendshapes set of their own, " +
+                    "so they can be faded without the rest of the face." +
+                    (sources.Count > 1 ? $"\nFrom {sources.Count} blendshapes sets: {string.Join(", ", sources)}." : "")));
+                container.Add(FTUI.Badge($"{bits} synced {(bits == 1 ? "bit" : "bits")}", FTKind.Ok,
+                    "Whether visemes are muted is synced, so everyone sees the same. The toggle itself isn't."));
+            });
+
+            visemesParameters.Update(plan.AddsVisemesToggle.ToString(), container =>
             {
                 if (!plan.AddsVisemesToggle) return;
 
-                var menuName = Component.menuName?.Trim() ?? "";
-                container.Add(FTUI.Row("Menu toggle", menuName.Length == 0 ? "Visemes, in the main menu" : $"Visemes, in {menuName}",
-                    $"{FTTogglesPlan.VisemesParameter}: saved, not synced."));
-                container.Add(FTUI.Row("Synced", FTTogglesPlan.VisemesMutedParameter,
-                    "Set on your side while the toggle is off and face tracking is on, and synced so others see the same."));
-                foreach (var set in plan.VisemeSets)
+                container.Add(FTUI.Text("Parameters", "ft-group-title"));
+                container.Add(FTUI.Chips(new[]
                 {
-                    container.Add(FTUI.Row(set.Name, $"{set.Visemes} visemes from {set.Source}",
-                        "The visemes move to a blendshapes set of their own, so they can be faded without the rest of the face."));
-                }
+                    (FTTogglesPlan.VisemesParameter, "The menu toggle. Saved, not synced."),
+                    (FTTogglesPlan.VisemesMutedParameter,
+                        "On while the toggle is off and face tracking is active. Set on your side and synced, 1 bit."),
+                }));
             });
+        }
+
+        /// <summary>Where the toggle goes, how it starts, and what that means for visemes.</summary>
+        string Note()
+        {
+            var menuName = Component.menuName?.Trim() ?? "";
+            var menu = menuName.Length == 0 ? "the main menu" : $"the {menuName} menu";
+            return Component.visemesOnByDefault
+                ? $"Adds a Visemes toggle to {menu}, on to start with. Turning it off mutes visemes while face tracking is active."
+                : $"Adds a Visemes toggle to {menu}, off to start with. While it's off, visemes are muted while face tracking is active.";
         }
 
         /// <summary>The same plan the build resolves: from the setup component's sets, or the ones already on the descriptor.</summary>

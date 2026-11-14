@@ -410,15 +410,7 @@ namespace Pawlygon.FaceTracking.Editor
             return row;
         }
 
-        /// <summary>Chips with their own tooltips.</summary>
-        static VisualElement Chips(IEnumerable<(string text, string tooltip)> items)
-        {
-            var list = items.ToList();
-            var chips = FTUI.Chips(list.Select(i => i.text));
-            var index = 0;
-            foreach (var chip in chips.Children()) chip.tooltip = list[index++].tooltip;
-            return chips;
-        }
+        static VisualElement Chips(IEnumerable<(string text, string tooltip)> items) => FTUI.Chips(items);
 
         /// <summary>A checked layer without a guard, waiting for Bake Guards.</summary>
         static VisualElement UnguardedBadge() => FTUI.Badge("unguarded", FTKind.Warning, "Bake Guards adds a guard to it.");
