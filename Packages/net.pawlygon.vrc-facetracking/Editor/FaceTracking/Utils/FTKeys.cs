@@ -42,12 +42,18 @@ namespace Pawlygon.FaceTracking.Editor
             FindKeyMethod = autoFill?.GetMethod("FindFaceTrackingBlendshape", flags);
             NamesForKeyMethod = autoFill?.GetMethod("GetNamesForFaceTrackingKey", flags);
 
-            if (FindKeyMethod == null)
-            {
-                Debug.LogWarning("[Pawlygon Face Tracking] The VRChat SDK face tracking auto-fill wasn't found. " +
-                                 "Blendshapes will only be matched by their exact Unified Expressions names.");
-            }
+            if (!AutoFillAvailable) Debug.LogWarning("[Pawlygon Face Tracking] " + AutoFillMissingMessage);
         }
+
+        public const string AutoFillMissingMessage =
+            "This VRChat SDK version changed the blendshape matching Pawlygon Face Tracking relies on, so blendshapes are only matched by their " +
+            "exact Unified Expressions names. ARKit, SRanipal and other names aren't matched. Update Pawlygon Face Tracking.";
+
+        /// <summary>
+        /// Whether the SDK's auto-fill was found. Without it, <see cref="FindKey"/> only matches exact key names and the
+        /// alias lookups return nothing, so the inspector says so and the build asks before going on.
+        /// </summary>
+        public static bool AutoFillAvailable => FindKeyMethod != null && NamesForKeyMethod != null;
 
         public static string KeyName(int key) => ((VRCAvatarDescriptor.FaceTrackingKey)key).ToString();
 

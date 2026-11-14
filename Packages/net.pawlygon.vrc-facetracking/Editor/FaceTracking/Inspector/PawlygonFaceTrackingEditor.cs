@@ -179,7 +179,12 @@ namespace Pawlygon.FaceTracking.Editor
 
         void AddAvatarIssues(VRCAvatarDescriptor avatar, FTIssues issues)
         {
-            var other = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault(c => c != Component);
+            if (!FTKeys.AutoFillAvailable)
+            {
+                issues.Error("Blendshapes are only matched by their exact Unified Expressions names.", FTKeys.AutoFillMissingMessage);
+            }
+
+            var other =FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault(c => c != Component);
             if (other != null)
             {
                 issues.Error("Another Pawlygon Face Tracking is on this avatar.",
