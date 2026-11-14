@@ -110,7 +110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   visemesToggle: 1
-  visemesOnByDefault: 0
+  visemesDisabledByDefault: 0
   menuName: Face Tracking
 --- !u!114 &3145729847366120597
 MonoBehaviour:

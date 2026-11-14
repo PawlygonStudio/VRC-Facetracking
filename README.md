@@ -25,7 +25,7 @@ The prefab contains these components. Each one shows what it will do in its insp
 | **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. |
 | **Face Tracking Parameters** | Keeps animators made for OSC face tracking working by feeding their `FT/v2/...` parameters from native face tracking. |
 | **Face Tracking Guards** | Pauses gesture expressions and blink animations while face / eye tracking is active, with a **Disable Gestures** menu toggle. |
-| **Face Tracking Toggles** | Adds a **Visemes** menu toggle, which mutes visemes while face tracking is active. |
+| **Face Tracking Toggles** | Adds a **Disable Visemes** menu toggle, which mutes visemes while face tracking is active. |
 | **Blendshape Fixes** | Drives the fix shapes that prevent clipping when two shapes combine, like `MouthSmileLeft-EyeClosedLeft`. |
 | **Pupil Emulation** | Lively pupils on headsets without pupil tracking, handing over to real pupil tracking when the headset has it. |
 | **Face Tracking Emulation** | Fills in shapes some trackers don't send (e.g. brows from the eyelids), and relaxes shapes that fight each other. |
@@ -103,14 +103,14 @@ With VRCFury, gesture layers in a Gesture controller count too when they animate
 Each parameter is only driven when a layer of an animator reads it, so avatars don't pay for unused synced bits: `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive` (e.g. for Face Tracking Extras or 1.x custom animations). A controller that only declares one of them doesn't count. They're set by the avatar's owner and synced, 1 bit each.
 
 ### Face Tracking Toggles
-Adds a **Visemes** toggle to the avatar's menu. While it's off, visemes are muted whenever face tracking is active, so they don't play on top of the tracked mouth. Without a tracker they play as usual, whatever the toggle says, so the avatar never ends up with a mouth that doesn't move.
+Adds a **Disable Visemes** toggle to the avatar's menu. Visemes play as usual until it's turned on. While it's on, visemes are muted whenever face tracking is active, so they don't play on top of the tracked mouth. Without a tracker they keep playing, whatever the toggle says, so the avatar never ends up with a mouth that doesn't move.
 
 When the avatar is built, the visemes get a blendshapes set of their own (`Pawlygon Visemes`), and an animator layer fades that set with VRChat's blendshapes set weight. The rest of the face tracking setup isn't touched, and with the toggle unticked the avatar builds exactly as it would without this component.
 
 | Setting | Default | What it does |
 |---|---|---|
-| Visemes | On | Adds the **Visemes** menu toggle. Needs lip sync set to face tracking visemes, and VRCFury or Modular Avatar. |
-| On By Default | Off | The toggle starts on, so visemes keep playing with face tracking until it's turned off. Its state is saved. |
+| Visemes | On | Adds the **Disable Visemes** menu toggle. Needs lip sync set to face tracking visemes, and VRCFury or Modular Avatar. |
+| Disabled By Default | Off | The toggle starts on, so visemes are muted with face tracking until it's turned off. Its state is saved. |
 | In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the toggle. Created if missing. Leave empty to put the toggle in the main menu. |
 
 The toggle itself isn't synced. Whether visemes are muted is worked out on the owner's side and synced, 1 bit.

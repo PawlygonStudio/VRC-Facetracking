@@ -35,8 +35,8 @@ namespace Pawlygon.FaceTracking.Editor
 
             var parameters = context.Generated.Parameters;
             // Read by the owner's driver only, so it doesn't need syncing
-            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesParameter, VRCExpressionParameters.ValueType.Bool,
-                component.visemesOnByDefault ? 1 : 0, true, false);
+            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.DisableVisemesParameter, VRCExpressionParameters.ValueType.Bool,
+                component.visemesDisabledByDefault ? 1 : 0, true, false);
             FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesMutedParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
 
             AddMenuToggle(component, context);
@@ -56,13 +56,13 @@ namespace Pawlygon.FaceTracking.Editor
             var existing = menuName.Length == 0
                 ? context.Descriptor.expressionsMenu
                 : FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
-            if (existing != null && existing.controls.Any(c => c.parameter?.name == FTTogglesPlan.VisemesParameter)) return;
+            if (existing != null && existing.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
 
             var submenu = context.Generated.GetSubmenu(menuName, AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "FaceTrackingIcon.png"));
-            if (submenu.controls.Any(c => c.parameter?.name == FTTogglesPlan.VisemesParameter)) return;
+            if (submenu.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
 
-            submenu.controls.Add(FTAvatarAssets.CreateControl("Visemes", VRCExpressionsMenu.Control.ControlType.Toggle,
-                FTTogglesPlan.VisemesParameter, AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Visemes_Icon.png")));
+            submenu.controls.Add(FTAvatarAssets.CreateControl("Disable Visemes", VRCExpressionsMenu.Control.ControlType.Toggle,
+                FTTogglesPlan.DisableVisemesParameter,AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Visemes_Icon.png")));
             EditorUtility.SetDirty(submenu);
         }
     }

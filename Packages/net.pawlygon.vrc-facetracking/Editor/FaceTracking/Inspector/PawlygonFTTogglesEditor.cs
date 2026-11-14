@@ -20,8 +20,8 @@ namespace Pawlygon.FaceTracking.Editor
         protected override string Subtitle => "Menu toggles for face tracking.";
 
         protected override string Details =>
-            "Adds a Visemes toggle to the avatar's menu. While it's off, visemes are muted whenever face tracking is active, so " +
-            "they don't play on top of the tracked mouth, and they come back on their own without a tracker. When the avatar is " +
+            "Adds a Disable Visemes toggle to the avatar's menu. Visemes play as usual until it's turned on. While it's on, they're " +
+            "muted whenever face tracking is active, so they don't play on top of the tracked mouth. When the avatar is " +
             "built, the visemes get their own blendshapes set, and an animator layer merged by VRCFury or Modular Avatar fades it. " +
             "The avatar in your scene isn't changed.";
 
@@ -32,7 +32,7 @@ namespace Pawlygon.FaceTracking.Editor
             visemesExtras.Add(visemesBadges.Element);
             visemesBadges.Element.style.flexDirection = FlexDirection.Row;
 
-            var toggle = new Toggle { tooltip = "Add the Visemes toggle to the menu." };
+            var toggle = new Toggle { tooltip = "Add the Disable Visemes toggle to the menu." };
             toggle.AddToClassList("ft-toggle");
             toggle.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesToggle)));
             visemesExtras.Add(toggle);
@@ -40,7 +40,7 @@ namespace Pawlygon.FaceTracking.Editor
             visemesBody = new VisualElement();
             visemesNote = FTUI.Text("", "ft-muted", "ft-card__note");
             visemesBody.Add(visemesNote);
-            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesOnByDefault)), "On By Default"));
+            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesDisabledByDefault)), "Disabled By Default"));
             visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.menuName)), "In Menu"));
             visemesBody.Add(visemesParameters.Element);
             visemes.Add(visemesBody);
@@ -57,7 +57,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             var plan = ResolvePlan(avatar, issues);
-            if (plan.VisemesSkipped != null) issues.Warning("The Visemes toggle won't be added.", plan.VisemesSkipped);
+            if (plan.VisemesSkipped != null) issues.Warning("The Disable Visemes toggle won't be added.", plan.VisemesSkipped);
 
             visemesBody.SetEnabled(Component.visemesToggle);
             visemesNote.text = Note();
@@ -94,9 +94,9 @@ namespace Pawlygon.FaceTracking.Editor
                 container.Add(FTUI.Text("Parameters", "ft-group-title"));
                 container.Add(FTUI.Chips(new[]
                 {
-                    (FTTogglesPlan.VisemesParameter, "The menu toggle. Saved, not synced."),
+                    (FTTogglesPlan.DisableVisemesParameter, "The Disable Visemes menu toggle. Saved, not synced."),
                     (FTTogglesPlan.VisemesMutedParameter,
-                        "On while the toggle is off and face tracking is active. Set on your side and synced, 1 bit."),
+                        "On while the toggle is on and face tracking is active. Set on your side and synced, 1 bit."),
                 }));
             });
         }
@@ -106,10 +106,10 @@ namespace Pawlygon.FaceTracking.Editor
         {
             var menuName = Component.menuName?.Trim() ?? "";
             var menu = menuName.Length == 0 ? "the main menu" : $"the {menuName} menu";
-            return (Component.visemesOnByDefault
-                       ? $"With face tracking active, visemes play until the Visemes toggle in {menu} is turned off."
-                       : $"With face tracking active, visemes are off until the Visemes toggle in {menu} is turned on.") +
-                   " Without face tracking they always play.";
+            return Component.visemesDisabledByDefault
+                ? $"With face tracking active, visemes are muted until the Disable Visemes toggle in {menu} is turned off. " +
+                  "Without face tracking they always play."
+                : $"Visemes play as usual. Turning on the Disable Visemes toggle in {menu} mutes them while face tracking is active.";
         }
 
         /// <summary>The same plan the build resolves: from the setup component's sets, or the ones already on the descriptor.</summary>

@@ -8,8 +8,8 @@ using VRC.SDKBase;
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// The FX layers behind the Visemes toggle. One runs on the avatar's owner and works out whether visemes are muted
-    /// (the toggle is off and face tracking is active), which is synced. The other runs for everyone and fades the
+    /// The FX layers behind the Disable Visemes toggle. One runs on the avatar's owner and works out whether visemes are
+    /// muted (the toggle is on and face tracking is active), which is synced. The other runs for everyone and fades the
     /// viseme sets' weight with VRChat's blendshapes set behaviour.
     /// </summary>
     internal static class FTToggleLayers
@@ -20,11 +20,11 @@ namespace Pawlygon.FaceTracking.Editor
         // Weight change per second: a tenth of a second from full to muted, so visemes don't pop
         const float FadeSpeed = 10f;
 
-        /// <summary>VisemesMuted is on while the Visemes toggle is off and face tracking is on.</summary>
+        /// <summary>VisemesMuted is on while the Disable Visemes toggle and face tracking are both on.</summary>
         public static void AddVisemesDriver(AnimatorController controller)
         {
             FXGuardWriter.OnOffConditions(controller, FTGuardDriver.UserFaceTracking, AnimatorControllerParameterType.Bool, out var tracking, out var notTracking);
-            FXGuardWriter.OnOffConditions(controller, FTTogglesPlan.VisemesParameter, AnimatorControllerParameterType.Bool, out var toggled, out var notToggled);
+            FXGuardWriter.OnOffConditions(controller, FTTogglesPlan.DisableVisemesParameter, AnimatorControllerParameterType.Bool, out var toggled, out var notToggled);
             FXGuardWriter.EnsureParameter(controller, FTTogglesPlan.VisemesMutedParameter, AnimatorControllerParameterType.Bool);
 
             var machine = FTGuardDriver.AddLayer(controller, DriverLayer);
@@ -32,9 +32,9 @@ namespace Pawlygon.FaceTracking.Editor
             var muted = FTGuardDriver.DriverState(machine, "Visemes Muted", new Vector3(300, 100), FTTogglesPlan.VisemesMutedParameter, 1);
             machine.defaultState = playing;
 
-            FTGuardDriver.Transition(playing, muted, tracking, notToggled);
-            // Back as soon as either the toggle is turned on or face tracking stops
-            FTGuardDriver.Transition(muted, playing, toggled);
+            FTGuardDriver.Transition(playing, muted, tracking, toggled);
+            // Back as soon as either the toggle is turned off or face tracking stops
+            FTGuardDriver.Transition(muted, playing, notToggled);
             FTGuardDriver.Transition(muted, playing, notTracking);
         }
 

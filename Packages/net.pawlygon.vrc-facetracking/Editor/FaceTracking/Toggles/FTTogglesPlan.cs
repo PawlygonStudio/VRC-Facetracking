@@ -11,10 +11,10 @@ namespace Pawlygon.FaceTracking.Editor
     /// </summary>
     internal sealed class FTTogglesPlan
     {
-        /// <summary>The menu toggle: saved, and only read by the owner's driver.</summary>
-        public const string VisemesParameter = "PawlygonFT/Visemes";
+        /// <summary>The Disable Visemes menu toggle: saved, and only read by the owner's driver.</summary>
+        public const string DisableVisemesParameter = "PawlygonFT/DisableVisemes";
 
-        /// <summary>On while the toggle is off and face tracking is active. Set by the owner and synced.</summary>
+        /// <summary>On while the toggle is on and face tracking is active. Set by the owner and synced.</summary>
         public const string VisemesMutedParameter = "PawlygonFT/VisemesMuted";
 
         public const string VisemeSetName = "Pawlygon Visemes";
@@ -52,12 +52,12 @@ namespace Pawlygon.FaceTracking.Editor
             var withVisemes = setList.Where(s => CountVisemes(s) > 0).ToList();
             if (!faceTrackingLipSync || withVisemes.Count == 0)
             {
-                plan.VisemesSkipped = "Lip sync doesn't use face tracking visemes, so there's nothing for the Visemes toggle to mute.";
+                plan.VisemesSkipped = "Lip sync doesn't use face tracking visemes, so there's nothing for the Disable Visemes toggle to mute.";
                 return plan;
             }
             if (!hasMerger)
             {
-                plan.VisemesSkipped = "The Visemes toggle needs VRCFury or Modular Avatar. " + FTMerger.MissingMessage;
+                plan.VisemesSkipped = "The Disable Visemes toggle needs VRCFury or Modular Avatar. " + FTMerger.MissingMessage;
                 return plan;
             }
 

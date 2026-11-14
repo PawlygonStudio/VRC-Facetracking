@@ -34,10 +34,10 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
-        public void DefaultsAddTheToggleStartingOff()
+        public void DefaultsAddTheToggleWithVisemesPlaying()
         {
             Assert.That(component.visemesToggle, Is.True);
-            Assert.That(component.visemesOnByDefault, Is.False);
+            Assert.That(component.visemesDisabledByDefault, Is.False);
             Assert.That(component.menuName, Is.EqualTo("Face Tracking"));
         }
 
@@ -131,7 +131,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
-        public void DriverMutesOnlyWhileTrackingWithTheToggleOff()
+        public void DriverMutesOnlyWhileTrackingWithTheToggleOn()
         {
             var controller = avatar.NewController("FX");
             FTToggleLayers.AddVisemesDriver(controller);
@@ -143,19 +143,19 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             var machine = layer.stateMachine;
             Assert.That(machine.defaultState.name, Is.EqualTo("Visemes Playing"));
 
-            // Playing -> Muted needs both: face tracking on and the toggle off
+            // Playing -> Muted needs both: face tracking and the Disable Visemes toggle on
             var mute = machine.defaultState.transitions.Single();
             Assert.That(mute.conditions.Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
             {
                 (FTGuardDriver.UserFaceTracking, UnityEditor.Animations.AnimatorConditionMode.If),
-                (FTTogglesPlan.VisemesParameter, UnityEditor.Animations.AnimatorConditionMode.IfNot),
+                (FTTogglesPlan.DisableVisemesParameter, UnityEditor.Animations.AnimatorConditionMode.If),
             }));
 
-            // Muted -> Playing on either: the toggle turned on, or face tracking stopped
+            // Muted -> Playing on either: the toggle turned off, or face tracking stopped
             var muted = mute.destinationState;
             Assert.That(muted.transitions.Select(t => t.conditions.Single()).Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
             {
-                (FTTogglesPlan.VisemesParameter, UnityEditor.Animations.AnimatorConditionMode.If),
+                (FTTogglesPlan.DisableVisemesParameter, UnityEditor.Animations.AnimatorConditionMode.IfNot),
                 (FTGuardDriver.UserFaceTracking, UnityEditor.Animations.AnimatorConditionMode.IfNot),
             }));
 
