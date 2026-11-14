@@ -101,14 +101,15 @@ namespace Pawlygon.FaceTracking.Editor
             });
         }
 
-        /// <summary>Where the toggle goes, how it starts, and what that means for visemes.</summary>
+        /// <summary>What visemes do with these settings, and where the toggle that changes it is.</summary>
         string Note()
         {
             var menuName = Component.menuName?.Trim() ?? "";
             var menu = menuName.Length == 0 ? "the main menu" : $"the {menuName} menu";
-            return Component.visemesOnByDefault
-                ? $"Adds a Visemes toggle to {menu}, on to start with. Turning it off mutes visemes while face tracking is active."
-                : $"Adds a Visemes toggle to {menu}, off to start with. While it's off, visemes are muted while face tracking is active.";
+            return (Component.visemesOnByDefault
+                       ? $"With face tracking active, visemes play until the Visemes toggle in {menu} is turned off."
+                       : $"With face tracking active, visemes are off until the Visemes toggle in {menu} is turned on.") +
+                   " Without face tracking they always play.";
         }
 
         /// <summary>The same plan the build resolves: from the setup component's sets, or the ones already on the descriptor.</summary>
