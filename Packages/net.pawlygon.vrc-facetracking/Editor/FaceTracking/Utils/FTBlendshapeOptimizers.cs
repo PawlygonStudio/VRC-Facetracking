@@ -23,8 +23,8 @@ namespace Pawlygon.FaceTracking.Editor
         // Emulation layer it merges. AAO's runs in NDMF's optimizing phase (-1025), after both passes. The versions
         // come from asmdef version defines rather than the Package Manager, which isn't safe to query during a build.
         // Shown in the fix messages; keep them equal to the PAWLYGON_*_KEEPS_FT expressions in the asmdef
-        const string VrcfuryKeepsFaceTrackingFrom = "1.1434.1-beta.2";
-        const string AaoKeepsFaceTrackingFrom = "1.9.21";
+        internal const string VrcfuryKeepsFaceTrackingFrom = "1.1434.1-beta.2";
+        internal const string AaoKeepsFaceTrackingFrom = "1.9.21";
 #if PAWLYGON_VRCFURY_KEEPS_FT
         static readonly bool VrcfuryKeepsFaceTracking = true;
 #else

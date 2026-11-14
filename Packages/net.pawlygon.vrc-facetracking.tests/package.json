@@ -1,0 +1,10 @@
+{
+  "name": "net.pawlygon.vrc-facetracking.tests",
+  "version": "0.0.0",
+  "displayName": "Pawlygon - VRC Facetracking Tests",
+  "description": "Editor tests for Pawlygon VRC Facetracking. For development only: it isn't part of the released package.",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.test-framework": "1.1.29"
+  }
+}
