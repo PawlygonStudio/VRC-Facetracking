@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0] - Unreleased
+- New: **Face Tracking Toggles** component, in the `!Pawlygon - Face Tracking` prefab. It adds a **Visemes** toggle to the avatar's menu. While the toggle is off, visemes are muted whenever face tracking is active, so they don't play on top of the tracked mouth, and without a tracker they play as usual. The toggle starts off (**On By Default** changes that) and its state is saved. It uses 1 synced bit and needs VRCFury or Modular Avatar. Avatars already using the prefab get the toggle on their next upload; untick **Visemes** in the component to leave it out.
+- Pupil Emulation no longer empties 1.x fake pupil layers when the avatar is built, so builds don't edit the merged FX controller anymore. The layers play on top of Pupil Emulation until they're removed: the inspector and the build warn about them, and **Remove Fake Pupils** now works on every fake pupil layer it finds, hand-made ones included. Controllers in packages get a copy the avatar switches to (`<name> (No Fake Pupils).controller`). **If your avatar relied on the automatic removal, click Remove Fake Pupils once.**
+- Face Tracking Guards only drives `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive` when a layer reads them. A controller that only declares one of them, like many made for 1.x, doesn't cost a synced bit anymore.
+- If a VRChat SDK update changes the blendshape matching this package relies on, the Face Tracking inspector shows an error and the build asks before continuing with exact Unified Expressions names only. Before, that was only a Console warning.
+- Removed the 1.x **Threshold Editor** and the OSC config cleanup that ran after every upload. Neither is used with native face tracking. The 1.x prefabs, animators and animations in `Deprecated/` are still included.
+- The package is about half the size: the menu icon was stored at 1829 px and used at 256.
+- Internal: editor tests for the blendshape matching, the setup plan, parameters, fixes, emulation, guards and toggles, kept in the repository outside the released package.
+
 ## [2.0.7] - 2026-11-10
 - Fixed: a key with no blendshape could suggest another key's blendshape as a misspelling, like TongueOut for TongueUp. Blendshapes named after a tracking key aren't suggested anymore.
 
