@@ -27,6 +27,8 @@ namespace Pawlygon.FaceTracking.Editor
         double nextAnalysis;
         List<(string source, AnimatorController controller, FXGuardAnalysis analysis)> analyses =
             new List<(string, AnimatorController, FXGuardAnalysis)>();
+        // The parameters each analyzed controller's layers read, found with the analysis since it walks every layer
+        Dictionary<AnimatorController, HashSet<string>> readParameters = new Dictionary<AnimatorController, HashSet<string>>();
         // Gesture controllers whose face layers VRCFury moves to FX
         HashSet<AnimatorController> gestureControllers = new HashSet<AnimatorController>();
         // Controllers Bake Guards can copy, and the baked copies the avatar uses
@@ -89,6 +91,8 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 nextAnalysis = EditorApplication.timeSinceStartup + AnalysisSeconds;
                 analyses = Analyze(avatar);
+                readParameters = analyses.Select(a => a.controller).Distinct()
+                    .ToDictionary(c => c, c => new HashSet<string>(c.layers.SelectMany(FTAnimatorReads.ReadParameters)));
             }
 
             gestureBody.SetEnabled(Component.guardGestures);
@@ -238,7 +242,7 @@ namespace Pawlygon.FaceTracking.Editor
         void UpdateDriven()
         {
             List<string> ReadBy(string parameter) => analyses
-                .Where(a => a.controller.parameters.Any(p => p.name == parameter))
+                .Where(a => readParameters.TryGetValue(a.controller, out var read) && read.Contains(parameter))
                 .Select(a => a.source)
                 .ToList();
             var lipSources = ReadBy(FTGuardDriver.LipTrackingParameter);

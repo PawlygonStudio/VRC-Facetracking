@@ -58,9 +58,10 @@ namespace Pawlygon.FaceTracking.Editor
     }
 
     /// <summary>
-    /// Finishes the components on the merged FX controller: guards in the avatar's gesture and blink layers, 1.x
-    /// fake pupil layers emptied, parameters forwarded to what the playable layers read. Runs after NDMF / Modular
-    /// Avatar and VRCFury so the final merged controllers are visible, and before the SDK's own processing (-2048).
+    /// Finishes the components once the controllers are merged: parameters forwarded to what the playable layers
+    /// read, lip sync and eye settings applied again, the parameter budget checked. The merged controllers are only
+    /// read, never edited. Runs after NDMF / Modular Avatar and VRCFury so the final merged controllers are visible,
+    /// and before the SDK's own processing (-2048).
     /// </summary>
     internal sealed class FTBuildHook : IVRCSDKPreprocessAvatarCallback
     {

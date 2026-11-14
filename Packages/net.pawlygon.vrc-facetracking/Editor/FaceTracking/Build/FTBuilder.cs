@@ -12,8 +12,8 @@ namespace Pawlygon.FaceTracking.Editor
         // Before NDMF / Modular Avatar and VRCFury: the descriptor's face tracking setup, and the components'
         // own FX layers, parameters and menu controls, which those tools then merge
         Descriptor,
-        // After VRCFury and Modular Avatar merged everything: changes to layers that only exist in the merged
-        // FX controller, and anything that reads it
+        // After VRCFury and Modular Avatar merged everything: anything that reads the merged controllers, which
+        // are never edited
         Animator,
     }
 

@@ -17,7 +17,7 @@ namespace Pawlygon.FaceTracking.Editor
         /// Adds the driver layers, parameters and menu toggle before VRCFury and Modular Avatar run, so they merge
         /// them. Nothing is guarded at build time: the guards come from the avatar's animators (baked by Unity Tools'
         /// FX Gesture Checker, by Bake Guards, or by other face tracking add-ons), and each parameter is only driven
-        /// when one of them reads it, so avatars don't pay for unused synced bits.
+        /// when a layer of one of them reads it, so avatars don't pay for unused synced bits.
         /// </summary>
         protected override void BuildDescriptor(PawlygonFTGuards component, FTBuildContext context)
         {
@@ -58,13 +58,13 @@ namespace Pawlygon.FaceTracking.Editor
         }
 
         /// <summary>
-        /// Whether the controller declares the parameter. LipTrackingActive is only driven when an animator
-        /// reads it, e.g. Custom Animations made for Pawlygon VRCFT 1.x.
+        /// Whether a layer of the controller reads the parameter, like a guard state's transitions do, or Custom
+        /// Animations made for Pawlygon VRCFT 1.x with LipTrackingActive. Controllers often declare these parameters
+        /// without using them, which isn't worth a synced bit.
         /// </summary>
         public static bool UsesParameter(RuntimeAnimatorController controller, string parameter)
         {
-            return FTAvatarUtils.BaseController(controller) is AnimatorController animator
-                   && animator.parameters.Any(p => p.name == parameter);
+            return FTAnimatorReads.Reads(controller, parameter);
         }
 
         /// <summary>

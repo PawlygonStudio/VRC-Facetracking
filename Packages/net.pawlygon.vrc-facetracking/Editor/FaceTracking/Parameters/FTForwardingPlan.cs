@@ -67,7 +67,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (!(FTAvatarUtils.BaseController(controller) is AnimatorController animator)) continue;
                 // Controllers made for OSC face tracking often declare far more parameters than they use, and each
                 // forwarded parameter counts toward the avatar's performance rank
-                var read = new HashSet<string>(animator.layers.SelectMany(FTFakePupilLayers.ReadParameters));
+                var read = new HashSet<string>(animator.layers.SelectMany(FTAnimatorReads.ReadParameters));
                 foreach (var parameter in animator.parameters)
                 {
                     types[parameter.name] = parameter.type;
