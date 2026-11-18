@@ -1,11 +1,25 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Pawlygon.FaceTracking
 {
     /// <summary>
-    /// Menu toggles for face tracking. Disable Visemes: while the toggle is on, visemes are muted whenever face tracking
-    /// is active, so they don't play on top of the tracked mouth, and they come back on their own without a tracker.
-    /// Applied at build time: the visemes get their own blendshapes set, whose weight an FX layer turns down.
+    /// How much of the visemes plays while face tracking is active. The numbers are the menu parameter's values:
+    /// Full is 0, so turning any other level's toggle off in the menu goes back to full visemes.
+    /// </summary>
+    public enum FTVisemesLevel
+    {
+        Full = 0,
+        Lively = 1,
+        Subtle = 2,
+        Off = 3,
+    }
+
+    /// <summary>
+    /// Menu controls for face tracking. Visemes: a submenu that picks how much of the visemes plays while face tracking
+    /// is active, so they don't play at full strength on top of the tracked mouth. Without a tracker they always play in
+    /// full. Pupils: toggles for the headset's pupil tracking and for Pupil Emulation, which can play together.
+    /// Applied at build time: the visemes get their own blendshapes set, whose weight an FX layer changes.
     /// </summary>
     [AddComponentMenu("Pawlygon/Pawlygon Face Tracking Toggles")]
     [DisallowMultipleComponent]
@@ -14,13 +28,20 @@ namespace Pawlygon.FaceTracking
     {
         public override int LatestVersion => 1;
 
-        [Tooltip("Add a Disable Visemes toggle to the avatar's menu. While it's on, visemes are muted while face tracking is active.")]
-        public bool visemesToggle = true;
+        [Tooltip("Add a Visemes submenu to the avatar's menu, with Full, Lively, Subtle and Off. The level applies while face tracking is active.")]
+        [FormerlySerializedAs("visemesToggle")]
+        public bool visemesMenu = true;
 
-        [Tooltip("The Disable Visemes toggle starts on, so visemes are muted with face tracking until it's turned off. Its state is saved.")]
-        public bool visemesDisabledByDefault = false;
+        [Tooltip("The level the menu starts on. Full plays visemes as usual until another level is picked. The pick is saved.")]
+        public FTVisemesLevel visemesDefault = FTVisemesLevel.Full;
 
-        [Tooltip("Submenu of the avatar's main menu that gets the toggles. Created if missing. Leave empty to put them in the main menu.")]
+        [Tooltip("Add a Pupil Tracking toggle to the menu, on to start with. Off ignores the pupil size the headset reports. Needs Pupil Emulation on the avatar.")]
+        public bool pupilTrackingToggle = true;
+
+        [Tooltip("Add a Pupil Emulation toggle to the menu, on to start with. Off stops the emulated pupil movement. Needs Pupil Emulation on the avatar.")]
+        public bool pupilEmulationToggle = true;
+
+        [Tooltip("Submenu of the avatar's main menu that gets the controls. Created if missing. Leave empty to put them in the main menu.")]
         public string menuName = "Face Tracking";
     }
 }

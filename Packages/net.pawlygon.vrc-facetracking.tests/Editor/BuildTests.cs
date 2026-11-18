@@ -124,7 +124,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             {
                 other.AddMesh("Body", TestAvatar.AllKeyNames.Concat(new[] { "vrc.v_aa", "vrc.v_oh", "JawOpen-EyeClosedLeft" }).ToArray());
                 other.Add<PawlygonFaceTracking>();
-                other.Add<PawlygonFTToggles>().visemesToggle = false;
+                other.Add<PawlygonFTToggles>().visemesMenu = false;
                 FTBuildRunner.Run(other.Root, FTPass.Descriptor);
 
                 Assert.That(Describe(other.Descriptor), Is.EqualTo(expected));

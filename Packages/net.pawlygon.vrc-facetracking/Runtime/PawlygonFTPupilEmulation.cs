@@ -3,8 +3,8 @@ using UnityEngine;
 namespace Pawlygon.FaceTracking
 {
     /// <summary>
-    /// Gives the pupils life on headsets without pupil tracking: while eye tracking is active they drift gently
-    /// and react to every blink. As soon as the headset reports real pupil dilation, it plays that instead.
+    /// Gives the pupils life, with or without pupil tracking: while eye tracking is active they drift gently
+    /// and react to every blink. When the headset tracks pupils, that plays on top.
     /// At build time, the pupil blendshapes are taken over from native face tracking and driven by an FX layer.
     /// </summary>
     [AddComponentMenu("Pawlygon/Pawlygon Face Tracking Pupil Emulation")]

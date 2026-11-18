@@ -14,9 +14,9 @@ namespace Pawlygon.FaceTracking.Editor
         public override FTPhase Phase => FTPhase.Animator;
 
         /// <summary>
-        /// Splits the visemes into their own sets and adds the layers, parameters and menu toggle before VRCFury and
-        /// Modular Avatar run, so they merge them. Without a toggle to add, the avatar builds exactly as it would
-        /// without this component.
+        /// Splits the visemes into their own sets and adds the layers, parameters and menu before VRCFury and Modular
+        /// Avatar run, so they merge them. Without a Visemes menu to add, the avatar builds exactly as it would without
+        /// this component. The pupil toggles are added by Pupil Emulation's builder, which owns the layer they change.
         /// </summary>
         protected override void BuildDescriptor(PawlygonFTToggles component, FTBuildContext context)
         {
@@ -25,7 +25,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 Debug.LogWarning($"[{FTErrorBoundary.Title}] {plan.VisemesSkipped}", component);
             }
-            if (!plan.AddsVisemesToggle) return;
+            if (!plan.AddsVisemesMenu) return;
 
             plan.SplitVisemes(context.Sets);
 
@@ -35,11 +35,12 @@ namespace Pawlygon.FaceTracking.Editor
 
             var parameters = context.Generated.Parameters;
             // Read by the owner's driver only, so it doesn't need syncing
-            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.DisableVisemesParameter, VRCExpressionParameters.ValueType.Bool,
-                component.visemesDisabledByDefault ? 1 : 0, true, false);
-            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesMutedParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesLevelParameter, VRCExpressionParameters.ValueType.Int,
+                (int)component.visemesDefault, true, false);
+            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesBitAParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesBitBParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
 
-            AddMenuToggle(component, context);
+            AddVisemesMenu(component, context);
         }
 
         /// <summary>Face Tracking has already applied its lip sync mode to the descriptor by now.</summary>
@@ -48,22 +49,47 @@ namespace Pawlygon.FaceTracking.Editor
             return context.EnableFaceTracking && context.Descriptor.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking;
         }
 
-        static void AddMenuToggle(PawlygonFTToggles component, FTBuildContext context)
+        /// <summary>
+        /// The generated menu the component's controls go in, or null when the avatar's own menu already has a control
+        /// for <paramref name="parameter"/> there.
+        /// </summary>
+        internal static VRCExpressionsMenu ControlsMenu(PawlygonFTToggles component, FTBuildContext context, string parameter)
         {
-            // Empty puts the toggle in the main menu
+            // Empty puts the controls in the main menu
             var menuName = component.menuName?.Trim() ?? "";
-            // The avatar's own menu may have one already
             var existing = menuName.Length == 0
                 ? context.Descriptor.expressionsMenu
                 : FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
-            if (existing != null && existing.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
+            if (HasControl(existing, parameter, 1)) return null;
 
             var submenu = context.Generated.GetSubmenu(menuName, AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "FaceTrackingIcon.png"));
-            if (submenu.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
+            return HasControl(submenu, parameter, 1) ? null : submenu;
+        }
 
-            submenu.controls.Add(FTAvatarAssets.CreateControl("Disable Visemes", VRCExpressionsMenu.Control.ControlType.Toggle,
-                FTTogglesPlan.DisableVisemesParameter,AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Visemes_Icon.png")));
-            EditorUtility.SetDirty(submenu);
+        internal static Texture2D Icon(string file) => AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + file);
+
+        static bool HasControl(VRCExpressionsMenu menu, string parameter, int depth)
+        {
+            if (menu == null) return false;
+            return menu.controls.Any(c => c.parameter?.name == parameter || (depth > 0 && HasControl(c.subMenu, parameter, depth - 1)));
+        }
+
+        /// <summary>A Visemes submenu with one toggle per level, each setting the menu parameter to its level.</summary>
+        static void AddVisemesMenu(PawlygonFTToggles component, FTBuildContext context)
+        {
+            var menu = ControlsMenu(component, context, FTTogglesPlan.VisemesLevelParameter);
+            if (menu == null) return;
+
+            var icon = Icon("Visemes_Icon.png");
+            var levels = context.Generated.GetSubmenu(menu, FTTogglesPlan.VisemesMenuName, icon);
+            foreach (var level in FTTogglesPlan.Levels)
+            {
+                var control = FTAvatarAssets.CreateControl(level.ToString(), VRCExpressionsMenu.Control.ControlType.Toggle,
+                    FTTogglesPlan.VisemesLevelParameter, icon);
+                control.value = (int)level;
+                levels.controls.Add(control);
+            }
+            EditorUtility.SetDirty(levels);
         }
     }
 }

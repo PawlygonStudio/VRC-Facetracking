@@ -25,12 +25,13 @@ namespace Pawlygon.FaceTracking.Editor
         int fakePupilControllers;
 
         protected override string Title => "Pupil Emulation";
-        protected override string Subtitle => "Lively pupils on headsets without pupil tracking.";
+        protected override string Subtitle => "Lively pupils, with or without pupil tracking.";
 
         protected override string Details =>
             "While eye tracking is active, the pupils drift gently and react to every blink: they reopen wide, tighten, then settle. " +
             "Mood reactions can add constriction with wide eyes and dilation with a frown. " +
-            "As soon as the headset reports real pupil dilation, that plays instead. When the avatar is built, the EyeDilation and " +
+            "When the headset tracks pupils, that plays on top, and Face Tracking Toggles can add a menu toggle for each. " +
+            "When the avatar is built, the EyeDilation and " +
             "EyeConstrict blendshapes are taken over from native face tracking and driven by an FX layer.";
 
         protected override void BuildBody(VisualElement body)
@@ -214,7 +215,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
             else if (!plan.RealTracking)
             {
-                issues.Info("All Tracking Keys is off, so real pupil tracking can't take over.", "The pupils are emulated whenever eye tracking is active.");
+                issues.Info("All Tracking Keys is off, so the headset's pupil tracking can't play.", "Only the emulated movement plays while eye tracking is active.");
             }
 
             var count = plan.Shapes.Count;
@@ -235,7 +236,7 @@ namespace Pawlygon.FaceTracking.Editor
                         shape.IsDilation ? "Dilates in the idle drift and the blink reflex." : "Tightens in the blink reflex."));
                 }
                 container.Add(FTUI.Text(plan.RealTracking
-                    ? "Real pupil tracking takes over once the headset reports it. Native face tracking leaves these blendshapes alone."
+                    ? "The headset's pupil tracking plays on top of the emulated movement. Native face tracking leaves these blendshapes alone."
                     : "Native face tracking leaves these blendshapes alone.", "ft-muted", "ft-card__note"));
             });
         }

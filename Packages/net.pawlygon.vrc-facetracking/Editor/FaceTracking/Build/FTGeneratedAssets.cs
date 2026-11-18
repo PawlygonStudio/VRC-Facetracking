@@ -68,13 +68,19 @@ namespace Pawlygon.FaceTracking.Editor
             RequireMerger();
             if (menu == null) menu = FTAvatarAssets.CreateMenu(context.BuildFolder, "Face Tracking Menu");
             if (string.IsNullOrEmpty(name)) return menu;
-            var control = FTAvatarAssets.FindSubmenu(menu, name);
+            return GetSubmenu(menu, name, icon);
+        }
+
+        /// <summary>The submenu with this name inside one of the generated menus, created if missing.</summary>
+        public VRCExpressionsMenu GetSubmenu(VRCExpressionsMenu parent, string name, Texture2D icon)
+        {
+            var control = FTAvatarAssets.FindSubmenu(parent, name);
             if (control == null)
             {
                 control = FTAvatarAssets.CreateControl(name, VRCExpressionsMenu.Control.ControlType.SubMenu, "", icon);
                 control.subMenu = FTAvatarAssets.CreateMenu(context.BuildFolder, $"{FTAvatarAssets.SafeName(name)} Menu");
-                menu.controls.Add(control);
-                EditorUtility.SetDirty(menu);
+                parent.controls.Add(control);
+                EditorUtility.SetDirty(parent);
             }
             return control.subMenu;
         }

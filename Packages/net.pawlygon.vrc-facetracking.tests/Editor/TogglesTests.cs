@@ -34,11 +34,63 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
-        public void DefaultsAddTheToggleWithVisemesPlaying()
+        public void DefaultsAddTheMenuWithFullVisemesAndBothPupilToggles()
         {
-            Assert.That(component.visemesToggle, Is.True);
-            Assert.That(component.visemesDisabledByDefault, Is.False);
+            Assert.That(component.visemesMenu, Is.True);
+            Assert.That(component.visemesDefault, Is.EqualTo(FTVisemesLevel.Full));
+            Assert.That(component.pupilTrackingToggle, Is.True);
+            Assert.That(component.pupilEmulationToggle, Is.True);
             Assert.That(component.menuName, Is.EqualTo("Face Tracking"));
+        }
+
+        [Test]
+        public void LevelsAreTwoBitsWithFullAsZero()
+        {
+            // Full is the menu parameter's 0, so turning a level's toggle off in the menu goes back to full visemes
+            Assert.That((int)FTVisemesLevel.Full, Is.EqualTo(0));
+            Assert.That(FTTogglesPlan.Levels, Is.EqualTo(new[] { FTVisemesLevel.Full, FTVisemesLevel.Lively, FTVisemesLevel.Subtle, FTVisemesLevel.Off }));
+            Assert.That(FTTogglesPlan.Levels.Select(l => (FTTogglesPlan.BitA(l), FTTogglesPlan.BitB(l))).Distinct().Count(), Is.EqualTo(4));
+            Assert.That((FTTogglesPlan.BitA(FTVisemesLevel.Full), FTTogglesPlan.BitB(FTVisemesLevel.Full)), Is.EqualTo((false, false)));
+
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Full), Is.EqualTo(1f));
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Off), Is.EqualTo(0f));
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Lively), Is.GreaterThan(FTTogglesPlan.LevelWeight(FTVisemesLevel.Subtle)));
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Subtle), Is.GreaterThan(0f));
+        }
+
+        [Test]
+        public void PupilTogglesNeedPupilShapesAndThePupilKeys()
+        {
+            avatar.AddMesh("Body", "EyeDilationLeft", "EyeDilationRight", "EyeConstrictLeft", "EyeConstrictRight");
+            var meshes = avatar.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var noSets = new BlendshapesSet[0];
+
+            var plan = FTPupilEmulationPlan.Resolve(meshes, noSets, true);
+            plan.ResolveToggles(component);
+            Assert.That(plan.Shapes, Is.Not.Empty);
+            Assert.That((plan.TrackingToggle, plan.EmulationToggle, plan.ToggleBits), Is.EqualTo((true, true, 2)));
+
+            // Left out in the component
+            component.pupilTrackingToggle = false;
+            plan = FTPupilEmulationPlan.Resolve(meshes, noSets, true);
+            plan.ResolveToggles(component);
+            Assert.That((plan.TrackingToggle, plan.EmulationToggle, plan.ToggleBits), Is.EqualTo((false, true, 1)));
+            component.pupilTrackingToggle = true;
+
+            // Without All Tracking Keys there's no pupil tracking to toggle
+            plan = FTPupilEmulationPlan.Resolve(meshes, noSets, false);
+            plan.ResolveToggles(component);
+            Assert.That(plan.TrackingToggle, Is.EqualTo(plan.RealTracking));
+            Assert.That(plan.EmulationToggle, Is.True);
+
+            // No Face Tracking Toggles on the avatar, or no pupil blendshapes
+            plan = FTPupilEmulationPlan.Resolve(meshes, noSets, true);
+            plan.ResolveToggles(null);
+            Assert.That(plan.ToggleBits, Is.EqualTo(0));
+
+            plan = FTPupilEmulationPlan.Resolve(new SkinnedMeshRenderer[0], noSets, true);
+            plan.ResolveToggles(component);
+            Assert.That(plan.ToggleBits, Is.EqualTo(0));
         }
 
         [Test]
@@ -46,9 +98,9 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         {
             var plan = FTTogglesPlan.Resolve(component, new[] { SetWithVisemes(PawlygonFaceTracking.BaseSetName) }, true, true);
 
-            Assert.That(plan.AddsVisemesToggle, Is.True);
+            Assert.That(plan.AddsVisemesMenu, Is.True);
             Assert.That(plan.VisemesSkipped, Is.Null);
-            Assert.That(plan.SyncedBits, Is.EqualTo(1));
+            Assert.That(plan.SyncedBits, Is.EqualTo(2));
             var set = plan.VisemeSets.Single();
             Assert.That(set.Name, Is.EqualTo(FTTogglesPlan.VisemeSetName));
             Assert.That(set.Source, Is.EqualTo(PawlygonFaceTracking.BaseSetName));
@@ -58,10 +110,10 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         [Test]
         public void ToggleOffPlansNothing()
         {
-            component.visemesToggle = false;
+            component.visemesMenu = false;
             var plan = FTTogglesPlan.Resolve(component, new[] { SetWithVisemes(PawlygonFaceTracking.BaseSetName) }, true, true);
 
-            Assert.That(plan.AddsVisemesToggle, Is.False);
+            Assert.That(plan.AddsVisemesMenu, Is.False);
             Assert.That(plan.VisemesSkipped, Is.Null);
             Assert.That(plan.SyncedBits, Is.EqualTo(0));
         }
@@ -74,7 +126,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
 
             var noVisemes = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
             var plan = FTTogglesPlan.Resolve(component, new[] { noVisemes }, true, true);
-            Assert.That(plan.AddsVisemesToggle, Is.False);
+            Assert.That(plan.AddsVisemesMenu, Is.False);
             Assert.That(plan.VisemesSkipped, Is.Not.Null);
         }
 
@@ -83,7 +135,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         {
             var plan = FTTogglesPlan.Resolve(component, new[] { SetWithVisemes(PawlygonFaceTracking.BaseSetName) }, true, false);
 
-            Assert.That(plan.AddsVisemesToggle, Is.False);
+            Assert.That(plan.AddsVisemesMenu, Is.False);
             Assert.That(plan.VisemesSkipped, Is.Not.Null);
         }
 
@@ -131,7 +183,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
-        public void DriverMutesOnlyWhileTrackingWithTheToggleOn()
+        public void DriverFollowsThePickedLevelOnlyWhileTracking()
         {
             var controller = avatar.NewController("FX");
             FTToggleLayers.AddVisemesDriver(controller);
@@ -141,32 +193,49 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             Assert.That(FXGuardAnalysis.IsOwnLayer(layer.name), Is.True);
 
             var machine = layer.stateMachine;
-            Assert.That(machine.defaultState.name, Is.EqualTo("Visemes Playing"));
+            Assert.That(machine.states.Select(s => s.state.name),
+                Is.EquivalentTo(FTTogglesPlan.Levels.Select(FTToggleLayers.StateName)));
+            var full = machine.defaultState;
+            Assert.That(full.name, Is.EqualTo(FTToggleLayers.StateName(FTVisemesLevel.Full)));
 
-            // Playing -> Muted needs both: face tracking and the Disable Visemes toggle on
-            var mute = machine.defaultState.transitions.Single();
-            Assert.That(mute.conditions.Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
+            // Leaving Full needs both: face tracking, and that level picked in the menu
+            Assert.That(full.transitions.Length, Is.EqualTo(3));
+            foreach (var transition in full.transitions)
             {
-                (FTGuardDriver.UserFaceTracking, UnityEditor.Animations.AnimatorConditionMode.If),
-                (FTTogglesPlan.DisableVisemesParameter, UnityEditor.Animations.AnimatorConditionMode.If),
-            }));
+                var level = FTTogglesPlan.Levels.Single(l => FTToggleLayers.StateName(l) == transition.destinationState.name);
+                Assert.That(transition.conditions.Select(c => (c.parameter, c.mode, c.threshold)), Is.EquivalentTo(new[]
+                {
+                    (FTGuardDriver.UserFaceTracking, UnityEditor.Animations.AnimatorConditionMode.If, 0f),
+                    (FTTogglesPlan.VisemesLevelParameter, UnityEditor.Animations.AnimatorConditionMode.Equals, (float)(int)level),
+                }));
+            }
 
-            // Muted -> Playing on either: the toggle turned off, or face tracking stopped
-            var muted = mute.destinationState;
-            Assert.That(muted.transitions.Select(t => t.conditions.Single()).Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
+            // Every other level goes back to Full on either: Full picked, or face tracking stopped
+            var off = machine.states.Select(s => s.state).Single(s => s.name == FTToggleLayers.StateName(FTVisemesLevel.Off));
+            var toFull = off.transitions.Where(t => t.destinationState == full).Select(t => t.conditions.Single()).ToList();
+            Assert.That(toFull.Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
             {
-                (FTTogglesPlan.DisableVisemesParameter, UnityEditor.Animations.AnimatorConditionMode.IfNot),
+                (FTTogglesPlan.VisemesLevelParameter, UnityEditor.Animations.AnimatorConditionMode.Equals),
                 (FTGuardDriver.UserFaceTracking, UnityEditor.Animations.AnimatorConditionMode.IfNot),
             }));
+            Assert.That(off.transitions.Length, Is.EqualTo(4));
 
-            var driver = muted.behaviours.OfType<VRCAvatarParameterDriver>().Single();
-            Assert.That(driver.localOnly, Is.True);
-            Assert.That(driver.parameters.Single().name, Is.EqualTo(FTTogglesPlan.VisemesMutedParameter));
-            Assert.That(driver.parameters.Single().value, Is.EqualTo(1f));
+            // Each state sets both synced bits to its level, on the owner only
+            foreach (var level in FTTogglesPlan.Levels)
+            {
+                var state = machine.states.Select(s => s.state).Single(s => s.name == FTToggleLayers.StateName(level));
+                var driver = state.behaviours.OfType<VRCAvatarParameterDriver>().Single();
+                Assert.That(driver.localOnly, Is.True);
+                Assert.That(driver.parameters.Select(p => (p.name, p.value)), Is.EqualTo(new[]
+                {
+                    (FTTogglesPlan.VisemesBitAParameter, FTTogglesPlan.BitA(level) ? 1f : 0f),
+                    (FTTogglesPlan.VisemesBitBParameter, FTTogglesPlan.BitB(level) ? 1f : 0f),
+                }));
+            }
         }
 
         [Test]
-        public void WeightLayerFadesTheVisemeSets()
+        public void WeightLayerScalesTheVisemeSetsByLevel()
         {
             var controller = avatar.NewController("FX");
             var sets = new[]
@@ -177,16 +246,30 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             FTToggleLayers.AddVisemesWeightLayer(controller, sets);
 
             var machine = controller.layers.Single().stateMachine;
-            var playing = machine.defaultState;
-            var muted = playing.transitions.Single().destinationState;
-            Assert.That(playing.transitions.Single().conditions.Single().parameter, Is.EqualTo(FTTogglesPlan.VisemesMutedParameter));
+            Assert.That(machine.defaultState.name, Is.EqualTo(FTToggleLayers.StateName(FTVisemesLevel.Full)));
 
             List<(string, float)> Weights(UnityEditor.Animations.AnimatorState state) => state.behaviours
                 .OfType<VRC_AnimatorFaceTrackingBlendshapesSet>().Single().blendSets
                 .Select(s => (s.blendshapesSetName, s.weight)).ToList();
 
-            Assert.That(Weights(playing), Is.EqualTo(new[] { ("Face Visemes", 1f), ("Mask Visemes", 0.5f) }));
-            Assert.That(Weights(muted), Is.EqualTo(new[] { ("Face Visemes", 0f), ("Mask Visemes", 0f) }));
+            foreach (var level in FTTogglesPlan.Levels)
+            {
+                var state = machine.states.Select(s => s.state).Single(s => s.name == FTToggleLayers.StateName(level));
+                var scale = FTTogglesPlan.LevelWeight(level);
+                Assert.That(Weights(state), Is.EqualTo(new[] { ("Face Visemes", 1f * scale), ("Mask Visemes", 0.5f * scale) }));
+
+                // Reached from every other state, on exactly this level's two synced bits
+                Assert.That(state.transitions.Length, Is.EqualTo(3));
+                foreach (var transition in state.transitions)
+                {
+                    var to = FTTogglesPlan.Levels.Single(l => FTToggleLayers.StateName(l) == transition.destinationState.name);
+                    Assert.That(transition.conditions.Select(c => (c.parameter, c.mode)), Is.EquivalentTo(new[]
+                    {
+                        (FTTogglesPlan.VisemesBitAParameter, FTTogglesPlan.BitA(to) ? UnityEditor.Animations.AnimatorConditionMode.If : UnityEditor.Animations.AnimatorConditionMode.IfNot),
+                        (FTTogglesPlan.VisemesBitBParameter, FTTogglesPlan.BitB(to) ? UnityEditor.Animations.AnimatorConditionMode.If : UnityEditor.Animations.AnimatorConditionMode.IfNot),
+                    }));
+                }
+            }
         }
     }
 }
