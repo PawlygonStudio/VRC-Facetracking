@@ -155,6 +155,20 @@ namespace Pawlygon.FaceTracking.Editor
             return chips;
         }
 
+        /// <summary>Chips with a tooltip each.</summary>
+        public static VisualElement Chips(IEnumerable<(string text, string tooltip)> items)
+        {
+            var chips = new VisualElement();
+            chips.AddToClassList("ft-chips");
+            foreach (var (text, tooltip) in items)
+            {
+                var chip = Text(text, "ft-chip");
+                chip.tooltip = tooltip;
+                chips.Add(chip);
+            }
+            return chips;
+        }
+
         public static VisualElement Progress(float fraction, FTKind kind)
         {
             var bar = new VisualElement();

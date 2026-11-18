@@ -160,7 +160,7 @@ namespace Pawlygon.FaceTracking.Editor
         {
             return FTAvatarUtils.BaseController(controller) is AnimatorController animator
                    && animator.parameters.Any(p => p.name == LegacyFixesMarker)
-                   && animator.layers.SelectMany(FTFakePupilLayers.ReadParameters).Any(p => FTParameterCatalog.GetExpression(p) != null);
+                   && animator.layers.SelectMany(FTAnimatorReads.ReadParameters).Any(p => FTParameterCatalog.GetExpression(p) != null);
         }
 
         /// <summary>

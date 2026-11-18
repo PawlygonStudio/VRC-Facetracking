@@ -1,13 +1,20 @@
 name: Build Release
 
-on: 
+on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build the zip and unitypackage as workflow artifacts, without making a release"
+        type: boolean
+        default: false
   push:
     branches: main
     paths: Packages/net.pawlygon.vrc-facetracking/package.json
 
 env:
   packageName: "net.pawlygon.vrc-facetracking"
+  listingRepo: "PawlygonStudio/VCC-Listing"
+  listingUrl: "https://vcc.pawlygon.net/index.json"
 
 permissions:
   contents: write
@@ -15,46 +22,168 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.mode.outputs.release }}
     steps:
-    
+
       - name: Checkout
-        uses: actions/checkout@v3
-    
-      - name: get version
+        uses: actions/checkout@v4
+
+      - name: Get version
         id: version
-        uses: notiz-dev/github-action-json-property@7c8cf5cc36eb85d8d287a8086a39dac59628eb31
-        with: 
-            path: "Packages/${{env.packageName}}/package.json"
-            prop_path: "version"
-    
-      - name: Set Environment Variables
         run: |
-          echo "zipFile=${{ env.packageName }}-${{ steps.version.outputs.prop }}".zip >> $GITHUB_ENV
-          echo "unityPackage=${{ env.packageName }}-${{ steps.version.outputs.prop }}.unitypackage" >> $GITHUB_ENV
-        
+          version=$(jq -r .version "Packages/$packageName/package.json")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "zipFile=$packageName-$version.zip" >> "$GITHUB_ENV"
+          echo "unityPackage=$packageName-$version.unitypackage" >> "$GITHUB_ENV"
+
+      # Releases are only made from main. Anywhere else, or with dry_run, the files are just built.
+      - name: Release or dry run
+        id: mode
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "${{ inputs.dry_run }}" != "true" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check the changelog has this version
+        env:
+          version: ${{ steps.version.outputs.version }}
+        run: |
+          changelog="Packages/$packageName/changelog.md"
+          if ! grep -qF "## [$version]" "$changelog"; then
+            echo "::error::changelog.md has no '## [$version]' entry."
+            exit 1
+          fi
+          # This version's entries, up to the next version heading
+          awk -v heading="## [$version]" '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' "$changelog" > release-notes.md
+          cat release-notes.md
+
+      # The listing stores each zip's hash, so a published version is never replaced
+      - name: Check the version isn't released yet
+        if: steps.mode.outputs.release == 'true'
+        env:
+          version: ${{ steps.version.outputs.version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$version" > /dev/null; then
+            echo "::error::$version is already released. Bump the version in package.json."
+            exit 1
+          fi
+
       - name: Create Zip
-        uses: thedoctor0/zip-release@09336613be18a8208dfa66bd57efafd9e2685657
-        with:
-          type: "zip"
-          directory: "Packages/${{env.packageName}}/"
-          filename: "../../${{env.zipFile}}" # make the zip file two directories up, since we start two directories in above
-          
+        run: |
+          cd "Packages/$packageName"
+          zip -r "$GITHUB_WORKSPACE/$zipFile" .
+
       - run: find "Packages/${{env.packageName}}/" -name \*.meta >> metaList
-          
+
       - name: Create UnityPackage
         uses: pCYSl5EDgo/create-unitypackage@cfcd3cf0391a5ef1306342794866a9897c32af0b
         with:
           package-path: ${{ env.unityPackage }}
           include-files: metaList
-        
-        
-      - name: Make Release
-        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5
+
+      - name: Upload the files (dry run)
+        if: steps.mode.outputs.release != 'true'
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ steps.version.outputs.prop }}
-          # Versions like 2.0.0-beta.1 are pre-releases, so releases/latest keeps pointing at the stable one
-          prerelease: ${{ contains(steps.version.outputs.prop, '-') }}
-          files: |
+          name: ${{ env.packageName }}-${{ steps.version.outputs.version }}
+          path: |
             ${{ env.zipFile }}
             ${{ env.unityPackage }}
-            Packages/${{ env.packageName }}/package.json
+            release-notes.md
+
+      - name: Make Release
+        if: steps.mode.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          version: ${{ steps.version.outputs.version }}
+        run: |
+          # Versions like 2.0.0-beta.1 are pre-releases, so releases/latest keeps pointing at the stable one
+          prerelease=""
+          case "$version" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$version" "$zipFile" "$unityPackage" "Packages/$packageName/package.json" \
+            --target "$GITHUB_SHA" --title "$version" --notes-file release-notes.md $prerelease
+
+  # Adds the release to the VCC listing, whose own workflow then rebuilds vcc.pawlygon.net.
+  # Needs a VCC_LISTING_TOKEN secret: a token that can write to the listing repository's contents.
+  # Without it this job does nothing, and the listing is updated by hand.
+  listing:
+    needs: build
+    if: needs.build.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    env:
+      version: ${{ needs.build.outputs.version }}
+      GH_TOKEN: ${{ secrets.VCC_LISTING_TOKEN }}
+    steps:
+
+      - name: Add the release to source.json
+        id: add
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::VCC_LISTING_TOKEN isn't set, so $version wasn't added to the VCC listing. Add it to source.json in $listingRepo."
+            exit 0
+          fi
+
+          gh api "repos/$listingRepo/contents/source.json" > current.json
+          jq -r .content current.json | base64 -d > source.json
+
+          python3 - <<'EOF'
+          import json, os, sys
+
+          package = os.environ["packageName"]
+          version = os.environ["version"]
+          prefix = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/"
+          url = f"{prefix}{version}/{package}-{version}.zip"
+
+          text = open("source.json", encoding="utf-8").read()
+          if url in text:
+              print(f"{version} is already listed.")
+              sys.exit(0)
+
+          # Added as a line after this package's last release, so the rest of the file keeps its formatting
+          lines = text.split("\n")
+          last = max((i for i, line in enumerate(lines) if line.strip().strip(",").strip('"').startswith(prefix)), default=-1)
+          if last < 0:
+              sys.exit(f"No release of {package} found in source.json.")
+          indent = lines[last][: len(lines[last]) - len(lines[last].lstrip())]
+          lines[last] = lines[last].rstrip().rstrip(",") + ","
+          lines.insert(last + 1, f'{indent}"{url}"')
+          text = "\n".join(lines)
+
+          releases = next(p for p in json.loads(text)["packages"] if p["name"] == package)["releases"]
+          if releases[-1] != url:
+              sys.exit("source.json didn't end up with the new release last in the package's list.")
+          open("source.json", "w", encoding="utf-8", newline="\n").write(text)
+          open(os.environ["GITHUB_OUTPUT"], "a").write("changed=true\n")
+          EOF
+
+      - name: Push source.json
+        if: steps.add.outputs.changed == 'true'
+        run: |
+          jq -n --arg message "Add VRC Facetracking $version" \
+                --arg content "$(base64 -w 0 source.json)" \
+                --arg sha "$(jq -r .sha current.json)" \
+                '{message: $message, content: $content, sha: $sha}' > body.json
+          gh api -X PUT "repos/$listingRepo/contents/source.json" --input body.json > /dev/null
+
+      - name: Wait for the listing
+        if: steps.add.outputs.changed == 'true'
+        run: |
+          agent="PawlygonFTReleaseCheck/1.0 (Pawlygon VRC Facetracking; https://github.com/$GITHUB_REPOSITORY)"
+          for attempt in $(seq 1 30); do
+            sleep 30
+            if curl -fsSL -A "$agent" "$listingUrl" \
+               | jq -e --arg package "$packageName" --arg version "$version" '.packages[$package].versions[$version]' > /dev/null; then
+              echo "$version is listed at $listingUrl."
+              exit 0
+            fi
+          done
+          echo "::error::$version still isn't listed at $listingUrl after 15 minutes. Check the Build Repo Listing run in $listingRepo."
+          exit 1

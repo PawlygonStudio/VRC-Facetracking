@@ -83,7 +83,7 @@ namespace Pawlygon.FaceTracking.Editor
             Transition(on, off, notTracking);
         }
 
-        static AnimatorStateMachine AddLayer(AnimatorController controller, string name)
+        internal static AnimatorStateMachine AddLayer(AnimatorController controller, string name)
         {
             var machine = new AnimatorStateMachine { name = name, hideFlags = HideFlags.HideInHierarchy };
             if (AssetDatabase.Contains(controller)) AssetDatabase.AddObjectToAsset(machine, controller);
@@ -96,7 +96,7 @@ namespace Pawlygon.FaceTracking.Editor
             return machine;
         }
 
-        static AnimatorState DriverState(AnimatorStateMachine machine, string name, Vector3 position, string parameter, float value)
+        internal static AnimatorState DriverState(AnimatorStateMachine machine, string name, Vector3 position, string parameter, float value)
         {
             var state = machine.AddState(name, position);
             state.writeDefaultValues = false;
@@ -112,7 +112,7 @@ namespace Pawlygon.FaceTracking.Editor
             return state;
         }
 
-        static void Transition(AnimatorState from, AnimatorState to, params AnimatorCondition[] conditions)
+        internal static void Transition(AnimatorState from, AnimatorState to, params AnimatorCondition[] conditions)
         {
             var transition = from.AddTransition(to);
             transition.conditions = conditions;

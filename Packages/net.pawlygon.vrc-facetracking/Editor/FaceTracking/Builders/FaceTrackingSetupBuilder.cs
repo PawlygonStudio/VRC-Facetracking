@@ -17,6 +17,7 @@ namespace Pawlygon.FaceTracking.Editor
         protected override void BuildDescriptor(PawlygonFaceTracking component, FTBuildContext context)
         {
             var descriptor = context.Descriptor;
+            ConfirmMatching();
             var plan = FaceTrackingSetupPlan.Resolve(component, descriptor);
             if (plan.Errors.Count > 0) throw new FTBuildException(string.Join("\n", plan.Errors));
 
@@ -54,6 +55,23 @@ namespace Pawlygon.FaceTracking.Editor
         protected override void BuildAnimator(PawlygonFaceTracking component, FTBuildContext context)
         {
             if (plans.TryGetValue(component, out var plan)) ApplyAvatarSettings(plan, context.Descriptor);
+        }
+
+        /// <summary>
+        /// Without the SDK's auto-fill, only exact Unified Expressions names are matched, which leaves most of an ARKit
+        /// or SRanipal avatar's face unmapped. An upload like that shouldn't happen unnoticed, so the build asks first.
+        /// </summary>
+        static void ConfirmMatching()
+        {
+            if (FTKeys.AutoFillAvailable) return;
+
+            // Play mode and batch builds can't prompt, and FTKeys already logged the warning
+            if (Application.isPlaying || Application.isBatchMode) return;
+
+            var proceed = UnityEditor.EditorUtility.DisplayDialog(FTErrorBoundary.Title,
+                FTKeys.AutoFillMissingMessage + "\n\nThe Tracking Keys list in the Face Tracking inspector shows what's mapped.",
+                "Continue with exact names only", "Cancel build");
+            if (!proceed) throw new FTBuildCancelledException("Build cancelled: blendshapes would only be matched by their exact Unified Expressions names.");
         }
 
         /// <summary>Drives a blendshape with an expression, fading with the given set like a mapping in it would.</summary>

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -38,9 +37,6 @@ namespace Pawlygon.FaceTracking.Editor
 
         // After Face Tracking has set up the meshes and blendshape sets the pupil keys are taken from
         public override FTPhase Phase => FTPhase.Animator;
-
-        // Components whose layer was built in the descriptor pass
-        static readonly ConditionalWeakTable<PawlygonFTPupilEmulation, object> built = new ConditionalWeakTable<PawlygonFTPupilEmulation, object>();
 
         /// <summary>
         /// Builds the layer before VRCFury and Modular Avatar run, so they merge it, and blendshape optimizers see
@@ -81,51 +77,25 @@ namespace Pawlygon.FaceTracking.Editor
             // Set by the owner's driver and synced, like Face Tracking Guards does
             FTAvatarAssets.AddParameter(context.Generated.Parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
 
-            built.Remove(component);
-            built.Add(component, null);
-        }
-
-        /// <summary>Empties the 1.x fake pupil layers, which only exist in the merged FX controller.</summary>
-        protected override void BuildAnimator(PawlygonFTPupilEmulation component, FTBuildContext context)
-        {
-            if (!built.TryGetValue(component, out _)) return;
-
-            var source = FTAvatarAssets.GetFX(context.Descriptor);
-            if (FTFakePupilLayers.Find(FTAvatarUtils.BaseController(source) as AnimatorController).Count == 0) return;
-
-            var fx = FTAvatarAssets.GetBuildFX(context.Descriptor);
-            ReplaceFakePupilLayers(component, context, fx);
-            AssetDatabase.SaveAssets();
+            WarnAboutFakePupils(component, context);
         }
 
         /// <summary>
-        /// Empties the fake pupil layers avatars bring from 1.x (Face Tracking Extras' or hand-made), which would
-        /// fight this component over the pupil blendshapes, and drops the forwards only they used.
+        /// Fake pupil layers avatars bring from 1.x (Face Tracking Extras' or hand-made) animate the same blendshapes, so
+        /// both would play at once. Builds don't change the avatar's animators, so they're only reported: Remove Fake
+        /// Pupils in the inspector takes them out of their controllers.
         /// </summary>
-        static void ReplaceFakePupilLayers(PawlygonFTPupilEmulation component, FTBuildContext context, AnimatorController fx)
+        static void WarnAboutFakePupils(PawlygonFTPupilEmulation component, FTBuildContext context)
         {
-            var indices = FTFakePupilLayers.Find(fx);
-            if (indices.Count == 0) return;
+            foreach (var (source, controller, _) in FTAvatarAssets.GetSourceFXControllers(context.Descriptor))
+            {
+                var names = FTFakePupilLayers.Find(controller).Select(i => $"'{FXGuardAnalysis.CleanLayerName(controller.layers[i].name)}'").ToList();
+                if (names.Count == 0) continue;
 
-            var names = indices.Select(i => fx.layers[i].name).ToList();
-            var readByRemoved = new HashSet<string>(indices.SelectMany(i => FTFakePupilLayers.ReadParameters(fx.layers[i])));
-            FTFakePupilLayers.Empty(fx, indices);
-
-            // Forwarded parameters go to every playable layer, so they're only dropped when no layer reads them anymore
-            var otherControllers = (context.Descriptor.baseAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0])
-                .Concat(context.Descriptor.specialAnimationLayers ?? new VRCAvatarDescriptor.CustomAnimLayer[0])
-                .Where(l => !l.isDefault && l.type != VRCAvatarDescriptor.AnimLayerType.FX && l.animatorController != null)
-                .Select(l => FTAvatarUtils.BaseController(l.animatorController) as AnimatorController)
-                .Where(c => c != null);
-            var stillRead = new HashSet<string>(fx.layers.Concat(otherControllers.SelectMany(c => c.layers)).SelectMany(FTFakePupilLayers.ReadParameters));
-            var dropped = context.Behaviors.RemoveAll(b => b.targetMode == VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator
-                                                           && readByRemoved.Contains(b.outputParameterName)
-                                                           && !stillRead.Contains(b.outputParameterName));
-
-            Debug.Log($"[{FTErrorBoundary.Title}] Pupil Emulation replaced the fake pupil {(names.Count == 1 ? "layer" : "layers")} " +
-                      $"{string.Join(", ", names.Select(n => $"'{n}'"))} in the FX controller" +
-                      (dropped > 0 ? $", and dropped {dropped} forwarded {(dropped == 1 ? "parameter" : "parameters")} only {(names.Count == 1 ? "it" : "they")} used." : "."),
-                component);
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The fake pupil {(names.Count == 1 ? "layer" : "layers")} {string.Join(", ", names)} in {source} " +
+                                 $"{(names.Count == 1 ? "animates" : "animate")} the same blendshapes as Pupil Emulation, so both will play at once. " +
+                                 "Use Remove Fake Pupils in the Pupil Emulation inspector.", component);
+            }
         }
 
         /// <summary>Mood reactions read keys that need All Tracking Keys, like real pupil tracking.</summary>
