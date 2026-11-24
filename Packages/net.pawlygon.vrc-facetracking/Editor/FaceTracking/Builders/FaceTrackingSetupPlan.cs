@@ -90,7 +90,7 @@ namespace Pawlygon.FaceTracking.Editor
                                 "Use Manual mesh mode to pick them.");
             }
 
-            if (component.visemeDampenMode != FTVisemeDampenMode.None && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
+            if (component.visemeDampenMode != FTVisemeDampenMode.None && component.visemeDampenMode != FTVisemeDampenMode.KeepExisting && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
             {
                 plan.Warnings.Add("Viseme dampening only works with face tracking visemes and all tracking keys, so it will have no effect.");
             }
@@ -270,8 +270,8 @@ namespace Pawlygon.FaceTracking.Editor
         void MapVisemes(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)
         {
             var wantsFaceTrackingLipSync = component.lipSync == FTLipSyncMode.FaceTrackingVisemes;
+            if (!wantsFaceTrackingLipSync) return;
             var alreadyFaceTrackingLipSync = descriptor.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking;
-            if (!wantsFaceTrackingLipSync && !alreadyFaceTrackingLipSync) return;
 
             // Reuse the avatar's existing viseme setup when it has one
             var existing = descriptor.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShape ? descriptor.VisemeBlendShapes : null;
