@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -15,6 +16,8 @@ namespace Pawlygon.FaceTracking.Editor
 
         readonly FTDynamic issuesView = new FTDynamic();
         VisualElement body;
+        FTTabs componentTabs;
+        HashSet<FTMark> lastMarks = new HashSet<FTMark>();
 
         protected T Component => (T)target;
 
@@ -51,6 +54,14 @@ namespace Pawlygon.FaceTracking.Editor
             return root;
         }
 
+        /// <summary>The inspector's tabs, added to the body. The open tab is remembered per component type.</summary>
+        protected FTTabs Tabs(VisualElement parent, int defaultIndex = 0)
+        {
+            componentTabs = new FTTabs("PawlygonFT.Tab." + typeof(T).Name, defaultIndex);
+            parent.Add(componentTabs.Element);
+            return componentTabs;
+        }
+
         protected void RefreshNow()
         {
             if (target == null || body == null) return;
@@ -72,6 +83,14 @@ namespace Pawlygon.FaceTracking.Editor
             if (onAvatar) Refresh(avatar, issues);
 
             issuesView.Update(issues.Key, issues.Render);
+
+            // Marks that weren't set again are over
+            foreach (var mark in lastMarks)
+            {
+                if (!issues.Marks.Contains(mark)) mark.Hide();
+            }
+            lastMarks = issues.Marks;
+            componentTabs?.RefreshStatus();
         }
 
         protected static void Select(UnityEngine.Object target)

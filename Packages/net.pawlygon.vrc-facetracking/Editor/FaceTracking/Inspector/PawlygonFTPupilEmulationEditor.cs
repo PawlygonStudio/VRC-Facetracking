@@ -40,21 +40,24 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
-            var shapes = FTUI.Card(body, "Pupils", out var shapesExtras);
+            var tabs = Tabs(body);
+            var pupilsPage = tabs.Add("Pupils", "The pupil blendshapes it drives.");
+            var shapes = FTUI.Card(pupilsPage, "Pupil Blendshapes", out var shapesExtras);
             shapesExtras.Add(shapesBadge.Element);
             shapes.Add(shapesList.Element);
 
-            replacedCard = FTUI.Card(body, "Fake Pupil Layers", out _);
+            replacedCard = FTUI.Card(pupilsPage, "Fake Pupil Layers", out _);
             replacedCard.Add(FTUI.Text("Fake pupil layers from 1.x (Face Tracking Extras, Custom Animations, or made by hand) animate the same " +
                                        "blendshapes as Pupil Emulation, so both would play at once. Builds don't change animators: remove them here.",
                 "ft-muted", "ft-card__note"));
             replacedCard.Add(replacedList.Element);
 
-            var idle = FTUI.Card(body, "Idle Drift", out _);
+            var movement = tabs.Add("Movement", "How the emulated pupils move.");
+            var idle = FTUI.Card(movement, "Idle Drift", out _);
             idle.Add(Field(nameof(PawlygonFTPupilEmulation.idleDilationMin), "Dilation Min"));
             idle.Add(Field(nameof(PawlygonFTPupilEmulation.idleDilationMax), "Dilation Max"));
 
-            var reflex = FTUI.Card(body, "Blink Reflex", out _);
+            var reflex = FTUI.Card(movement, "Blink Reflex", out _);
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.reflexPeakDilation), "Peak Dilation"));
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.reflexConstrict), "Constriction"));
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.reflexDuration), "Duration"));
@@ -63,7 +66,7 @@ namespace Pawlygon.FaceTracking.Editor
             reflex.Add(Field(nameof(PawlygonFTPupilEmulation.lidOpenAbove), "Reopened Above"));
 
             // Same layout as the Guards cards: the switch in the header, the settings greyed out while it's off
-            var mood = FTUI.Card(body, "Mood Reactions", out var moodExtras);
+            var mood = FTUI.Card(movement, "Mood Reactions", out var moodExtras);
             var moodProperty = serializedObject.FindProperty(nameof(PawlygonFTPupilEmulation.moodReactions));
             var moodToggle = new Toggle { tooltip = "Enabled" };
             moodToggle.AddToClassList("ft-toggle");
@@ -80,7 +83,7 @@ namespace Pawlygon.FaceTracking.Editor
             moodBody.SetEnabled(moodProperty.boolValue);
             mood.TrackPropertyValue(moodProperty, p => moodBody.SetEnabled(p.boolValue));
 
-            var menu = FTUI.Card(body, "Menu Toggles", out var menuExtras);
+            var menu = FTUI.Card(tabs.Add("Menu", "The Pupil Tracking and Pupil Emulation toggles in the avatar's menu."), "Menu Toggles", out var menuExtras);
             menuExtras.Add(toggleBadges.Element);
             toggleBadges.Element.style.flexDirection = FlexDirection.Row;
             toggleBody = new VisualElement();

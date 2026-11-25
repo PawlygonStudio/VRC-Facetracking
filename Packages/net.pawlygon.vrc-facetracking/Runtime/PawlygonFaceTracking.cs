@@ -108,10 +108,10 @@ namespace Pawlygon.FaceTracking
         [Tooltip("Map every tracking key. Off limits the avatar to eye look and eyelids.")]
         public bool useAllTrackingKeys = true;
 
-        [Tooltip("Tracking keys mapped by hand, replacing the automatic match. Edited from the Tracking Keys list.")]
+        [Tooltip("Tracking keys mapped by hand, replacing the automatic match. Edited in the inspector's Keys tab.")]
         public List<FTKeyOverride> keyOverrides = new List<FTKeyOverride>();
 
-        [Tooltip("How strongly each tracking key moves its blendshape, for the keys where it isn't 1. Edited from the Tracking Keys list.")]
+        [Tooltip("How strongly each tracking key moves its blendshape, for the keys where it isn't 1. Edited in the inspector's Keys tab.")]
         public List<FTKeyMultiplier> keyMultipliers = new List<FTKeyMultiplier>();
 
         [Tooltip("Avatars with tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2). Steps plays them one after the other " +

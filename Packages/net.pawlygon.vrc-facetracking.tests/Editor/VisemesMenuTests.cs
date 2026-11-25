@@ -65,7 +65,10 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             var toggles = FTLegacyToggles.Pupils(pupils, avatar.Root);
             Assert.That((toggles.TrackingToggle, toggles.EmulationToggle, toggles.MenuName, toggles.Legacy), Is.EqualTo((false, true, "Settings", legacy)));
 
-            FTLegacyToggles.MoveSettings(legacy, avatar.Root);
+            // Move Settings in the inspector does this and then removes the component with an undo step. The removal
+            // isn't done here: undoing it after the test would bring the object back into the open scene.
+            FTLegacyToggles.CopySettings(legacy, avatar.Root);
+            Object.DestroyImmediate(legacy.gameObject);
 
             Assert.That(avatar.Root.GetComponentsInChildren<PawlygonFTToggles>(true), Is.Empty);
             Assert.That((component.visemesMenu, component.visemesDefault, component.menuName), Is.EqualTo((false, FTVisemesLevel.Off, "Settings")));

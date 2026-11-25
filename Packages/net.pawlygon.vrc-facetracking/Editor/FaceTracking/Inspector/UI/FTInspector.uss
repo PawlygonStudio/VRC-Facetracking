@@ -1,6 +1,7 @@
 /* Pawlygon face tracking inspectors. Colors match Pawlygon Unity Tools (PawlygonEditorUI). */
 
 .ft-dark {
+    --ft-text: rgb(210, 210, 210);
     --ft-ok: rgb(107, 204, 120);
     --ft-ok-bg: rgba(107, 204, 120, 0.16);
     --ft-warning: rgb(255, 184, 77);
@@ -21,6 +22,7 @@
 }
 
 .ft-light {
+    --ft-text: rgb(9, 9, 9);
     --ft-ok: rgb(41, 140, 56);
     --ft-ok-bg: rgba(41, 140, 56, 0.13);
     --ft-warning: rgb(191, 115, 0);
@@ -106,8 +108,12 @@
 .ft-intro {
     flex-direction: row;
     align-items: center;
-    padding: 2px 3px 2px 3px;
-    margin-bottom: 4px;
+    padding: 0 3px;
+    margin-bottom: 2px;
+}
+
+.ft-intro__text {
+    font-size: 11px;
 }
 
 .ft-intro__text {
@@ -142,10 +148,85 @@
 .ft-issue {
     flex-direction: row;
     align-items: center;
-    padding: 3px 6px;
-    margin-bottom: 3px;
+    padding: 2px 6px;
+    margin-bottom: 2px;
     border-radius: 3px;
-    border-left-width: 3px;
+    border-left-width: 2px;
+}
+
+/* Tabs */
+
+.ft-tabs {
+    flex-direction: row;
+    margin: 2px 0 6px 0;
+    border-bottom-width: 1px;
+    border-color: var(--ft-border);
+}
+
+.ft-tab {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    height: 22px;
+    margin: 0;
+    padding: 0 4px;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ft-tab:hover {
+    background-color: var(--ft-surface-alt);
+}
+
+.ft-tab--selected {
+    border-bottom-color: rgb(0, 187, 213);
+}
+
+.ft-tab__title {
+    margin: 0;
+    padding: 0;
+    color: var(--ft-muted);
+}
+
+.ft-tab--selected > .ft-tab__title {
+    color: var(--ft-text);
+    -unity-font-style: bold;
+}
+
+.ft-tab__count {
+    margin: 0 0 0 4px;
+    padding: 0;
+    font-size: 10px;
+    color: var(--ft-muted);
+}
+
+.ft-tab__status {
+    width: 12px;
+    height: 12px;
+    margin-left: 3px;
+    flex-shrink: 0;
+}
+
+.ft-page {
+    padding: 0 1px;
+}
+
+/* A section after other content in a page */
+.ft-page > .ft-card {
+    margin-top: 6px;
+}
+
+/* A problem's icon next to its setting */
+
+.ft-mark {
+    width: 14px;
+    height: 14px;
+    margin-left: 4px;
+    flex-shrink: 0;
 }
 
 .ft-issue--error {
@@ -196,13 +277,11 @@
 
 /* Cards */
 
+/* A section: a title line with a rule under it, then its content. No box. */
+
 .ft-card {
-    padding: 5px 8px 7px 8px;
-    margin-bottom: 6px;
-    border-radius: 4px;
-    border-width: 1px;
-    border-color: var(--ft-border);
-    background-color: var(--ft-surface);
+    padding: 0;
+    margin: 2px 0 8px 0;
 }
 
 .ft-card__header {
@@ -210,6 +289,9 @@
     align-items: center;
     min-height: 20px;
     margin-bottom: 3px;
+    padding: 0 0 1px 3px;
+    border-bottom-width: 1px;
+    border-color: var(--ft-border);
 }
 
 .ft-card__title {
@@ -224,19 +306,17 @@
 
 /* Badges, chips and rows */
 
+/* Plain small text. Only problems get a colour, so they stand out. */
 .ft-badge {
-    padding: 1px 6px;
+    padding: 0 5px;
     margin-left: 4px;
-    border-radius: 8px;
-    font-size: 10px;
-    -unity-font-style: bold;
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--ft-muted);
 }
 
-.ft-badge--ok { color: var(--ft-ok); background-color: var(--ft-ok-bg); }
 .ft-badge--warning { color: var(--ft-warning); background-color: var(--ft-warning-bg); }
 .ft-badge--error { color: var(--ft-error); background-color: var(--ft-error-bg); }
-.ft-badge--info { color: var(--ft-info); background-color: var(--ft-info-bg); }
-.ft-badge--muted { color: var(--ft-muted); background-color: var(--ft-muted-bg); }
 
 .ft-chips {
     flex-direction: row;
@@ -244,11 +324,13 @@
 }
 
 .ft-chip {
-    padding: 1px 6px;
-    margin: 0 4px 4px 0;
+    padding: 0 5px;
+    margin: 0 3px 3px 0;
     border-radius: 3px;
+    border-width: 1px;
+    border-color: var(--ft-border);
     font-size: 11px;
-    background-color: var(--ft-muted-bg);
+    color: var(--ft-muted);
 }
 
 .ft-chip--clickable:hover {
@@ -560,12 +642,99 @@
     padding: 0 8px;
 }
 
+.ft-table__header {
+    flex-direction: row;
+    align-items: center;
+    height: 18px;
+    padding: 0 16px 0 4px;
+    border-bottom-width: 1px;
+    border-color: var(--ft-border);
+}
+
+.ft-table__header > .unity-label {
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    -unity-font-style: bold;
+    color: var(--ft-muted);
+}
+
+.ft-table__grow {
+    flex-grow: 1;
+}
+
+.ft-table__last {
+    width: 70px;
+    flex-shrink: 0;
+}
+
+.ft-table__scroll {
+    max-height: 320px;
+    margin-bottom: 2px;
+}
+
+.ft-key-group {
+    flex-direction: row;
+    align-items: center;
+    height: 18px;
+    padding: 0 4px;
+    background-color: var(--ft-muted-bg);
+}
+
+.ft-key-group__name {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.ft-key-group__count {
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    color: var(--ft-muted);
+}
+
+/* The face regions: small tabs on top of the table */
+.ft-key-regions {
+    flex-direction: row;
+    margin: 2px 0 0 0;
+}
+
+.ft-key-region {
+    flex-grow: 1;
+    height: 18px;
+    margin: 0;
+    padding: 0 1px;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 11px;
+    color: var(--ft-muted);
+}
+
+.ft-key-region:hover {
+    background-color: var(--ft-surface-alt);
+}
+
+.ft-key-region--selected {
+    border-bottom-color: rgb(0, 187, 213);
+    color: var(--ft-text);
+    -unity-font-style: bold;
+}
+
 .ft-key {
     flex-direction: row;
     align-items: center;
     min-height: 20px;
     padding: 1px 2px 1px 4px;
-    border-radius: 3px;
+}
+
+.ft-key--alt {
+    background-color: var(--ft-surface-alt);
 }
 
 .ft-key:hover {
@@ -619,7 +788,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
 }
 
 .ft-key-bulk__label {

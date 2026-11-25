@@ -12,6 +12,19 @@ namespace Pawlygon.FaceTracking.Editor
     /// What a <see cref="PawlygonFaceTracking"/> component will do to an avatar. Resolved the same way
     /// for the build and for the inspector preview, without changing anything.
     /// </summary>
+    /// <summary>The part of the setup a warning is about, so the inspector can show it next to that setting.</summary>
+    internal enum FTSetupArea
+    {
+        General,
+        Meshes,
+        Keys,
+        LipSync,
+        Dampening,
+        Eyelids,
+        Gaze,
+        Rotation,
+    }
+
     internal sealed class FaceTrackingSetupPlan
     {
         public readonly List<SkinnedMeshRenderer> Meshes = new List<SkinnedMeshRenderer>();
@@ -58,6 +71,15 @@ namespace Pawlygon.FaceTracking.Editor
 
         public readonly List<string> Errors = new List<string>();
         public readonly List<string> Warnings = new List<string>();
+        readonly Dictionary<string, FTSetupArea> areas = new Dictionary<string, FTSetupArea>();
+
+        public FTSetupArea AreaOf(string warning) => areas.TryGetValue(warning, out var area) ? area : FTSetupArea.General;
+
+        void Warn(FTSetupArea area, string text)
+        {
+            Warnings.Add(text);
+            areas[text] = area;
+        }
 
         public static FaceTrackingSetupPlan Resolve(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor)
         {
@@ -99,7 +121,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             if (component.visemeDampenMode != FTVisemeDampenMode.None && (!plan.UseFaceTrackingLipSync || !component.useAllTrackingKeys))
             {
-                plan.Warnings.Add("Viseme dampening only works with face tracking visemes and all tracking keys, so it will have no effect.");
+                plan.Warn(FTSetupArea.Dampening, "Viseme dampening only works with face tracking visemes and all tracking keys, so it will have no effect.");
             }
 
             plan.Meshes.RemoveAll(m => !FTAvatarUtils.IsPartOfAvatar(m, avatarRoot));
@@ -116,7 +138,7 @@ namespace Pawlygon.FaceTracking.Editor
                     if (FTAvatarUtils.IsPartOfAvatar(mesh, avatarRoot)) Meshes.Add(mesh);
                     else Errors.Add($"'{mesh.name}' isn't part of this avatar.");
                 }
-                if (component.meshes.Any(m => m == null)) Warnings.Add("The mesh list has empty entries, they're ignored.");
+                if (component.meshes.Any(m => m == null)) Warn(FTSetupArea.Meshes, "The mesh list has empty entries, they're ignored.");
                 return;
             }
 
@@ -162,7 +184,7 @@ namespace Pawlygon.FaceTracking.Editor
                     }
                     else
                     {
-                        Warnings.Add($"{FTKeys.KeyName(key)} is set to '{manual.blendshape}', which isn't on the face tracking meshes, so it's matched automatically.");
+                        Warn(FTSetupArea.Keys, $"{FTKeys.KeyName(key)} is set to '{manual.blendshape}', which isn't on the face tracking meshes, so it's matched automatically.");
                     }
                 }
 
@@ -182,8 +204,8 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 if (manual == null) continue;
                 var key = FTKeys.KeyByName(manual.key);
-                if (key < 0) Warnings.Add($"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
-                else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warnings.Add($"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
+                if (key < 0) Warn(FTSetupArea.Keys, $"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
+                else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warn(FTSetupArea.Keys, $"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
             }
         }
 
@@ -199,7 +221,7 @@ namespace Pawlygon.FaceTracking.Editor
                 var key = FTKeys.KeyByName(entry.key);
                 if (key < 0)
                 {
-                    Warnings.Add($"'{entry.key}' isn't a tracking key, so its multiplier is ignored.");
+                    Warn(FTSetupArea.Keys, $"'{entry.key}' isn't a tracking key, so its multiplier is ignored.");
                     continue;
                 }
                 if (!MappedKeys.Contains(key)) continue;
@@ -252,7 +274,7 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 if (component.tongueMode == FTTongueMode.Steps)
                 {
-                    Warnings.Add("Tongue Mode is Steps, but no tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2) were found, " +
+                    Warn(FTSetupArea.Keys, "Tongue Mode is Steps, but no tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2) were found, " +
                                  "so TongueOut is mapped as usual.");
                 }
                 return;
@@ -279,7 +301,7 @@ namespace Pawlygon.FaceTracking.Editor
                 {
                     TongueConflict = $"This avatar has both a TongueOut blendshape ('{single}') and tongue steps ('{FoundTongueSteps.Step1}', " +
                                      $"'{FoundTongueSteps.Step2}'), so TongueOut is used. Set Tongue Mode to Steps to use the steps instead.";
-                    Warnings.Add(TongueConflict);
+                    Warn(FTSetupArea.Keys, TongueConflict);
                     mode = FTTongueMode.TongueOut;
                 }
                 else mode = FTTongueMode.Steps;
@@ -337,7 +359,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             if (MappedVisemes == 0 && wantsFaceTrackingLipSync && !alreadyFaceTrackingLipSync)
             {
-                Warnings.Add("No viseme blendshapes were found, so lip sync is left unchanged.");
+                Warn(FTSetupArea.LipSync, "No viseme blendshapes were found, so lip sync is left unchanged.");
                 return;
             }
             UseFaceTrackingLipSync = wantsFaceTrackingLipSync || alreadyFaceTrackingLipSync;
@@ -350,7 +372,7 @@ namespace Pawlygon.FaceTracking.Editor
                 var hasEyelids = MappedKeys.Contains((int)VRCAvatarDescriptor.FaceTrackingKey.EyeClosedLeft)
                                  && MappedKeys.Contains((int)VRCAvatarDescriptor.FaceTrackingKey.EyeClosedRight);
                 if (hasEyelids) UseFaceTrackingEyelids = true;
-                else Warnings.Add("EyeClosedLeft/Right blendshapes weren't found, so eyelids are left unchanged.");
+                else Warn(FTSetupArea.Eyelids, "EyeClosedLeft/Right blendshapes weren't found, so eyelids are left unchanged.");
             }
 
             var hasEyeLookShapes = MappedKeys.Any(key => FTKeys.KeyName(key).StartsWith("EyeLook"));
@@ -376,11 +398,11 @@ namespace Pawlygon.FaceTracking.Editor
 
             if ((GazeMode == EyeGazeMode.Both || GazeMode == EyeGazeMode.FaceTracking) && !hasEyeLookShapes)
             {
-                Warnings.Add("Eye gaze uses face tracking blendshapes, but no EyeLook blendshapes were found.");
+                Warn(FTSetupArea.Gaze, "Eye gaze uses face tracking blendshapes, but no EyeLook blendshapes were found.");
             }
             if ((GazeMode == EyeGazeMode.Both || GazeMode == EyeGazeMode.BoneRotation) && !hasEyeBones)
             {
-                Warnings.Add("Eye gaze rotates the eye bones, but they aren't set up in the descriptor's Eye Look section.");
+                Warn(FTSetupArea.Gaze, "Eye gaze rotates the eye bones, but they aren't set up in the descriptor's Eye Look section.");
             }
 
             if (component.eyeRotationRange == FTEyeRotationRange.HumanoidRig)
@@ -388,12 +410,12 @@ namespace Pawlygon.FaceTracking.Editor
                 var gaze = GazeMode ?? settings.eyeGazeMode;
                 if (gaze != EyeGazeMode.Both && gaze != EyeGazeMode.BoneRotation)
                 {
-                    Warnings.Add("Eye Rotation is Humanoid Rig, but eye gaze doesn't rotate the eye bones, so it's not used.");
+                    Warn(FTSetupArea.Rotation, "Eye Rotation is Humanoid Rig, but eye gaze doesn't rotate the eye bones, so it's not used.");
                 }
                 else if (hasEyeBones)
                 {
                     EyeRange = FTLegacyEyeRange.Find(descriptor, out var problem);
-                    if (EyeRange == null) Warnings.Add(problem + " The descriptor's eye rotations are left unchanged.");
+                    if (EyeRange == null) Warn(FTSetupArea.Rotation, problem + " The descriptor's eye rotations are left unchanged.");
                 }
             }
         }

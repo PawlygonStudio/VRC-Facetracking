@@ -36,7 +36,8 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
-            var detected = FTUI.Card(body, "Detected", out var detectedExtras);
+            var tabs = Tabs(body);
+            var detected = FTUI.Card(tabs.Add("Detected", "Parameters the avatar's animators use."), "Detected Parameters", out var detectedExtras);
             var autoDetect = new Toggle { text = "Auto-detect", tooltip = "Forward every known face tracking parameter used by the avatar's animators." };
             autoDetect.AddToClassList("ft-toggle");
             autoDetect.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTParameters.autoDetect)));
@@ -50,7 +51,7 @@ namespace Pawlygon.FaceTracking.Editor
             detected.Add(search);
             detected.Add(detectedList.Element);
 
-            var manual = FTUI.Card(body, "Manual", out var manualExtras);
+            var manual = FTUI.Card(tabs.Add("Manual", "Parameters added by hand."), "Manual Parameters", out var manualExtras);
             manualExtras.Add(manualBadge.Element);
             manualRows = new VisualElement();
             manual.Add(manualRows);

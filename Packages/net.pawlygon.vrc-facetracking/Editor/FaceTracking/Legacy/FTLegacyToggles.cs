@@ -67,6 +67,20 @@ namespace Pawlygon.FaceTracking.Editor
             if (legacy == null || avatarRoot == null) return;
 
             Undo.SetCurrentGroupName("Move Face Tracking Toggles Settings");
+            CopySettings(legacy, avatarRoot);
+
+            // An object that only held the component goes with it
+            var holder = legacy.gameObject;
+            var onlyThis = holder != avatarRoot && holder.transform.childCount == 0 && holder.GetComponents<Component>().Length == 2
+                           && !PrefabUtility.IsPartOfPrefabInstance(holder);
+            if (onlyThis) Undo.DestroyObjectImmediate(holder);
+            else Undo.DestroyObjectImmediate(legacy);
+            Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
+        }
+
+        /// <summary>The 2.1 component's settings, written to the avatar's Face Tracking and Pupil Emulation.</summary>
+        internal static void CopySettings(PawlygonFTToggles legacy, GameObject avatarRoot)
+        {
             foreach (var tracking in FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatarRoot))
             {
                 Undo.RecordObject(tracking, "Move Face Tracking Toggles Settings");
@@ -83,14 +97,6 @@ namespace Pawlygon.FaceTracking.Editor
                 pupils.menuName = legacy.menuName;
                 Saved(pupils);
             }
-
-            // An object that only held the component goes with it
-            var holder = legacy.gameObject;
-            var onlyThis = holder != avatarRoot && holder.transform.childCount == 0 && holder.GetComponents<Component>().Length == 2
-                           && !PrefabUtility.IsPartOfPrefabInstance(holder);
-            if (onlyThis) Undo.DestroyObjectImmediate(holder);
-            else Undo.DestroyObjectImmediate(legacy);
-            Undo.CollapseUndoOperations(Undo.GetCurrentGroup());
         }
 
         static void Saved(Object component)

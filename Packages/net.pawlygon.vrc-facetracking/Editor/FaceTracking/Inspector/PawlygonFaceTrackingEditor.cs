@@ -15,11 +15,18 @@ namespace Pawlygon.FaceTracking.Editor
         // Scanning every component on the avatar is slow on big avatars, so these are cached briefly
         const double SlowScanSeconds = 4;
 
-        readonly FTDynamic meshBadge = new FTDynamic();
+        FTTabs tabs;
+        VisualElement meshesPage, keysPage, keysTable;
         readonly FTDynamic meshList = new FTDynamic();
-        readonly FTDynamic keysBadge = new FTDynamic();
+        readonly FTDynamic meshNotesView = new FTDynamic();
+        readonly FTDynamic keyNotesView = new FTDynamic();
         readonly FTDynamic keysDetails = new FTDynamic();
-        readonly FTDynamic keysList = new FTDynamic();
+        readonly FTDynamic keysRows = new FTDynamic();
+        FTMark lipSyncMark, dampenMark, eyelidsMark, gazeMark, eyeRangeMark;
+        readonly List<(string region, Button button)> regionButtons = new List<(string, Button)>();
+
+        // The face region the list is limited to, or null for all of them
+        string keyRegion;
         PropertyField manualMeshes;
         PropertyField tongueMode;
         VisualElement keysTools;
@@ -41,7 +48,6 @@ namespace Pawlygon.FaceTracking.Editor
 
         KeyFilter keyFilter;
         string keySearch = "";
-        readonly HashSet<string> openGroups = new HashSet<string>();
 
         // Suggestions only change with the blendshapes and the unmapped keys, and are slow to find
         string suggestionsKey;
@@ -70,34 +76,51 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
-            var meshes = FTUI.Card(body, "Meshes", out var meshExtras);
-            meshExtras.Add(meshBadge.Element);
-            meshes.Add(FTUI.Segmented(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshMode)),
+            // Opens on the tracking keys, the page that gets looked at most
+            tabs = Tabs(body, 1);
+
+            meshesPage = tabs.Add("Meshes", "The meshes face tracking drives.");
+            meshesPage.Add(FTUI.Segmented(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshMode)),
                 "Auto picks every mesh with face tracking blendshapes."));
             manualMeshes = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.meshes)), "Meshes");
-            meshes.Add(manualMeshes);
-            meshes.Add(meshList.Element);
+            meshesPage.Add(manualMeshes);
+            meshesPage.Add(meshNotesView.Element);
+            meshesPage.Add(meshList.Element);
 
-            var keys = FTUI.Card(body, "Tracking Keys", out var keysExtras);
-            keysExtras.Add(keysBadge.Element);
-            keys.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
+            keysPage = tabs.Add("Keys", "The blendshape every tracking key drives, and how strongly.");
+            keysPage.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.useAllTrackingKeys)), "All Tracking Keys"));
             // Only shown for avatars with tongue steps, see Refresh
             tongueMode = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.tongueMode)), "Tongue Mode");
             tongueMode.style.display = DisplayStyle.None;
-            keys.Add(tongueMode);
-            keys.Add(keysDetails.Element);
-            keys.Add(BuildKeysTools());
-            keys.Add(keysList.Element);
+            keysPage.Add(tongueMode);
+            keysPage.Add(keysDetails.Element);
+            keysPage.Add(keyNotesView.Element);
+            keysPage.Add(BuildKeysTools());
 
-            var lipSync = FTUI.Card(body, "Lip Sync", out _);
-            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Mode", out lipSyncResult));
-            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.visemeDampenMode), "Dampening", out dampenResult));
+            // The rows scroll inside a fixed height, under their column names. The scroll view is built once, so
+            // it stays where it is when the rows are redrawn.
+            keysTable = new VisualElement();
+            var header = new VisualElement();
+            header.AddToClassList("ft-table__header");
+            header.Add(FTUI.Text("Tracking Key", "ft-key__name"));
+            header.Add(FTUI.Text("Blendshape", "ft-table__grow"));
+            header.Add(FTUI.Text("Multiplier", "ft-table__last"));
+            keysTable.Add(header);
+            var scroll = new ScrollView(ScrollViewMode.Vertical);
+            scroll.AddToClassList("ft-table__scroll");
+            scroll.Add(keysRows.Element);
+            keysTable.Add(scroll);
+            keysPage.Add(keysTable);
+
+            var lipSync = tabs.Add("Lip Sync", "Visemes, how they blend with the tracked mouth, and the Visemes menu.");
+            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.lipSync), "Mode", out lipSyncResult, out lipSyncMark));
+            lipSync.Add(FieldWithResult(nameof(PawlygonFaceTracking.visemeDampenMode), "Dampening", out dampenResult, out dampenMark));
             var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Amount");
             dampenAmount.AddToClassList("ft-sub-field");
             lipSync.Add(dampenAmount);
 
-            // Same layout as the Guards cards: badges and the switch in the header, the settings greyed out while it's off
-            var visemes = FTUI.Card(body, "Visemes Menu", out var visemesExtras);
+            // Same layout as the Guards sections: what it adds and the switch in the header, the settings greyed out while it's off
+            var visemes = FTUI.Card(lipSync, "Visemes Menu", out var visemesExtras);
             visemesExtras.Add(visemesBadges.Element);
             visemesBadges.Element.style.flexDirection = FlexDirection.Row;
             var visemesToggle = new Toggle { tooltip = "Add the Visemes submenu to the avatar's menu." };
@@ -113,12 +136,12 @@ namespace Pawlygon.FaceTracking.Editor
             visemesBody.Add(visemesParameters.Element);
             visemes.Add(visemesBody);
 
-            var eyes = FTUI.Card(body, "Eyes", out _);
-            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
-            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Gaze", out gazeResult));
+            var eyes = tabs.Add("Eyes", "Eyelids, eye gaze, and how far the eyes turn.");
+            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult, out eyelidsMark));
+            eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeGaze), "Gaze", out gazeResult, out gazeMark));
             // Only shown when eye gaze rotates the bones, see UpdateEyeRange
             eyeRangeRow = new VisualElement();
-            eyeRangeRow.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeRotationRange), "Rotation", out eyeRangeResult));
+            eyeRangeRow.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyeRotationRange), "Rotation", out eyeRangeResult, out eyeRangeMark));
             var detail = new VisualElement();
             detail.AddToClassList("ft-eye-detail");
             eyeRangeNote = FTUI.Text("", "ft-muted", "ft-eye-detail__note");
@@ -165,13 +188,16 @@ namespace Pawlygon.FaceTracking.Editor
 
         void OnDisable() => eyePreview.Stop();
 
-        VisualElement FieldWithResult(string property, string label, out Label result)
+        /// <summary>A setting, what it comes to for this avatar, and a mark that shows when there's a problem with it.</summary>
+        VisualElement FieldWithResult(string property, string label, out Label result, out FTMark mark)
         {
             var row = new VisualElement();
             row.AddToClassList("ft-field-row");
             row.Add(new PropertyField(serializedObject.FindProperty(property), label));
             result = FTUI.Text("", "ft-result");
             row.Add(result);
+            mark = new FTMark();
+            row.Add(mark);
             return row;
         }
 
@@ -181,15 +207,35 @@ namespace Pawlygon.FaceTracking.Editor
 
             var plan = FaceTrackingSetupPlan.Resolve(Component, avatar);
             foreach (var error in plan.Errors) issues.Error(error);
-            foreach (var warning in plan.Warnings.Where(w => w != plan.TongueConflict)) issues.Warning(warning);
+
+            // A warning about one setting shows next to it, and one about a page inside that page. The tab shows
+            // an icon for either, so only what stops a build or concerns the whole avatar is listed at the top.
+            var meshNotes = new FTIssues();
+            var keyNotes = new FTIssues();
+            foreach (var warning in plan.Warnings.Where(w => w != plan.TongueConflict))
+            {
+                switch (plan.AreaOf(warning))
+                {
+                    case FTSetupArea.Meshes: meshNotes.Warning(warning); break;
+                    case FTSetupArea.Keys: keyNotes.Warning(warning); break;
+                    case FTSetupArea.LipSync: issues.Mark(lipSyncMark, FTKind.Warning, warning); break;
+                    case FTSetupArea.Dampening: issues.Mark(dampenMark, FTKind.Warning, warning); break;
+                    case FTSetupArea.Eyelids: issues.Mark(eyelidsMark, FTKind.Warning, warning); break;
+                    case FTSetupArea.Gaze: issues.Mark(gazeMark, FTKind.Warning, warning); break;
+                    case FTSetupArea.Rotation: issues.Mark(eyeRangeMark, FTKind.Warning, warning); break;
+                    default: issues.Warning(warning); break;
+                }
+            }
             if (plan.TongueConflict != null)
             {
-                issues.Warning("TongueOut is used, the tongue steps aren't.", plan.TongueConflict, ("Use Steps", () => SetTongueMode(FTTongueMode.Steps)));
+                keyNotes.Warning("TongueOut is used, the tongue steps aren't.", plan.TongueConflict, ("Use Steps", () => SetTongueMode(FTTongueMode.Steps)));
             }
             tongueMode.style.display = plan.FoundTongueSteps != null || Component.tongueMode != FTTongueMode.Auto ? DisplayStyle.Flex : DisplayStyle.None;
 
             UpdateMeshes(plan);
-            UpdateKeys(plan, issues);
+            UpdateKeys(plan, keyNotes);
+            meshNotesView.Update(meshNotes.Key, meshNotes.Render);
+            keyNotesView.Update(keyNotes.Key, keyNotes.Render);
             previewAvatar = avatar;
             previewPlan = plan;
             UpdateResults(plan, avatar);
@@ -212,7 +258,6 @@ namespace Pawlygon.FaceTracking.Editor
 
             var sets = setup.Set != null ? new[] { setup.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0];
             var plan = FTVisemesPlan.Resolve(settings.Menu, sets, setup.UseFaceTrackingLipSync, FTMerger.Find() != null);
-            if (plan.VisemesSkipped != null && !plan.NoVisemes) issues.Warning("The Visemes menu won't be added.", plan.VisemesSkipped);
 
             // The 2.1 component's settings can't be edited here
             visemesBody.SetEnabled(settings.Menu && settings.Legacy == null);
@@ -385,21 +430,23 @@ namespace Pawlygon.FaceTracking.Editor
         void UpdateMeshes(FaceTrackingSetupPlan plan)
         {
             var names = plan.Meshes.Select(m => m.name).ToList();
-            meshBadge.Update($"{names.Count}", e => e.Add(FTUI.Badge(names.Count == 1 ? "1 mesh" : $"{names.Count} meshes",
-                names.Count == 0 ? FTKind.Error : FTKind.Muted)));
+            tabs.SetCount(meshesPage, names.Count.ToString());
 
             var left = plan.LeftToFullControllers.Where(x => x.mesh != null).ToList();
             var key = Component.meshMode + string.Join("|", names) + "|" + string.Join("|", left.Select(x => x.mesh.name + x.holder));
             meshList.Update(key, e =>
             {
-                if (Component.meshMode == FTMeshMode.Manual) return;
                 if (plan.Meshes.Count == 0 && left.Count == 0)
                 {
-                    e.Add(FTUI.Text("No mesh with face tracking blendshapes found.", "ft-muted"));
+                    if (Component.meshMode == FTMeshMode.Auto) e.Add(FTUI.Text("No mesh with face tracking blendshapes found.", "ft-muted", "ft-card__note"));
                     return;
                 }
                 var meshes = plan.Meshes.ToList();
-                if (meshes.Count > 0) e.Add(FTUI.Chips(names, name => Select(meshes.FirstOrDefault(m => m != null && m.name == name)), "Click to select"));
+                // In Manual mode the list above already shows them
+                if (meshes.Count > 0 && Component.meshMode == FTMeshMode.Auto)
+                {
+                    e.Add(FTUI.Chips(names, name => Select(meshes.FirstOrDefault(m => m != null && m.name == name)), "Click to select"));
+                }
                 if (left.Count > 0)
                 {
                     // VRCFury sets these up itself, and stops the build if they're configured here too
@@ -448,8 +495,34 @@ namespace Pawlygon.FaceTracking.Editor
             var wrapper = new VisualElement();
             wrapper.Add(keysTools);
             wrapper.Add(BuildBulkMultiplier());
+            wrapper.Add(BuildRegions());
             keysTools = wrapper;
             return keysTools;
+        }
+
+        /// <summary>One button per face region, to show that region's keys only.</summary>
+        VisualElement BuildRegions()
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ft-key-regions");
+            var regions = new (string region, string label)[]
+            {
+                (null, "All"), ("Eyes", "Eyes"), ("Brows", "Brows"), ("Cheeks & Nose", "Cheeks"), ("Jaw", "Jaw"),
+                ("Mouth", "Mouth"), ("Lips", "Lips"), ("Tongue", "Tongue"), ("Neck & Throat", "Neck"),
+            };
+            for (var i = 0; i < regions.Length; i++)
+            {
+                var region = regions[i].region;
+                var button = new Button(() =>
+                {
+                    keyRegion = region;
+                    RefreshNow();
+                }) { text = regions[i].label, tooltip = region ?? "Every face region" };
+                button.AddToClassList("ft-key-region");
+                regionButtons.Add((region, button));
+                row.Add(button);
+            }
+            return row;
         }
 
         /// <summary>Sets the multiplier of every key the list shows, so a search or a filter picks which.</summary>
@@ -474,30 +547,30 @@ namespace Pawlygon.FaceTracking.Editor
             return row;
         }
 
-        void UpdateKeys(FaceTrackingSetupPlan plan, FTIssues issues)
+        void UpdateKeys(FaceTrackingSetupPlan plan, FTIssues notes)
         {
             if (plan.Set == null)
             {
-                keysBadge.Hide();
+                tabs.SetCount(keysPage, "");
                 keysDetails.Hide();
-                keysList.Hide();
+                keysRows.Hide();
                 keysTools.style.display = DisplayStyle.None;
+                keysTable.style.display = DisplayStyle.None;
                 return;
             }
             keysTools.style.display = DisplayStyle.Flex;
+            keysTable.style.display = DisplayStyle.Flex;
 
             var mapped = plan.MappedKeys.Count;
             var total = mapped + plan.UnmappedKeys.Count;
             var fraction = total == 0 ? 0f : (float)mapped / total;
-            var kind = fraction >= 0.9f ? FTKind.Ok : fraction >= 0.5f ? FTKind.Info : FTKind.Warning;
-
-            keysBadge.Update($"{mapped}/{total}", e => e.Add(FTUI.Badge($"{mapped}/{total} mapped", kind)));
+            tabs.SetCount(keysPage, $"{mapped}/{total}");
             keysDetails.Update($"{fraction}", e => e.Add(FTUI.Progress(fraction, fraction >= 0.5f ? FTKind.Ok : FTKind.Warning)));
 
             UpdateSuggestions(plan);
             if (suggestions.Count > 0)
             {
-                issues.Info($"{(suggestions.Count == 1 ? "1 unmapped key has" : $"{suggestions.Count} unmapped keys have")} a blendshape with a similar name.",
+                notes.Info($"{(suggestions.Count == 1 ? "1 unmapped key has" : $"{suggestions.Count} unmapped keys have")} a blendshape with a similar name.",
                     string.Join("\n", suggestions.Select(x => $"{FTKeys.KeyName(x.Key)}: {x.Value}")) + "\nIt may be misspelled. Use them to map those keys by hand.",
                     ("Use", () => { foreach (var x in suggestions.ToList()) SetOverride(FTKeys.KeyName(x.Key), x.Value, plan); }));
             }
@@ -505,7 +578,7 @@ namespace Pawlygon.FaceTracking.Editor
             if (plan.ArkitOverlaps.Count > 0)
             {
                 var count = plan.ArkitOverlaps.Count;
-                issues.Info($"{(count == 1 ? "1 key is" : $"{count} keys are")} left unmapped so blendshapes don't play twice.",
+                notes.Info($"{(count == 1 ? "1 key is" : $"{count} keys are")} left unmapped so blendshapes don't play twice.",
                     "This avatar has Unified Expressions and ARKit blendshapes. Unified Expressions comes first, and these keys' only match is an " +
                     "ARKit blendshape that also moves a key it already drives:\n" +
                     string.Join("\n", plan.ArkitOverlaps.OrderBy(x => x.Key).Select(x => $"{FTKeys.KeyName(x.Key)}: {x.Value.Arkit} (moves {FTKeys.KeyName(x.Value.Covered)})")) +
@@ -520,10 +593,11 @@ namespace Pawlygon.FaceTracking.Editor
                 filterButtons[i].text = filter == KeyFilter.All ? "All" : $"{filter} ({counts[i]})";
                 filterButtons[i].EnableInClassList("ft-segmented__button--selected", filter == keyFilter);
             }
+            foreach (var (region, button) in regionButtons) button.EnableInClassList("ft-key-region--selected", region == keyRegion);
 
             var keys = plan.MappedKeys.Concat(plan.UnmappedKeys).OrderBy(k => k).ToList();
             var visible = keys.Where(k => MatchesFilter(plan, k)).ToList();
-            var filtering = keyFilter != KeyFilter.All || !string.IsNullOrWhiteSpace(keySearch);
+            var filtering = keyFilter != KeyFilter.All || keyRegion != null || !string.IsNullOrWhiteSpace(keySearch);
 
             shownKeys = visible.Where(k => plan.MappedKeys.Contains(k)).ToList();
             bulkLabel.text = filtering
@@ -534,8 +608,8 @@ namespace Pawlygon.FaceTracking.Editor
                                                               + (plan.Multipliers.TryGetValue(k, out var scale) ? "x" + scale : "")
                                                               + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")
                                                               + (plan.ArkitOverlaps.TryGetValue(k, out var skip) ? "!" + skip.Arkit : "")))
-                          + filtering + string.Join(",", openGroups) + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "");
-            keysList.Update(listKey, container =>
+                          + keyRegion + keyFilter + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "");
+            keysRows.Update(listKey, container =>
             {
                 if (visible.Count == 0)
                 {
@@ -547,26 +621,31 @@ namespace Pawlygon.FaceTracking.Editor
 
                 foreach (var group in visible.GroupBy(k => KeyGroup(FTKeys.KeyName(k))))
                 {
-                    var groupKeys = keys.Where(k => KeyGroup(FTKeys.KeyName(k)) == group.Key).ToList();
-                    var groupMapped = groupKeys.Count(k => plan.MappedKeys.Contains(k));
-                    var name = group.Key;
-
-                    // Searching or filtering opens every group that has results
-                    var foldout = FTUI.Collapsible($"{name}  {groupMapped}/{groupKeys.Count}", filtering || openGroups.Contains(name));
-                    foldout.RegisterValueChangedCallback(e =>
+                    // With every region shown, each gets a heading with how much of it is mapped
+                    if (keyRegion == null)
                     {
-                        if (e.target != foldout || filtering) return;
-                        if (e.newValue) openGroups.Add(name);
-                        else openGroups.Remove(name);
-                    });
-                    foreach (var key in group) foldout.Add(KeyRow(plan, key));
-                    container.Add(foldout);
+                        var groupKeys = keys.Where(k => KeyGroup(FTKeys.KeyName(k)) == group.Key).ToList();
+                        var heading = new VisualElement();
+                        heading.AddToClassList("ft-key-group");
+                        heading.Add(FTUI.Text(group.Key, "ft-key-group__name"));
+                        heading.Add(FTUI.Text($"{groupKeys.Count(k => plan.MappedKeys.Contains(k))}/{groupKeys.Count}", "ft-key-group__count"));
+                        container.Add(heading);
+                    }
+
+                    var index = 0;
+                    foreach (var key in group)
+                    {
+                        var row = KeyRow(plan, key);
+                        row.EnableInClassList("ft-key--alt", index++ % 2 == 1);
+                        container.Add(row);
+                    }
                 }
             });
         }
 
         bool MatchesFilter(FaceTrackingSetupPlan plan, int key)
         {
+            if (keyRegion != null && KeyGroup(FTKeys.KeyName(key)) != keyRegion) return false;
             if (keyFilter == KeyFilter.Unmapped && !plan.UnmappedKeys.Contains(key)) return false;
             if (keyFilter == KeyFilter.Edited && !plan.OverriddenKeys.Contains(key) && !plan.Multipliers.ContainsKey(key)) return false;
             if (string.IsNullOrWhiteSpace(keySearch)) return true;
@@ -597,6 +676,7 @@ namespace Pawlygon.FaceTracking.Editor
                                 "Set Tongue Mode to TongueOut to map a single blendshape instead.";
                 row.Add(steps);
                 row.Add(MultiplierField(plan, key));
+                row.Add(Spacer("ft-key__reset"));
                 return row;
             }
 
@@ -630,14 +710,24 @@ namespace Pawlygon.FaceTracking.Editor
                 use.AddToClassList("ft-key__suggestion");
                 row.Add(use);
             }
+            // Every row keeps both columns, so they line up under the header
             if (mapped) row.Add(MultiplierField(plan, key));
+            else row.Add(Spacer("ft-key__multiplier"));
             if (edited)
             {
                 var reset = new Button(() => SetOverride(keyName, null, plan)) { text = "↺", tooltip = $"Back to the automatic match ({auto ?? "unmapped"})." };
                 reset.AddToClassList("ft-key__reset");
                 row.Add(reset);
             }
+            else row.Add(Spacer("ft-key__reset"));
             return row;
+        }
+
+        static VisualElement Spacer(string className)
+        {
+            var spacer = new VisualElement();
+            spacer.AddToClassList(className);
+            return spacer;
         }
 
         /// <summary>
