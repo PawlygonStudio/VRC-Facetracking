@@ -73,8 +73,8 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             // The viseme set has no key mappings, so it must never become a fix's weight set
             var setup = Setup("JawOpen", "EyeClosedLeft", "JawOpen-EyeClosedLeft", "vrc.v_aa");
             var sets = new[] { setup.Set }.ToList();
-            var toggles = FTTogglesPlan.Resolve(avatar.Add<PawlygonFTToggles>(), sets, true, true);
-            toggles.SplitVisemes(sets);
+            var visemes = FTVisemesPlan.Resolve(true, sets, true, true);
+            visemes.SplitVisemes(sets);
 
             var plan = FTFixPlan.Resolve(avatar.Add<PawlygonFTBlendshapeFixes>(), setup.Meshes, sets);
             Assert.That(plan.Entries.Single().WeightSet, Is.EqualTo(PawlygonFaceTracking.BaseSetName));

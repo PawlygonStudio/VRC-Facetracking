@@ -7,7 +7,7 @@ namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
     /// What a <see cref="PawlygonFTPupilEmulation"/> component will drive: the blendshapes the pupil keys map to,
-    /// whether the headset's pupil tracking can play on top, and which menu toggles Face Tracking Toggles adds.
+    /// whether the headset's pupil tracking can play on top, and which menu toggles it adds.
     /// Resolved the same way for the build and the inspector.
     /// </summary>
     internal sealed class FTPupilEmulationPlan
@@ -92,24 +92,24 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>The pupil keys are available (they need all tracking keys), so the headset's pupil tracking can play.</summary>
         public bool RealTracking;
 
-        /// <summary>Face Tracking Toggles adds a Pupil Tracking toggle to the menu. Without it, pupil tracking always plays.</summary>
+        /// <summary>The menu gets a Pupil Tracking toggle. Without it, pupil tracking always plays.</summary>
         public bool TrackingToggle;
 
-        /// <summary>Face Tracking Toggles adds a Pupil Emulation toggle to the menu. Without it, the emulation always plays.</summary>
+        /// <summary>The menu gets a Pupil Emulation toggle. Without it, the emulation always plays.</summary>
         public bool EmulationToggle;
 
         /// <summary>Synced bits the menu toggles use.</summary>
         public int ToggleBits => (TrackingToggle ? 1 : 0) + (EmulationToggle ? 1 : 0);
 
         /// <summary>
-        /// Which menu toggles Face Tracking Toggles asks for. There's nothing to toggle without pupil blendshapes, and
-        /// no pupil tracking to toggle without the pupil keys.
+        /// Which of the menu toggles the component asks for are added. There's nothing to toggle without pupil
+        /// blendshapes, and no pupil tracking to toggle without the pupil keys.
         /// </summary>
-        public void ResolveToggles(PawlygonFTToggles toggles)
+        public void ResolveToggles(bool trackingToggle, bool emulationToggle)
         {
-            if (toggles == null || Shapes.Count == 0) return;
-            TrackingToggle = toggles.pupilTrackingToggle && RealTracking;
-            EmulationToggle = toggles.pupilEmulationToggle;
+            if (Shapes.Count == 0) return;
+            TrackingToggle = trackingToggle && RealTracking;
+            EmulationToggle = emulationToggle;
         }
 
         public IEnumerable<Shape> DilationShapes => Shapes.Where(s => s.IsDilation);
@@ -165,35 +165,6 @@ namespace Pawlygon.FaceTracking.Editor
                 entry.Keys.Add(key);
                 if (!Mathf.Approximately(multiplier, 1f)) entry.Multipliers[key] = multiplier;
             }
-            return plan;
-        }
-
-        /// <summary>
-        /// The plan for an avatar as its build would resolve it, with the menu toggles its Face Tracking Toggles asks
-        /// for. Null when the avatar has no Pupil Emulation, or face tracking isn't enabled on it.
-        /// </summary>
-        public static FTPupilEmulationPlan ForAvatar(VRC.SDK3.Avatars.Components.VRCAvatarDescriptor avatar)
-        {
-            if (FTAvatarUtils.GetBuildComponents<PawlygonFTPupilEmulation>(avatar.gameObject).Count == 0) return null;
-
-            FTPupilEmulationPlan plan;
-            var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
-            if (setup != null)
-            {
-                var setupPlan = FaceTrackingSetupPlan.Resolve(setup, avatar);
-                plan = Resolve(setupPlan.Meshes, setupPlan.Set != null ? new[] { setupPlan.Set } : new BlendshapesSet[0], setup.useAllTrackingKeys);
-            }
-            else if (avatar.enableFaceTracking)
-            {
-                plan = Resolve(avatar.faceTrackingMeshes ?? new List<SkinnedMeshRenderer>(),
-                    avatar.faceTrackingBlendshapesSetList ?? new List<BlendshapesSet>(), avatar.useAllTrackingKeys);
-            }
-            else
-            {
-                return null;
-            }
-
-            plan.ResolveToggles(FTAvatarUtils.GetBuildComponents<PawlygonFTToggles>(avatar.gameObject).FirstOrDefault());
             return plan;
         }
 

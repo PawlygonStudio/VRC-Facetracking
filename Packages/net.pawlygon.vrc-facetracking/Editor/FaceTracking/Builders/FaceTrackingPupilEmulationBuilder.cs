@@ -12,8 +12,7 @@ namespace Pawlygon.FaceTracking.Editor
     /// <summary>
     /// Takes the pupil blendshapes over from native face tracking and drives them from an FX layer:
     /// Off → Idle → Eyes Closed (blink) → Blink Reflex → Idle while eye tracking is active. Each of those plays the
-    /// emulated movement with the headset's pupil tracking added on top, and Face Tracking Toggles can put a menu
-    /// toggle on either. The layer's weight is 0 while eye tracking is off, so the blendshapes are left as they are.
+    /// emulated movement with the headset's pupil tracking added on top, and the menu gets a toggle for either. The layer's weight is 0 while eye tracking is off, so the blendshapes are left as they are.
     /// </summary>
     internal sealed class FaceTrackingPupilEmulationBuilder : FTBuilder<PawlygonFTPupilEmulation>
     {
@@ -55,8 +54,8 @@ namespace Pawlygon.FaceTracking.Editor
                 return;
             }
 
-            var toggles = FTAvatarUtils.GetBuildComponents<PawlygonFTToggles>(context.AvatarRoot).FirstOrDefault();
-            plan.ResolveToggles(toggles);
+            var settings = FTLegacyToggles.Pupils(component, context.AvatarRoot);
+            plan.ResolveToggles(settings.TrackingToggle, settings.EmulationToggle);
 
             FTPupilEmulationPlan.UnmapPupilKeys(context.Sets);
             AddForward(context, LidParameter, LidExpression);
@@ -77,8 +76,8 @@ namespace Pawlygon.FaceTracking.Editor
             // Set by the owner's driver and synced, like Face Tracking Guards does
             FTAvatarAssets.AddParameter(context.Generated.Parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
 
-            if (plan.TrackingToggle) AddToggle(toggles, context, "Pupil Tracking", FTPupilEmulationPlan.TrackingParameter, "Eye_Dilatation_Tracking_Icon.png");
-            if (plan.EmulationToggle) AddToggle(toggles, context, "Pupil Emulation", FTPupilEmulationPlan.EmulationParameter, "Eye_Tracking_Icon.png");
+            if (plan.TrackingToggle) AddToggle(settings.MenuName, context, "Pupil Tracking", FTPupilEmulationPlan.TrackingParameter, "Eye_Dilatation_Tracking_Icon.png");
+            if (plan.EmulationToggle) AddToggle(settings.MenuName, context, "Pupil Emulation", FTPupilEmulationPlan.EmulationParameter, "Eye_Tracking_Icon.png");
 
             WarnAboutFakePupils(component, context);
         }
@@ -86,13 +85,13 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>
         /// A menu toggle that starts on. Everyone's layer reads it, so it's synced, and the choice is saved.
         /// </summary>
-        static void AddToggle(PawlygonFTToggles toggles, FTBuildContext context, string name, string parameter, string icon)
+        static void AddToggle(string menuName, FTBuildContext context, string name, string parameter, string icon)
         {
             FTAvatarAssets.AddParameter(context.Generated.Parameters, parameter, VRCExpressionParameters.ValueType.Bool, 1, true, true);
 
-            var menu = FaceTrackingTogglesBuilder.ControlsMenu(toggles, context, parameter);
+            var menu = FTMenu.ControlsMenu(menuName, context, parameter);
             if (menu == null) return;
-            menu.controls.Add(FTAvatarAssets.CreateControl(name, VRCExpressionsMenu.Control.ControlType.Toggle, parameter, FaceTrackingTogglesBuilder.Icon(icon)));
+            menu.controls.Add(FTAvatarAssets.CreateControl(name, VRCExpressionsMenu.Control.ControlType.Toggle, parameter, FTMenu.Icon(icon)));
             EditorUtility.SetDirty(menu);
         }
 

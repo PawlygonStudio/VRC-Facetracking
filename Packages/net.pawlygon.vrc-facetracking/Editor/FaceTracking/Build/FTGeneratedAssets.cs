@@ -89,6 +89,7 @@ namespace Pawlygon.FaceTracking.Editor
         public void Install()
         {
             if (fx == null && parameters == null && menu == null) return;
+            FTMenu.Order(menu);
             merger.Install(context.AvatarRoot, fx, parameters, menu);
             AssetDatabase.SaveAssets();
         }

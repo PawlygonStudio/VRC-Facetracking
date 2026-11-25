@@ -4,7 +4,7 @@ namespace Pawlygon.FaceTracking
 {
     /// <summary>
     /// Gives the pupils life, with or without pupil tracking: while eye tracking is active they drift gently
-    /// and react to every blink. When the headset tracks pupils, that plays on top.
+    /// and react to every blink. When the headset tracks pupils, that plays on top, and the menu gets a toggle for each.
     /// At build time, the pupil blendshapes are taken over from native face tracking and driven by an FX layer.
     /// </summary>
     [AddComponentMenu("Pawlygon/Pawlygon Face Tracking Pupil Emulation")]
@@ -43,5 +43,14 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("EyeDilation added when both mouth corners fully frown.")]
         [Range(0f, 100f)] public float frownDilation = 70f;
+
+        [Tooltip("Add a Pupil Tracking toggle to the menu, on to start with. Off ignores the pupil size the headset reports.")]
+        public bool pupilTrackingToggle = true;
+
+        [Tooltip("Add a Pupil Emulation toggle to the menu, on to start with. Off stops the emulated pupil movement.")]
+        public bool pupilEmulationToggle = true;
+
+        [Tooltip("Submenu of the avatar's main menu that gets the toggles. Created if missing. Leave empty to put them in the main menu.")]
+        public string menuName = "Face Tracking";
     }
 }

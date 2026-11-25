@@ -25,6 +25,11 @@ namespace Pawlygon.FaceTracking.Editor
         VisualElement keysTools;
         Button[] filterButtons;
         Label bulkLabel;
+
+        readonly FTDynamic visemesBadges = new FTDynamic();
+        readonly FTDynamic visemesParameters = new FTDynamic();
+        VisualElement visemesBody;
+        Label visemesNote;
         List<int> shownKeys = new List<int>();
 
         enum KeyFilter
@@ -59,7 +64,8 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override string Details =>
             "Sets up VRChat's native face tracking on the avatar descriptor when the avatar is built or uploaded: " +
-            "meshes, blendshape mapping, visemes, eyelids and eye gaze. The avatar in your scene isn't changed. " +
+            "meshes, blendshape mapping, visemes, eyelids and eye gaze. It can also add a Visemes submenu to the avatar's menu, " +
+            "to turn visemes down while face tracking is active. The avatar in your scene isn't changed. " +
             "To inspect the result, right-click the avatar > !Pawlygon > Face Tracking > Build Test Copy.";
 
         protected override void BuildBody(VisualElement body)
@@ -89,6 +95,23 @@ namespace Pawlygon.FaceTracking.Editor
             var dampenAmount = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemeDampenAmount)), "Amount");
             dampenAmount.AddToClassList("ft-sub-field");
             lipSync.Add(dampenAmount);
+
+            // Same layout as the Guards cards: badges and the switch in the header, the settings greyed out while it's off
+            var visemes = FTUI.Card(body, "Visemes Menu", out var visemesExtras);
+            visemesExtras.Add(visemesBadges.Element);
+            visemesBadges.Element.style.flexDirection = FlexDirection.Row;
+            var visemesToggle = new Toggle { tooltip = "Add the Visemes submenu to the avatar's menu." };
+            visemesToggle.AddToClassList("ft-toggle");
+            visemesToggle.BindProperty(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemesMenu)));
+            visemesExtras.Add(visemesToggle);
+
+            visemesBody = new VisualElement();
+            visemesNote = FTUI.Text("", "ft-muted", "ft-card__note");
+            visemesBody.Add(visemesNote);
+            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.visemesDefault)), "Default Level"));
+            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.menuName)), "In Menu"));
+            visemesBody.Add(visemesParameters.Element);
+            visemes.Add(visemesBody);
 
             var eyes = FTUI.Card(body, "Eyes", out _);
             eyes.Add(FieldWithResult(nameof(PawlygonFaceTracking.eyelids), "Eyelids", out eyelidsResult));
@@ -170,6 +193,91 @@ namespace Pawlygon.FaceTracking.Editor
             previewAvatar = avatar;
             previewPlan = plan;
             UpdateResults(plan, avatar);
+            UpdateVisemesMenu(plan, avatar, issues);
+        }
+
+        /// <summary>The Visemes menu the build will add, from the same plan it uses.</summary>
+        void UpdateVisemesMenu(FaceTrackingSetupPlan setup, VRCAvatarDescriptor avatar, FTIssues issues)
+        {
+            var settings = FTLegacyToggles.Visemes(Component, avatar.gameObject);
+            if (settings.Legacy != null)
+            {
+                var legacy = settings.Legacy;
+                issues.Warning("A Face Tracking Toggles component from 2.1 is on this avatar.",
+                    "Its Visemes settings are used in place of the ones here. Move Settings copies them to Face Tracking and Pupil Emulation " +
+                    "and removes it (undoable).",
+                    ("Move Settings", () => { FTLegacyToggles.MoveSettings(legacy, avatar.gameObject); RefreshNow(); }),
+                    ("Select", () => Select(legacy.gameObject)));
+            }
+
+            var sets = setup.Set != null ? new[] { setup.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0];
+            var plan = FTVisemesPlan.Resolve(settings.Menu, sets, setup.UseFaceTrackingLipSync, FTMerger.Find() != null);
+            if (plan.VisemesSkipped != null && !plan.NoVisemes) issues.Warning("The Visemes menu won't be added.", plan.VisemesSkipped);
+
+            // The 2.1 component's settings can't be edited here
+            visemesBody.SetEnabled(settings.Menu && settings.Legacy == null);
+            visemesNote.text = VisemesNote(settings);
+
+            var count = plan.VisemeSets.Sum(s => s.Visemes);
+            var bits = plan.SyncedBits;
+            visemesBadges.Update($"{settings.Menu}|{plan.AddsVisemesMenu}|{count}|{bits}|{plan.VisemesSkipped}", container =>
+            {
+                if (!settings.Menu)
+                {
+                    container.Add(FTUI.Badge("off", FTKind.Muted));
+                    return;
+                }
+                if (!plan.AddsVisemesMenu)
+                {
+                    container.Add(FTUI.Badge("not added", plan.NoVisemes ? FTKind.Muted : FTKind.Warning, plan.VisemesSkipped));
+                    return;
+                }
+
+                container.Add(FTUI.Badge($"{count} {(count == 1 ? "viseme" : "visemes")}", FTKind.Muted,
+                    "The avatar's visemes, which the menu turns down. When the avatar is built they move to a blendshapes set of their own, " +
+                    $"'{FTVisemesPlan.VisemeSetName}', so they can be turned down without the rest of the face."));
+                container.Add(FTUI.Badge($"{bits} synced bits", FTKind.Ok,
+                    "The level in effect is synced, so everyone sees the same. The level picked in the menu isn't."));
+            });
+
+            visemesParameters.Update(plan.AddsVisemesMenu.ToString(), container =>
+            {
+                if (!plan.AddsVisemesMenu) return;
+
+                container.Add(FTUI.Text("Levels", "ft-group-title"));
+                container.Add(FTUI.Chips(FTVisemesPlan.Levels.Select(level =>
+                {
+                    var percent = Mathf.RoundToInt(FTVisemesPlan.LevelWeight(level) * 100f);
+                    return ($"{level} {percent}%", $"Visemes play at {percent}% of their strength while face tracking is active.");
+                })));
+
+                container.Add(FTUI.Text("Parameters", "ft-group-title"));
+                container.Add(FTUI.Chips(new[]
+                {
+                    (FTVisemesPlan.VisemesLevelParameter, "The level picked in the Visemes menu. Saved, not synced."),
+                    (FTVisemesPlan.VisemesBitAParameter,
+                        "With VisemesB, the level in effect: the picked one while face tracking is active, Full otherwise. Set on your side and synced, 1 bit."),
+                    (FTVisemesPlan.VisemesBitBParameter, "With VisemesA, the level in effect. Set on your side and synced, 1 bit."),
+                }));
+            });
+        }
+
+        /// <summary>What visemes do with these settings, and where the menu that changes it is.</summary>
+        static string VisemesNote(FTLegacyToggles.VisemeSettings settings)
+        {
+            if (!settings.Menu) return "Visemes always play in full, on top of the tracked mouth.";
+
+            var where = $"The Visemes submenu in {FTMenu.Describe(settings.MenuName)} picks how much of them plays while face tracking is active.";
+            switch (settings.Default)
+            {
+                case FTVisemesLevel.Full:
+                    return $"Visemes play as usual. {where}";
+                case FTVisemesLevel.Off:
+                    return $"With face tracking active, visemes are off until another level is picked. Without face tracking they always play in full. {where}";
+                default:
+                    var percent = Mathf.RoundToInt(FTVisemesPlan.LevelWeight(settings.Default) * 100f);
+                    return $"With face tracking active, visemes play at {percent}% until another level is picked. Without face tracking they always play in full. {where}";
+            }
         }
 
         void SetTongueMode(FTTongueMode mode)

@@ -12,7 +12,7 @@ namespace Pawlygon.FaceTracking.Editor
     /// picked in the menu while face tracking is active, Full otherwise), which is synced as two bits. The other runs
     /// for everyone and sets the viseme sets' weight for that level with VRChat's blendshapes set behaviour.
     /// </summary>
-    internal static class FTToggleLayers
+    internal static class FTVisemeLayers
     {
         public const string DriverLayer = "Pawlygon FT - Visemes Level";
         public const string WeightLayer = "Pawlygon FT - Visemes";
@@ -26,24 +26,24 @@ namespace Pawlygon.FaceTracking.Editor
         public static void AddVisemesDriver(AnimatorController controller)
         {
             FXGuardWriter.OnOffConditions(controller, FTGuardDriver.UserFaceTracking, AnimatorControllerParameterType.Bool, out var tracking, out var notTracking);
-            FXGuardWriter.EnsureParameter(controller, FTTogglesPlan.VisemesLevelParameter, AnimatorControllerParameterType.Int);
-            FXGuardWriter.EnsureParameter(controller, FTTogglesPlan.VisemesBitAParameter, AnimatorControllerParameterType.Bool);
-            FXGuardWriter.EnsureParameter(controller, FTTogglesPlan.VisemesBitBParameter, AnimatorControllerParameterType.Bool);
+            FXGuardWriter.EnsureParameter(controller, FTVisemesPlan.VisemesLevelParameter, AnimatorControllerParameterType.Int);
+            FXGuardWriter.EnsureParameter(controller, FTVisemesPlan.VisemesBitAParameter, AnimatorControllerParameterType.Bool);
+            FXGuardWriter.EnsureParameter(controller, FTVisemesPlan.VisemesBitBParameter, AnimatorControllerParameterType.Bool);
 
             var machine = FTGuardDriver.AddLayer(controller, DriverLayer);
             var states = new Dictionary<FTVisemesLevel, AnimatorState>();
-            foreach (var level in FTTogglesPlan.Levels)
+            foreach (var level in FTVisemesPlan.Levels)
             {
                 states[level] = FTGuardDriver.DriverState(machine, StateName(level), new Vector3(300, 100 * states.Count),
-                    (FTTogglesPlan.VisemesBitAParameter, FTTogglesPlan.BitA(level) ? 1f : 0f),
-                    (FTTogglesPlan.VisemesBitBParameter, FTTogglesPlan.BitB(level) ? 1f : 0f));
+                    (FTVisemesPlan.VisemesBitAParameter, FTVisemesPlan.BitA(level) ? 1f : 0f),
+                    (FTVisemesPlan.VisemesBitBParameter, FTVisemesPlan.BitB(level) ? 1f : 0f));
             }
             machine.defaultState = states[FTVisemesLevel.Full];
 
-            foreach (var from in FTTogglesPlan.Levels)
+            foreach (var from in FTVisemesPlan.Levels)
             {
                 // A lower level needs face tracking and that level picked
-                foreach (var to in FTTogglesPlan.Levels.Where(l => l != from && l != FTVisemesLevel.Full))
+                foreach (var to in FTVisemesPlan.Levels.Where(l => l != from && l != FTVisemesLevel.Full))
                 {
                     FTGuardDriver.Transition(states[from], states[to], tracking, Picked(to));
                 }
@@ -57,33 +57,33 @@ namespace Pawlygon.FaceTracking.Editor
 
         static AnimatorCondition Picked(FTVisemesLevel level)
         {
-            return new AnimatorCondition { mode = AnimatorConditionMode.Equals, parameter = FTTogglesPlan.VisemesLevelParameter, threshold = (int)level };
+            return new AnimatorCondition { mode = AnimatorConditionMode.Equals, parameter = FTVisemesPlan.VisemesLevelParameter, threshold = (int)level };
         }
 
         /// <summary>The viseme sets play at their own weight, scaled by the level the synced bits say.</summary>
-        public static void AddVisemesWeightLayer(AnimatorController controller, IReadOnlyList<FTTogglesPlan.VisemeSet> sets)
+        public static void AddVisemesWeightLayer(AnimatorController controller, IReadOnlyList<FTVisemesPlan.VisemeSet> sets)
         {
-            FXGuardWriter.OnOffConditions(controller, FTTogglesPlan.VisemesBitAParameter, AnimatorControllerParameterType.Bool, out var aOn, out var aOff);
-            FXGuardWriter.OnOffConditions(controller, FTTogglesPlan.VisemesBitBParameter, AnimatorControllerParameterType.Bool, out var bOn, out var bOff);
+            FXGuardWriter.OnOffConditions(controller, FTVisemesPlan.VisemesBitAParameter, AnimatorControllerParameterType.Bool, out var aOn, out var aOff);
+            FXGuardWriter.OnOffConditions(controller, FTVisemesPlan.VisemesBitBParameter, AnimatorControllerParameterType.Bool, out var bOn, out var bOff);
 
             var machine = FTGuardDriver.AddLayer(controller, WeightLayer);
             var states = new Dictionary<FTVisemesLevel, AnimatorState>();
-            foreach (var level in FTTogglesPlan.Levels)
+            foreach (var level in FTVisemesPlan.Levels)
             {
-                states[level] = WeightState(machine, StateName(level), new Vector3(300, 100 * states.Count), sets, FTTogglesPlan.LevelWeight(level));
+                states[level] = WeightState(machine, StateName(level), new Vector3(300, 100 * states.Count), sets, FTVisemesPlan.LevelWeight(level));
             }
             machine.defaultState = states[FTVisemesLevel.Full];
 
-            foreach (var from in FTTogglesPlan.Levels)
+            foreach (var from in FTVisemesPlan.Levels)
             {
-                foreach (var to in FTTogglesPlan.Levels.Where(l => l != from))
+                foreach (var to in FTVisemesPlan.Levels.Where(l => l != from))
                 {
-                    FTGuardDriver.Transition(states[from], states[to], FTTogglesPlan.BitA(to) ? aOn : aOff, FTTogglesPlan.BitB(to) ? bOn : bOff);
+                    FTGuardDriver.Transition(states[from], states[to], FTVisemesPlan.BitA(to) ? aOn : aOff, FTVisemesPlan.BitB(to) ? bOn : bOff);
                 }
             }
         }
 
-        static AnimatorState WeightState(AnimatorStateMachine machine, string name, Vector3 position, IReadOnlyList<FTTogglesPlan.VisemeSet> sets, float scale)
+        static AnimatorState WeightState(AnimatorStateMachine machine, string name, Vector3 position, IReadOnlyList<FTVisemesPlan.VisemeSet> sets, float scale)
         {
             var state = machine.AddState(name, position);
             state.writeDefaultValues = false;

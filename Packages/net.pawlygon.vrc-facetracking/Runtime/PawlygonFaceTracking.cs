@@ -52,6 +52,18 @@ namespace Pawlygon.FaceTracking
         DampenVisemes,
     }
 
+    /// <summary>
+    /// How much of the visemes plays while face tracking is active. The numbers are the menu parameter's values:
+    /// Full is 0, so turning any other level's toggle off in the menu goes back to full visemes.
+    /// </summary>
+    public enum FTVisemesLevel
+    {
+        Full = 0,
+        Medium = 1,
+        Low = 2,
+        Off = 3,
+    }
+
     /// <summary>A tracking key mapped by hand.</summary>
     [Serializable]
     public class FTKeyOverride
@@ -125,5 +137,15 @@ namespace Pawlygon.FaceTracking
 
         [Range(0f, 1f)]
         public float visemeDampenAmount = 0.5f;
+
+        [Tooltip("Add a Visemes submenu to the avatar's menu, with Full, Medium, Low and Off. The level applies while face tracking is active, " +
+                 "so visemes don't play at full strength on top of the tracked mouth. Needs face tracking visemes, and VRCFury or Modular Avatar.")]
+        public bool visemesMenu = true;
+
+        [Tooltip("The level the menu starts on. Full plays visemes as usual until another level is picked. The pick is saved.")]
+        public FTVisemesLevel visemesDefault = FTVisemesLevel.Full;
+
+        [Tooltip("Submenu of the avatar's main menu that gets the Visemes submenu. Created if missing. Leave empty to put it in the main menu.")]
+        public string menuName = "Face Tracking";
     }
 }

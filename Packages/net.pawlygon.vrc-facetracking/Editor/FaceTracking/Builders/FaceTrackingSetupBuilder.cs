@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDKBase;
 using ParameterBehavior = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.FaceTrackingParameterBehavior;
 
@@ -46,6 +48,50 @@ namespace Pawlygon.FaceTracking.Editor
             ApplyAvatarSettings(plan, descriptor);
             plans.Remove(component);
             plans.Add(component, plan);
+
+            AddVisemesMenu(component, context, plan);
+        }
+
+        /// <summary>
+        /// The Visemes menu. A blendshapes set has one weight for everything in it, so the visemes move to a set of
+        /// their own, and layers merged by VRCFury or Modular Avatar change that set's weight. Without the menu the
+        /// avatar builds with the base set alone.
+        /// </summary>
+        static void AddVisemesMenu(PawlygonFaceTracking component, FTBuildContext context, FaceTrackingSetupPlan setup)
+        {
+            var settings = FTLegacyToggles.Visemes(component, context.AvatarRoot);
+            var plan = FTVisemesPlan.Resolve(settings.Menu, context.Sets, setup.UseFaceTrackingLipSync, FTMerger.Find() != null);
+            if (plan.VisemesSkipped != null && !plan.NoVisemes)
+            {
+                Debug.LogWarning($"[{FTErrorBoundary.Title}] The Visemes menu wasn't added. {plan.VisemesSkipped}", component);
+            }
+            if (!plan.AddsVisemesMenu) return;
+
+            plan.SplitVisemes(context.Sets);
+
+            var fx = context.Generated.FX;
+            FTVisemeLayers.AddVisemesDriver(fx);
+            FTVisemeLayers.AddVisemesWeightLayer(fx, plan.VisemeSets);
+
+            var parameters = context.Generated.Parameters;
+            // Read by the owner's driver only, so it doesn't need syncing
+            FTAvatarAssets.AddParameter(parameters, FTVisemesPlan.VisemesLevelParameter, VRCExpressionParameters.ValueType.Int, (int)settings.Default, true, false);
+            FTAvatarAssets.AddParameter(parameters, FTVisemesPlan.VisemesBitAParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+            FTAvatarAssets.AddParameter(parameters, FTVisemesPlan.VisemesBitBParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
+
+            // A Visemes submenu with one toggle per level, each setting the menu parameter to its level
+            var menu = FTMenu.ControlsMenu(settings.MenuName, context, FTVisemesPlan.VisemesLevelParameter);
+            if (menu == null) return;
+
+            var icon = FTMenu.Icon("Visemes_Icon.png");
+            var levels = context.Generated.GetSubmenu(menu, FTVisemesPlan.VisemesMenuName, icon);
+            foreach (var level in FTVisemesPlan.Levels)
+            {
+                var control = FTAvatarAssets.CreateControl(level.ToString(), VRCExpressionsMenu.Control.ControlType.Toggle, FTVisemesPlan.VisemesLevelParameter, icon);
+                control.value = (int)level;
+                levels.controls.Add(control);
+            }
+            EditorUtility.SetDirty(levels);
         }
 
         /// <summary>

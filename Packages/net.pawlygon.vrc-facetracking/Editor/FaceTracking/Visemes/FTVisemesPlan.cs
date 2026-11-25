@@ -5,11 +5,10 @@ using BlendshapesSet = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.FaceTrack
 namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
-    /// What a <see cref="PawlygonFTToggles"/> component adds for visemes. Resolved the same way for the build and the
-    /// inspector. A blendshapes set has one weight for everything in it, so turning visemes down alone needs them in a
+    /// What Face Tracking's Visemes menu adds. Resolved the same way for the build and the inspector. A blendshapes set has one weight for everything in it, so turning visemes down alone needs them in a
     /// set of their own: each set's viseme mappings move to a new set, whose weight an FX layer then changes.
     /// </summary>
-    internal sealed class FTTogglesPlan
+    internal sealed class FTVisemesPlan
     {
         /// <summary>The level picked in the Visemes menu, as an <see cref="FTVisemesLevel"/>: saved, and only read by the owner's driver.</summary>
         public const string VisemesLevelParameter = "PawlygonFT/Visemes";
@@ -60,6 +59,9 @@ namespace Pawlygon.FaceTracking.Editor
         /// <summary>Why the Visemes menu isn't added although it's on, or null.</summary>
         public string VisemesSkipped;
 
+        /// <summary>It's skipped because the avatar has no face tracking visemes, which isn't worth a warning.</summary>
+        public bool NoVisemes;
+
         public bool AddsVisemesMenu => VisemeSets.Count > 0;
 
         /// <summary>Synced bits the Visemes menu's parameters use.</summary>
@@ -68,16 +70,17 @@ namespace Pawlygon.FaceTracking.Editor
         /// <param name="sets">The avatar's blendshapes sets, as they are before the visemes are split off.</param>
         /// <param name="faceTrackingLipSync">Whether lip sync is (or will be) the face tracking viseme mode.</param>
         /// <param name="hasMerger">Whether VRCFury or Modular Avatar is there to merge the layers, parameters and menu.</param>
-        public static FTTogglesPlan Resolve(PawlygonFTToggles component, IEnumerable<BlendshapesSet> sets, bool faceTrackingLipSync, bool hasMerger)
+        public static FTVisemesPlan Resolve(bool visemesMenu, IEnumerable<BlendshapesSet> sets, bool faceTrackingLipSync, bool hasMerger)
         {
-            var plan = new FTTogglesPlan();
-            if (!component.visemesMenu) return plan;
+            var plan = new FTVisemesPlan();
+            if (!visemesMenu) return plan;
 
             var setList = sets.Where(s => s != null).ToList();
             var withVisemes = setList.Where(s => CountVisemes(s) > 0).ToList();
             if (!faceTrackingLipSync || withVisemes.Count == 0)
             {
                 plan.VisemesSkipped = "Lip sync doesn't use face tracking visemes, so there's nothing for the Visemes menu to turn down.";
+                plan.NoVisemes = true;
                 return plan;
             }
             if (!hasMerger)
