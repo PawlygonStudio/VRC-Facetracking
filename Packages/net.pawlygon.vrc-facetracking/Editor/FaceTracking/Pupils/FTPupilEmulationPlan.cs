@@ -7,7 +7,8 @@ namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
     /// What a <see cref="PawlygonFTPupilEmulation"/> component will drive: the blendshapes the pupil keys map to,
-    /// and whether real pupil tracking can take over. Resolved the same way for the build and the inspector.
+    /// whether the headset's pupil tracking can play on top, and which menu toggles it adds.
+    /// Resolved the same way for the build and the inspector.
     /// </summary>
     internal sealed class FTPupilEmulationPlan
     {
@@ -17,6 +18,9 @@ namespace Pawlygon.FaceTracking.Editor
             public string Name;
             public bool IsDilation;
             public readonly List<int> Keys = new List<int>();
+
+            /// <summary>The keys' multipliers in the set they were mapped in, where they aren't 1.</summary>
+            public readonly Dictionary<int, float> Multipliers = new Dictionary<int, float>();
 
             /// <summary>Left, Right, or Both when the shape's keys cover both eyes.</summary>
             public string Side
@@ -51,26 +55,62 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 get
                 {
-                    var dilation = Average(DilationShapes.SelectMany(s => s.Keys).Distinct().ToList());
-                    var constrict = Average(ConstrictShapes.SelectMany(s => s.Keys).Distinct().ToList());
+                    var dilation = Average(DilationShapes);
+                    var constrict = Average(ConstrictShapes);
                     if (constrict == null) return dilation;
                     return $"{dilation ?? "0"} - {constrict}";
                 }
             }
 
-            static string Average(List<int> keys)
+            /// <summary>The shapes' keys, each with the multiplier it had in its set, since the pupil keys are taken out of the sets.</summary>
+            static string Average(IEnumerable<Shape> shapes)
             {
+                var keys = new List<string>();
+                var seen = new HashSet<int>();
+                foreach (var shape in shapes)
+                {
+                    foreach (var key in shape.Keys.Where(seen.Add))
+                    {
+                        keys.Add(FTKeys.Scaled(FTKeys.KeyName(key), shape.Multipliers.TryGetValue(key, out var multiplier) ? multiplier : 1f));
+                    }
+                }
                 if (keys.Count == 0) return null;
-                return keys.Count == 1 ? FTKeys.KeyName(keys[0]) : $"({string.Join(" + ", keys.Select(FTKeys.KeyName))}) / {keys.Count}";
+                return keys.Count == 1 ? keys[0] : $"({string.Join(" + ", keys)}) / {keys.Count}";
             }
         }
 
         public const string ParameterPrefix = "PawlygonFT/Pupils/";
 
+        /// <summary>The Pupil Tracking menu toggle: whether the headset's pupil tracking plays. Saved and synced.</summary>
+        public const string TrackingParameter = "PawlygonFT/PupilTracking";
+
+        /// <summary>The Pupil Emulation menu toggle: whether the emulated pupil movement plays. Saved and synced.</summary>
+        public const string EmulationParameter = "PawlygonFT/PupilEmulation";
+
         public readonly List<Shape> Shapes = new List<Shape>();
 
-        /// <summary>The pupil keys are available (they need all tracking keys), so real pupil tracking can take over.</summary>
+        /// <summary>The pupil keys are available (they need all tracking keys), so the headset's pupil tracking can play.</summary>
         public bool RealTracking;
+
+        /// <summary>The menu gets a Pupil Tracking toggle. Without it, pupil tracking always plays.</summary>
+        public bool TrackingToggle;
+
+        /// <summary>The menu gets a Pupil Emulation toggle. Without it, the emulation always plays.</summary>
+        public bool EmulationToggle;
+
+        /// <summary>Synced bits the menu toggles use.</summary>
+        public int ToggleBits => (TrackingToggle ? 1 : 0) + (EmulationToggle ? 1 : 0);
+
+        /// <summary>
+        /// Which of the menu toggles the component asks for are added. There's nothing to toggle without pupil
+        /// blendshapes, and no pupil tracking to toggle without the pupil keys.
+        /// </summary>
+        public void ResolveToggles(bool trackingToggle, bool emulationToggle)
+        {
+            if (Shapes.Count == 0) return;
+            TrackingToggle = trackingToggle && RealTracking;
+            EmulationToggle = emulationToggle;
+        }
 
         public IEnumerable<Shape> DilationShapes => Shapes.Where(s => s.IsDilation);
         public IEnumerable<Shape> ConstrictShapes => Shapes.Where(s => !s.IsDilation);
@@ -102,8 +142,13 @@ namespace Pawlygon.FaceTracking.Editor
 
             foreach (var key in pupilKeys)
             {
-                var shape = setList.Select(s => key < s.faceTrackingBlendshapeNames.Length ? s.faceTrackingBlendshapeNames[key] : null)
-                    .FirstOrDefault(n => !string.IsNullOrEmpty(n) && names.Contains(n));
+                var source = setList.FirstOrDefault(s => key < s.faceTrackingBlendshapeNames.Length
+                                                         && !string.IsNullOrEmpty(s.faceTrackingBlendshapeNames[key])
+                                                         && names.Contains(s.faceTrackingBlendshapeNames[key]));
+                var shape = source?.faceTrackingBlendshapeNames[key];
+                var multiplier = source?.faceTrackingBlendshapeMultipliers != null && key < source.faceTrackingBlendshapeMultipliers.Length
+                    ? source.faceTrackingBlendshapeMultipliers[key]
+                    : 1f;
                 if (shape == null)
                 {
                     var index = FTKeys.FindKey(names, key);
@@ -118,6 +163,7 @@ namespace Pawlygon.FaceTracking.Editor
                     plan.Shapes.Add(entry);
                 }
                 entry.Keys.Add(key);
+                if (!Mathf.Approximately(multiplier, 1f)) entry.Multipliers[key] = multiplier;
             }
             return plan;
         }

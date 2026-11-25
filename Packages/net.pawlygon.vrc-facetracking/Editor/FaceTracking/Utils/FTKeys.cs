@@ -57,6 +57,14 @@ namespace Pawlygon.FaceTracking.Editor
 
         public static string KeyName(int key) => ((VRCAvatarDescriptor.FaceTrackingKey)key).ToString();
 
+        /// <summary>A key in an expression with its multiplier, like the set applies it: just the key when it's 1.</summary>
+        public static string Scaled(string key, float multiplier)
+        {
+            return Mathf.Approximately(multiplier, 1f)
+                ? key
+                : $"{key} * {multiplier.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)}";
+        }
+
         /// <summary>The tracking key with this name, or -1.</summary>
         public static int KeyByName(string name)
         {

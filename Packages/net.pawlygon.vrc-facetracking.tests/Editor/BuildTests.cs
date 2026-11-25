@@ -23,6 +23,17 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         [TearDown]
         public void TearDown() => avatar.Dispose();
 
+        /// <summary>
+        /// Without the Visemes menu, which adds animator layers: those are saved as assets and handed to VRCFury or
+        /// Modular Avatar.
+        /// </summary>
+        PawlygonFaceTracking AddFaceTracking()
+        {
+            var component = avatar.Add<PawlygonFaceTracking>();
+            component.visemesMenu = false;
+            return component;
+        }
+
         void AddFullFace()
         {
             avatar.AddMesh("Body", TestAvatar.AllKeyNames.Concat(new[] { "vrc.v_aa", "vrc.v_oh", "JawOpen-EyeClosedLeft" }).ToArray());
@@ -32,7 +43,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         public void DescriptorPassWritesTheSetup()
         {
             AddFullFace();
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
             avatar.Add<PawlygonFTBlendshapeFixes>();
             avatar.Add<PawlygonFTEmulation>();
 
@@ -62,7 +73,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         public void GeneratedExpressionsPassTheSdkValidator()
         {
             AddFullFace();
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
             avatar.Add<PawlygonFTBlendshapeFixes>();
             var emulation = avatar.Add<PawlygonFTEmulation>();
             // Every rule on is the most expressions an avatar can get
@@ -79,7 +90,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         public void TongueStepsAreDrivenByExpressions()
         {
             avatar.AddMesh("Body", "JawOpen", "Tongue_LongStep1", "Tongue_LongStep2");
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
 
             FTBuildRunner.Run(avatar.Root, FTPass.Descriptor);
 
@@ -96,7 +107,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             var fx = avatar.AddFX();
             fx.AddParameter("FT/v2/JawX", AnimatorControllerParameterType.Float);
             ParameterTests.AddLayerReading(fx, "FT/v2/JawX");
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
             avatar.Add<PawlygonFTParameters>();
 
             FTBuildRunner.Run(avatar.Root, FTPass.Descriptor);
@@ -113,18 +124,19 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
-        public void TogglesWithoutAToggleChangeNothing()
+        public void A21TogglesComponentDecidesTheVisemesMenu()
         {
             AddFullFace();
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
             FTBuildRunner.Run(avatar.Root, FTPass.Descriptor);
             var expected = Describe(avatar.Descriptor);
 
+            // Face Tracking alone would add the menu here. The 2.1 component, still on the avatar, says not to.
             using (var other = new TestAvatar())
             {
                 other.AddMesh("Body", TestAvatar.AllKeyNames.Concat(new[] { "vrc.v_aa", "vrc.v_oh", "JawOpen-EyeClosedLeft" }).ToArray());
                 other.Add<PawlygonFaceTracking>();
-                other.Add<PawlygonFTToggles>().visemesToggle = false;
+                other.Add<PawlygonFTToggles>().visemesMenu = false;
                 FTBuildRunner.Run(other.Root, FTPass.Descriptor);
 
                 Assert.That(Describe(other.Descriptor), Is.EqualTo(expected));
@@ -135,8 +147,8 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         public void TwoFaceTrackingComponentsStopTheBuild()
         {
             AddFullFace();
-            avatar.Add<PawlygonFaceTracking>();
-            avatar.Add<PawlygonFaceTracking>();
+            AddFaceTracking();
+            AddFaceTracking();
 
             Assert.Throws<FTBuildException>(() => FTBuildRunner.Run(avatar.Root, FTPass.Descriptor));
         }
@@ -145,7 +157,7 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         public void EditorOnlyComponentsAreNotBuilt()
         {
             AddFullFace();
-            avatar.Add<PawlygonFaceTracking>().gameObject.tag = "EditorOnly";
+            AddFaceTracking().gameObject.tag = "EditorOnly";
 
             FTBuildRunner.Run(avatar.Root, FTPass.Descriptor);
 

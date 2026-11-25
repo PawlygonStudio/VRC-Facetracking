@@ -1,138 +1,66 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDKBase;
 
 namespace Pawlygon.FaceTracking.Editor
 {
+    /// <summary>The 2.1 component, which only hands its settings over now.</summary>
     [CustomEditor(typeof(PawlygonFTToggles))]
     internal sealed class PawlygonFTTogglesEditor : FTComponentEditor<PawlygonFTToggles>
     {
-        readonly FTDynamic visemesBadges = new FTDynamic();
-        readonly FTDynamic visemesParameters = new FTDynamic();
-        VisualElement visemesBody;
-        Label visemesNote;
+        readonly FTDynamic settings = new FTDynamic();
+        Button move;
 
         protected override string Title => "Face Tracking Toggles";
-        protected override string Subtitle => "Menu toggles for face tracking.";
+        protected override string Subtitle => "Replaced in 2.2 by settings in Face Tracking and Pupil Emulation.";
 
         protected override string Details =>
-            "Adds a Disable Visemes toggle to the avatar's menu. Visemes play as usual until it's turned on. While it's on, they're " +
-            "muted whenever face tracking is active, so they don't play on top of the tracked mouth. When the avatar is " +
-            "built, the visemes get their own blendshapes set, and an animator layer merged by VRCFury or Modular Avatar fades it. " +
-            "The avatar in your scene isn't changed.";
+            "Since 2.2 the Visemes menu is set in Face Tracking, and the Pupil Tracking and Pupil Emulation toggles in Pupil Emulation. " +
+            "This component is from 2.1. While it's on the avatar, its settings are used in place of theirs, so the avatar builds as before. " +
+            "Move Settings copies them over and removes this component.";
 
         protected override void BuildBody(VisualElement body)
         {
-            // Same layout as the Guards cards: badges and the switch in the header, the settings greyed out while it's off
-            var visemes = FTUI.Card(body, "Visemes", out var visemesExtras);
-            visemesExtras.Add(visemesBadges.Element);
-            visemesBadges.Element.style.flexDirection = FlexDirection.Row;
-
-            var toggle = new Toggle { tooltip = "Add the Disable Visemes toggle to the menu." };
-            toggle.AddToClassList("ft-toggle");
-            toggle.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesToggle)));
-            visemesExtras.Add(toggle);
-
-            visemesBody = new VisualElement();
-            visemesNote = FTUI.Text("", "ft-muted", "ft-card__note");
-            visemesBody.Add(visemesNote);
-            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.visemesDisabledByDefault)), "Disabled By Default"));
-            visemesBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTToggles.menuName)), "In Menu"));
-            visemesBody.Add(visemesParameters.Element);
-            visemes.Add(visemesBody);
+            var card = FTUI.Card(body, "Settings From 2.1", out _);
+            card.Add(settings.Element);
+            move = new Button
+            {
+                text = "Move Settings",
+                tooltip = "Copies these settings to the avatar's Face Tracking and Pupil Emulation and removes this component. Undoable.",
+            };
+            move.AddToClassList("ft-add-button");
+            card.Add(move);
         }
 
         protected override void Refresh(VRCAvatarDescriptor avatar, FTIssues issues)
         {
-            var other = FTAvatarUtils.GetBuildComponents<PawlygonFTToggles>(avatar.gameObject).FirstOrDefault(c => c != Component);
-            if (other != null)
+            var component = Component;
+            void Move() => FTLegacyToggles.MoveSettings(component, avatar.gameObject);
+            move.clickable = new Clickable(Move);
+
+            var hasTracking = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).Any();
+            var hasPupils = FTAvatarUtils.GetBuildComponents<PawlygonFTPupilEmulation>(avatar.gameObject).Any();
+            issues.Info("This component was replaced in 2.2.",
+                "The Visemes menu is set in Face Tracking and the pupil toggles in Pupil Emulation. Its settings are used until they're moved.",
+                ("Move Settings", Move));
+            if (!hasTracking)
             {
-                issues.Error("Another Pawlygon Face Tracking Toggles is on this avatar.",
-                    $"Only one is allowed per avatar. The other one is on '{FTAvatarUtils.GetPath(other.transform, avatar.transform)}'.",
-                    ("Select", () => Select(other.gameObject)));
+                issues.Warning("The avatar has no Face Tracking component, so there's no Visemes menu.",
+                    "The Visemes menu is part of Face Tracking now. Add the component to get it back.");
             }
 
-            var plan = ResolvePlan(avatar, issues);
-            if (plan.VisemesSkipped != null) issues.Warning("The Disable Visemes toggle won't be added.", plan.VisemesSkipped);
-
-            visemesBody.SetEnabled(Component.visemesToggle);
-            visemesNote.text = Note();
-
-            // The sets are only named when there's more than one: a single one is just the avatar's visemes
-            var count = plan.VisemeSets.Sum(s => s.Visemes);
-            var sources = plan.VisemeSets.Select(s => s.Source).ToList();
-            var bits = plan.SyncedBits;
-            visemesBadges.Update($"{Component.visemesToggle}|{plan.AddsVisemesToggle}|{count}|{bits}|{string.Join(",", sources)}", container =>
+            var menu = FTMenu.Describe(component.menuName);
+            settings.Update($"{component.visemesMenu}|{component.visemesDefault}|{component.pupilTrackingToggle}|{component.pupilEmulationToggle}|{menu}|{hasTracking}|{hasPupils}", container =>
             {
-                if (!Component.visemesToggle)
-                {
-                    container.Add(FTUI.Badge("off", FTKind.Muted));
-                    return;
-                }
-                if (!plan.AddsVisemesToggle)
-                {
-                    container.Add(FTUI.Badge("not added", FTKind.Warning, plan.VisemesSkipped));
-                    return;
-                }
-
-                container.Add(FTUI.Badge($"{count} {(count == 1 ? "viseme" : "visemes")}", FTKind.Muted,
-                    "The avatar's visemes, which the toggle mutes. When the avatar is built they move to a blendshapes set of their own, " +
-                    "so they can be faded without the rest of the face." +
-                    (sources.Count > 1 ? $"\nFrom {sources.Count} blendshapes sets: {string.Join(", ", sources)}." : "")));
-                container.Add(FTUI.Badge($"{bits} synced {(bits == 1 ? "bit" : "bits")}", FTKind.Ok,
-                    "Whether visemes are muted is synced, so everyone sees the same. The toggle itself isn't."));
+                container.Add(FTUI.Row("Visemes menu", component.visemesMenu ? $"on, starts at {component.visemesDefault}" : "off",
+                    hasTracking ? "Goes to Face Tracking's Visemes Menu." : "There's no Face Tracking component to take it."));
+                container.Add(FTUI.Row("Pupil Tracking toggle", component.pupilTrackingToggle ? "on" : "off",
+                    hasPupils ? "Goes to Pupil Emulation's Menu Toggles." : "There's no Pupil Emulation component to take it."));
+                container.Add(FTUI.Row("Pupil Emulation toggle", component.pupilEmulationToggle ? "on" : "off",
+                    hasPupils ? "Goes to Pupil Emulation's Menu Toggles." : "There's no Pupil Emulation component to take it."));
+                container.Add(FTUI.Row("In menu", menu));
             });
-
-            visemesParameters.Update(plan.AddsVisemesToggle.ToString(), container =>
-            {
-                if (!plan.AddsVisemesToggle) return;
-
-                container.Add(FTUI.Text("Parameters", "ft-group-title"));
-                container.Add(FTUI.Chips(new[]
-                {
-                    (FTTogglesPlan.DisableVisemesParameter, "The Disable Visemes menu toggle. Saved, not synced."),
-                    (FTTogglesPlan.VisemesMutedParameter,
-                        "On while the toggle is on and face tracking is active. Set on your side and synced, 1 bit."),
-                }));
-            });
-        }
-
-        /// <summary>What visemes do with these settings, and where the toggle that changes it is.</summary>
-        string Note()
-        {
-            var menuName = Component.menuName?.Trim() ?? "";
-            var menu = menuName.Length == 0 ? "the main menu" : $"the {menuName} menu";
-            return Component.visemesDisabledByDefault
-                ? $"With face tracking active, visemes are muted until the Disable Visemes toggle in {menu} is turned off. " +
-                  "Without face tracking they always play."
-                : $"Visemes play as usual. Turning on the Disable Visemes toggle in {menu} mutes them while face tracking is active.";
-        }
-
-        /// <summary>The same plan the build resolves: from the setup component's sets, or the ones already on the descriptor.</summary>
-        FTTogglesPlan ResolvePlan(VRCAvatarDescriptor avatar, FTIssues issues)
-        {
-            var hasMerger = FTMerger.Find() != null;
-            var setup = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
-            if (setup != null)
-            {
-                var setupPlan = FaceTrackingSetupPlan.Resolve(setup, avatar);
-                var sets = setupPlan.Set != null ? new[] { setupPlan.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0];
-                return FTTogglesPlan.Resolve(Component, sets, setupPlan.UseFaceTrackingLipSync, hasMerger);
-            }
-            if (avatar.enableFaceTracking)
-            {
-                return FTTogglesPlan.Resolve(Component,
-                    avatar.faceTrackingBlendshapesSetList ?? new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>(),
-                    avatar.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking, hasMerger);
-            }
-
-            issues.Error("Face tracking isn't enabled on this avatar.",
-                "Add a Pawlygon Face Tracking component, or enable face tracking on the avatar descriptor.");
-            return new FTTogglesPlan();
         }
     }
 }

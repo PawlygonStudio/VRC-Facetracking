@@ -244,6 +244,45 @@ namespace Pawlygon.FaceTracking.Editor
     }
 
     /// <summary>
+    /// A small icon next to a setting that has a problem, with the problem in its tooltip. Hidden while there's
+    /// none. Set through <see cref="FTIssues.Mark"/>, which clears it again on the next refresh.
+    /// </summary>
+    internal sealed class FTMark : Image
+    {
+        FTKind? kind;
+
+        public FTMark()
+        {
+            AddToClassList("ft-mark");
+            Hide();
+        }
+
+        public void Hide()
+        {
+            kind = null;
+            image = null;
+            tooltip = null;
+            style.display = DisplayStyle.None;
+            RemoveFromClassList("ft-mark--warning");
+            RemoveFromClassList("ft-mark--error");
+        }
+
+        public void Set(FTKind newKind, string text)
+        {
+            tooltip = string.IsNullOrEmpty(tooltip) ? text : tooltip + "\n\n" + text;
+            // The worst one decides the icon
+            if (kind.HasValue && Rank(kind.Value) >= Rank(newKind)) return;
+            kind = newKind;
+            image = FTUI.Icon(newKind);
+            style.display = DisplayStyle.Flex;
+            EnableInClassList("ft-mark--warning", newKind == FTKind.Warning);
+            EnableInClassList("ft-mark--error", newKind == FTKind.Error);
+        }
+
+        static int Rank(FTKind value) => value == FTKind.Error ? 3 : value == FTKind.Warning ? 2 : 1;
+    }
+
+    /// <summary>
     /// A part of the inspector rebuilt on refresh, only when its content key changed. Keeps foldouts,
     /// focus and buttons stable while the inspector polls the avatar.
     /// </summary>
@@ -270,9 +309,23 @@ namespace Pawlygon.FaceTracking.Editor
         }
     }
 
-    /// <summary>Messages collected during a refresh and shown at the top of the inspector.</summary>
+    /// <summary>
+    /// Messages collected during a refresh and shown at the top of the inspector. One about a single setting can
+    /// also put an icon next to that setting with <see cref="Mark"/>.
+    /// </summary>
     internal sealed class FTIssues
     {
+        /// <summary>The marks set in this refresh. The editor clears the ones set before that aren't among them.</summary>
+        public readonly HashSet<FTMark> Marks = new HashSet<FTMark>();
+
+        /// <summary>Puts an icon next to a setting, with the message in its tooltip.</summary>
+        public void Mark(FTMark mark, FTKind kind, string text, string tooltip = null)
+        {
+            if (mark == null) return;
+            if (Marks.Add(mark)) mark.Hide();
+            mark.Set(kind, string.IsNullOrEmpty(tooltip) ? text : text + "\n" + tooltip);
+        }
+
         readonly List<(FTKind kind, string text, string tooltip, (string label, Action action)[] actions)> items =
             new List<(FTKind, string, string, (string, Action)[])>();
 

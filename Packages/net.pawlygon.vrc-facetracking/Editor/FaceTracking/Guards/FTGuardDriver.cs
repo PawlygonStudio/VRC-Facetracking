@@ -98,17 +98,26 @@ namespace Pawlygon.FaceTracking.Editor
 
         internal static AnimatorState DriverState(AnimatorStateMachine machine, string name, Vector3 position, string parameter, float value)
         {
+            return DriverState(machine, name, position, (parameter, value));
+        }
+
+        /// <summary>A state whose driver sets each parameter to its value, on the avatar's owner only.</summary>
+        internal static AnimatorState DriverState(AnimatorStateMachine machine, string name, Vector3 position, params (string parameter, float value)[] values)
+        {
             var state = machine.AddState(name, position);
             state.writeDefaultValues = false;
 
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             driver.localOnly = true;
-            driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+            foreach (var (parameter, value) in values)
             {
-                type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = parameter,
-                value = value,
-            });
+                driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = parameter,
+                    value = value,
+                });
+            }
             return state;
         }
 

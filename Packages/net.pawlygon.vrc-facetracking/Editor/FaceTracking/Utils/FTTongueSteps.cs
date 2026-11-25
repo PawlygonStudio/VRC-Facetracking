@@ -21,6 +21,12 @@ namespace Pawlygon.FaceTracking.Editor
 
         public IEnumerable<string> Names => new[] { Step1, Step2 };
 
+        /// <summary>TongueOut's multiplier, which the steps take since they aren't mapped in a set.</summary>
+        public float Multiplier = 1f;
+
+        /// <summary>TongueOut with its multiplier, as the steps' input.</summary>
+        public string Value => FTKeys.Scaled(Key, Multiplier);
+
         /// <summary>The first Step1 / Step2 pair among the blendshapes, or null without both.</summary>
         public static FTTongueSteps Find(IEnumerable<string> blendshapes)
         {
@@ -45,8 +51,9 @@ namespace Pawlygon.FaceTracking.Editor
         }
 
         /// <summary>Each step blendshape with its expression.</summary>
-        public IEnumerable<(string Blendshape, string Expression)> Expressions(string value = Key)
+        public IEnumerable<(string Blendshape, string Expression)> Expressions(string value = null)
         {
+            value = value ?? Value;
             yield return (Step1, Remap(1, value));
             yield return (Step2, Remap(2, value));
         }

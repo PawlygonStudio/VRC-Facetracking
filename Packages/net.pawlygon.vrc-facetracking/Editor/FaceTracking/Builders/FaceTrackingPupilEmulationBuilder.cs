@@ -11,9 +11,8 @@ namespace Pawlygon.FaceTracking.Editor
 {
     /// <summary>
     /// Takes the pupil blendshapes over from native face tracking and drives them from an FX layer:
-    /// Off → Idle → Eyes Closed (blink) → Blink Reflex → Idle while eye tracking is active, and Tracked, which
-    /// plays the real pupil tracking, as soon as the headset reports it. The layer's weight is 0 while eye
-    /// tracking is off, so the blendshapes are left as they are.
+    /// Off → Idle → Eyes Closed (blink) → Blink Reflex → Idle while eye tracking is active. Each of those plays the
+    /// emulated movement with the headset's pupil tracking added on top, and the menu gets a toggle for either. The layer's weight is 0 while eye tracking is off, so the blendshapes are left as they are.
     /// </summary>
     internal sealed class FaceTrackingPupilEmulationBuilder : FTBuilder<PawlygonFTPupilEmulation>
     {
@@ -31,9 +30,6 @@ namespace Pawlygon.FaceTracking.Editor
         // The more open eyelid, on the 1.x EyeLid scale (0 closed, 0.75 normally open): both eyelids are
         // below a threshold exactly when this is
         const string LidExpression = "max(1 - EyeClosedLeft, 1 - EyeClosedRight) * 0.75";
-
-        // A pupil value above this means the headset tracks pupils
-        const float RealTrackingMargin = 0.02f;
 
         // After Face Tracking has set up the meshes and blendshape sets the pupil keys are taken from
         public override FTPhase Phase => FTPhase.Animator;
@@ -58,6 +54,9 @@ namespace Pawlygon.FaceTracking.Editor
                 return;
             }
 
+            var settings = FTLegacyToggles.Pupils(component, context.AvatarRoot);
+            plan.ResolveToggles(settings.TrackingToggle, settings.EmulationToggle);
+
             FTPupilEmulationPlan.UnmapPupilKeys(context.Sets);
             AddForward(context, LidParameter, LidExpression);
             if (plan.RealTracking)
@@ -77,7 +76,23 @@ namespace Pawlygon.FaceTracking.Editor
             // Set by the owner's driver and synced, like Face Tracking Guards does
             FTAvatarAssets.AddParameter(context.Generated.Parameters, FXGuardWriter.BlinkGuardParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
 
+            if (plan.TrackingToggle) AddToggle(settings.MenuName, context, "Pupil Tracking", FTPupilEmulationPlan.TrackingParameter, "Eye_Dilatation_Tracking_Icon.png");
+            if (plan.EmulationToggle) AddToggle(settings.MenuName, context, "Pupil Emulation", FTPupilEmulationPlan.EmulationParameter, "Eye_Tracking_Icon.png");
+
             WarnAboutFakePupils(component, context);
+        }
+
+        /// <summary>
+        /// A menu toggle that starts on. Everyone's layer reads it, so it's synced, and the choice is saved.
+        /// </summary>
+        static void AddToggle(string menuName, FTBuildContext context, string name, string parameter, string icon)
+        {
+            FTAvatarAssets.AddParameter(context.Generated.Parameters, parameter, VRCExpressionParameters.ValueType.Bool, 1, true, true);
+
+            var menu = FTMenu.ControlsMenu(menuName, context, parameter);
+            if (menu == null) return;
+            menu.controls.Add(FTAvatarAssets.CreateControl(name, VRCExpressionsMenu.Control.ControlType.Toggle, parameter, FTMenu.Icon(icon)));
+            EditorUtility.SetDirty(menu);
         }
 
         /// <summary>
@@ -145,10 +160,13 @@ namespace Pawlygon.FaceTracking.Editor
                 if (UsesMood(settings, plan)) idleClip = WithMood(idleClip);
                 var reflexClip = Clip("Pupils - Blink Reflex", false, reflexDilation, reflexConstrict);
 
+                var idleMotion = Combined("Idle", idleClip, FTPupilCurves.IdleLength);
+                var reflexMotion = Combined("Blink Reflex", reflexClip, FTPupilCurves.ReflexDuration(settings));
+
                 var off = State(machine, "Off", new Vector3(300f, 0f), Save(new AnimationClip { name = "Pupils - Off" }));
-                var idle = State(machine, "Idle", new Vector3(300f, 120f), idleClip);
-                var closed = State(machine, "Eyes Closed", new Vector3(560f, 120f), idleClip);
-                var reflex = State(machine, "Blink Reflex", new Vector3(430f, 240f), reflexClip);
+                var idle = State(machine, "Idle", new Vector3(300f, 120f), idleMotion);
+                var closed = State(machine, "Eyes Closed", new Vector3(560f, 120f), idleMotion);
+                var reflex = State(machine, "Blink Reflex", new Vector3(430f, 240f), reflexMotion);
                 machine.defaultState = off;
 
                 LayerControl(off, layerIndex, 0f);
@@ -171,22 +189,41 @@ namespace Pawlygon.FaceTracking.Editor
                 Configure(settle, 0.25f);
                 settle.hasExitTime = true;
                 settle.exitTime = 1f;
+            }
 
-                if (!plan.RealTracking) return;
+            /// <summary>
+            /// The emulated motion with the headset's pupil tracking added on top, in a Direct tree. Each part plays at
+            /// its menu toggle's value, or always when it has no toggle. A headset that doesn't track pupils reports 0,
+            /// which adds nothing. Every clip in the tree is as long as the emulated one, so the tree keeps its length
+            /// whatever the weights are.
+            /// </summary>
+            Motion Combined(string name, Motion emulated, float length)
+            {
+                if (!plan.RealTracking && !plan.EmulationToggle) return emulated;
 
-                // Stays in Tracked until eye tracking stops, even when the pupils come back to rest
-                var tracked = State(machine, "Tracked", new Vector3(560f, 0f), TrackedMotion());
-                LayerControl(tracked, layerIndex, 1f);
-                foreach (var channel in plan.Channels)
+                AddFloat(OneParameter, 1f);
+                var children = new List<ChildMotion> { Child(emulated, Weight(plan.EmulationToggle, FTPupilEmulationPlan.EmulationParameter)) };
+                if (plan.RealTracking)
                 {
-                    AddFloat(channel.Parameter, 0f);
-                    foreach (var from in new[] { idle, closed, reflex })
-                    {
-                        // Dilating or constricting: the value is signed
-                        Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = channel.Parameter, threshold = RealTrackingMargin });
-                        Transition(from, tracked, 0.25f, new AnimatorCondition { mode = AnimatorConditionMode.Less, parameter = channel.Parameter, threshold = -RealTrackingMargin });
-                    }
+                    children.Add(Child(TrackedMotion(name, length), Weight(plan.TrackingToggle, FTPupilEmulationPlan.TrackingParameter)));
                 }
+
+                var root = Tree($"Pupils - {name} Combined", BlendTreeType.Direct, null);
+                root.children = children.ToArray();
+                return root;
+            }
+
+            /// <summary>The menu toggle's parameter, read as a float (0 or 1), or the constant 1 without a toggle.</summary>
+            string Weight(bool hasToggle, string parameter)
+            {
+                if (!hasToggle) return OneParameter;
+                AddFloat(parameter, 1f);
+                return parameter;
+            }
+
+            static ChildMotion Child(Motion motion, string weightParameter)
+            {
+                return new ChildMotion { motion = motion, directBlendParameter = weightParameter, timeScale = 1f };
             }
 
             /// <summary>
@@ -199,7 +236,7 @@ namespace Pawlygon.FaceTracking.Editor
                 AddFloat(WideParameter, 0f);
                 AddFloat(FrownParameter, 0f);
 
-                var children = new List<ChildMotion> { new ChildMotion { motion = idle, directBlendParameter = OneParameter, timeScale = 1f } };
+                var children = new List<ChildMotion> { Child(idle, OneParameter) };
                 if (plan.ConstrictShapes.Any() && settings.wideEyesConstrict > 0f)
                 {
                     children.Add(MoodChild("Wide Eyes", WideParameter, plan.ConstrictShapes, 0f, settings.wideEyesConstrict));
@@ -218,16 +255,19 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 var list = shapes.ToList();
                 var tree = Tree($"Pupils - Mood {name}", BlendTreeType.Simple1D, parameter);
-                tree.AddChild(PupilClip($"Pupils - Mood {name} 0", list, 0f, 0f), 0f);
-                tree.AddChild(PupilClip($"Pupils - Mood {name}", list, dilation, constriction), 1f);
-                return new ChildMotion { motion = tree, directBlendParameter = OneParameter, timeScale = 1f };
+                tree.AddChild(PupilClip($"Pupils - Mood {name} 0", list, 0f, 0f, FTPupilCurves.IdleLength), 0f);
+                tree.AddChild(PupilClip($"Pupils - Mood {name}", list, dilation, constriction, FTPupilCurves.IdleLength), 1f);
+                return Child(tree, OneParameter);
             }
 
-            /// <summary>The given shapes held at one value: <paramref name="dilation"/> for dilation shapes, <paramref name="constriction"/> for the others.</summary>
-            AnimationClip PupilClip(string name, IEnumerable<FTPupilEmulationPlan.Shape> shapes, float dilation, float constriction)
+            /// <summary>
+            /// The given shapes held at one value for <paramref name="length"/> seconds: <paramref name="dilation"/> for
+            /// dilation shapes, <paramref name="constriction"/> for the others.
+            /// </summary>
+            AnimationClip PupilClip(string name, IEnumerable<FTPupilEmulationPlan.Shape> shapes, float dilation, float constriction, float length)
             {
                 var clip = new AnimationClip { name = name };
-                foreach (var shape in shapes) SetCurve(clip, shape.Name, Constant(shape.IsDilation ? dilation : constriction, 1f / 60f));
+                foreach (var shape in shapes) SetCurve(clip, shape.Name, Constant(shape.IsDilation ? dilation : constriction, length));
                 return Save(clip);
             }
 
@@ -235,17 +275,17 @@ namespace Pawlygon.FaceTracking.Editor
             /// Each eye's pupil shapes follow its signed tracking value, played together in a Direct tree: -1 fully
             /// constricted, 0 at rest, 1 fully dilated.
             /// </summary>
-            Motion TrackedMotion()
+            Motion TrackedMotion(string name, float length)
             {
-                AddFloat(OneParameter, 1f);
-                var root = Tree("Pupils - Tracked", BlendTreeType.Direct, null);
+                var root = Tree($"Pupils - {name} Tracked", BlendTreeType.Direct, null);
                 root.children = plan.Channels.Select(channel =>
                 {
-                    var tree = Tree($"Pupils - Tracked {channel.Side}", BlendTreeType.Simple1D, channel.Parameter);
-                    if (channel.ConstrictShapes.Any()) tree.AddChild(PupilClip($"Pupils - {channel.Side} Constricted", channel.Shapes, 0f, 100f), -1f);
-                    tree.AddChild(PupilClip($"Pupils - {channel.Side} 0", channel.Shapes, 0f, 0f), 0f);
-                    if (channel.DilationShapes.Any()) tree.AddChild(PupilClip($"Pupils - {channel.Side} Dilated", channel.Shapes, 100f, 0f), 1f);
-                    return new ChildMotion { motion = tree, directBlendParameter = OneParameter, timeScale = 1f };
+                    AddFloat(channel.Parameter, 0f);
+                    var tree = Tree($"Pupils - {name} Tracked {channel.Side}", BlendTreeType.Simple1D, channel.Parameter);
+                    if (channel.ConstrictShapes.Any()) tree.AddChild(PupilClip($"Pupils - {name} {channel.Side} Constricted", channel.Shapes, 0f, 100f, length), -1f);
+                    tree.AddChild(PupilClip($"Pupils - {name} {channel.Side} 0", channel.Shapes, 0f, 0f, length), 0f);
+                    if (channel.DilationShapes.Any()) tree.AddChild(PupilClip($"Pupils - {name} {channel.Side} Dilated", channel.Shapes, 100f, 0f, length), 1f);
+                    return Child(tree, OneParameter);
                 }).ToArray();
                 return root;
             }

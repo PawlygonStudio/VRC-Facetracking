@@ -15,6 +15,10 @@ namespace Pawlygon.FaceTracking.Editor
         readonly FTDynamic shapesBadge = new FTDynamic();
         readonly FTDynamic shapesList = new FTDynamic();
         readonly FTDynamic replacedList = new FTDynamic();
+        readonly FTDynamic toggleBadges = new FTDynamic();
+        readonly FTDynamic toggleParameters = new FTDynamic();
+        VisualElement toggleBody;
+        Label toggleNote;
         VisualElement replacedCard;
 
         // Scanning every component and controller on the avatar is slow on big avatars, so it's cached briefly
@@ -25,12 +29,13 @@ namespace Pawlygon.FaceTracking.Editor
         int fakePupilControllers;
 
         protected override string Title => "Pupil Emulation";
-        protected override string Subtitle => "Lively pupils on headsets without pupil tracking.";
+        protected override string Subtitle => "Pupils that move on their own, with or without pupil tracking.";
 
         protected override string Details =>
             "While eye tracking is active, the pupils drift gently and react to every blink: they reopen wide, tighten, then settle. " +
             "Mood reactions can add constriction with wide eyes and dilation with a frown. " +
-            "As soon as the headset reports real pupil dilation, that plays instead. When the avatar is built, the EyeDilation and " +
+            "When the headset tracks pupils, that plays on top, and the avatar's menu gets a toggle for each. " +
+            "When the avatar is built, the EyeDilation and " +
             "EyeConstrict blendshapes are taken over from native face tracking and driven by an FX layer.";
 
         protected override void BuildBody(VisualElement body)
@@ -74,6 +79,18 @@ namespace Pawlygon.FaceTracking.Editor
 
             moodBody.SetEnabled(moodProperty.boolValue);
             mood.TrackPropertyValue(moodProperty, p => moodBody.SetEnabled(p.boolValue));
+
+            var menu = FTUI.Card(body, "Menu Toggles", out var menuExtras);
+            menuExtras.Add(toggleBadges.Element);
+            toggleBadges.Element.style.flexDirection = FlexDirection.Row;
+            toggleBody = new VisualElement();
+            toggleNote = FTUI.Text("", "ft-muted", "ft-card__note");
+            toggleBody.Add(toggleNote);
+            toggleBody.Add(Field(nameof(PawlygonFTPupilEmulation.pupilTrackingToggle), "Pupil Tracking"));
+            toggleBody.Add(Field(nameof(PawlygonFTPupilEmulation.pupilEmulationToggle), "Pupil Emulation"));
+            toggleBody.Add(Field(nameof(PawlygonFTPupilEmulation.menuName), "In Menu"));
+            toggleBody.Add(toggleParameters.Element);
+            menu.Add(toggleBody);
         }
 
         PropertyField Field(string property, string label)
@@ -119,7 +136,53 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             UpdateShapes(plan, issues);
+            UpdateToggles(plan, avatar, issues);
             UpdateFakePupils(avatar, issues);
+        }
+
+        /// <summary>The menu toggles the build will add, from the same plan it uses.</summary>
+        void UpdateToggles(FTPupilEmulationPlan plan, VRCAvatarDescriptor avatar, FTIssues issues)
+        {
+            var settings = FTLegacyToggles.Pupils(Component, avatar.gameObject);
+            if (settings.Legacy != null)
+            {
+                var legacy = settings.Legacy;
+                issues.Warning("A Face Tracking Toggles component from 2.1 is on this avatar.",
+                    "Its pupil toggle settings are used in place of the ones here. Move Settings copies them to Face Tracking and Pupil Emulation " +
+                    "and removes it (undoable).",
+                    ("Move Settings", () => { FTLegacyToggles.MoveSettings(legacy, avatar.gameObject); RefreshNow(); }),
+                    ("Select", () => Select(legacy.gameObject)));
+            }
+            plan.ResolveToggles(settings.TrackingToggle, settings.EmulationToggle);
+
+            var available = plan.Shapes.Count > 0;
+            var asked = settings.TrackingToggle || settings.EmulationToggle;
+            var hasMerger = FTMerger.Find() != null;
+            // The 2.1 component's settings can't be edited here
+            toggleBody.SetEnabled(settings.Legacy == null);
+            toggleNote.text = !available ? "There are no pupil blendshapes to toggle."
+                : !plan.RealTracking ? "All Tracking Keys is off, so only the emulated pupils play and there's no pupil tracking to toggle."
+                : $"The emulated pupils and the headset's pupil tracking play together. Each toggle in {FTMenu.Describe(settings.MenuName)} " +
+                  "turns one of them off, and a part without a toggle always plays.";
+
+            var bits = plan.ToggleBits;
+            toggleBadges.Update($"{available}|{asked}|{bits}|{hasMerger}", container =>
+            {
+                if (!asked) container.Add(FTUI.Badge("off", FTKind.Muted));
+                else if (!available || bits == 0) container.Add(FTUI.Badge("not added", FTKind.Muted));
+                else container.Add(FTUI.Badge($"{bits} synced {(bits == 1 ? "bit" : "bits")}", FTKind.Ok, "Each toggle is synced, so everyone sees the same pupils."));
+            });
+
+            toggleParameters.Update($"{plan.TrackingToggle}|{plan.EmulationToggle}", container =>
+            {
+                if (!plan.TrackingToggle && !plan.EmulationToggle) return;
+
+                var chips = new List<(string, string)>();
+                if (plan.TrackingToggle) chips.Add((FTPupilEmulationPlan.TrackingParameter, "The Pupil Tracking menu toggle. On to start with, saved and synced, 1 bit."));
+                if (plan.EmulationToggle) chips.Add((FTPupilEmulationPlan.EmulationParameter, "The Pupil Emulation menu toggle. On to start with, saved and synced, 1 bit."));
+                container.Add(FTUI.Text("Parameters", "ft-group-title"));
+                container.Add(FTUI.Chips(chips));
+            });
         }
 
         /// <summary>The fake pupil layers in the FX controller and in the controllers VRCFury / Modular Avatar will merge into it.</summary>
@@ -214,7 +277,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
             else if (!plan.RealTracking)
             {
-                issues.Info("All Tracking Keys is off, so real pupil tracking can't take over.", "The pupils are emulated whenever eye tracking is active.");
+                issues.Info("All Tracking Keys is off, so the headset's pupil tracking can't play.", "Only the emulated movement plays while eye tracking is active.");
             }
 
             var count = plan.Shapes.Count;
@@ -235,7 +298,7 @@ namespace Pawlygon.FaceTracking.Editor
                         shape.IsDilation ? "Dilates in the idle drift and the blink reflex." : "Tightens in the blink reflex."));
                 }
                 container.Add(FTUI.Text(plan.RealTracking
-                    ? "Real pupil tracking takes over once the headset reports it. Native face tracking leaves these blendshapes alone."
+                    ? "The headset's pupil tracking plays on top of the emulated movement. Native face tracking leaves these blendshapes alone."
                     : "Native face tracking leaves these blendshapes alone.", "ft-muted", "ft-card__note"));
             });
         }

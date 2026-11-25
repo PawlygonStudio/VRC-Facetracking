@@ -1,69 +1,20 @@
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Avatars.ScriptableObjects;
-using VRC.SDKBase;
 
 namespace Pawlygon.FaceTracking.Editor
 {
+    /// <summary>
+    /// Face Tracking Toggles from 2.1. It adds nothing itself anymore: Face Tracking and Pupil Emulation read its
+    /// settings through <see cref="FTLegacyToggles"/> while it's on the avatar. The build only says so.
+    /// </summary>
     internal sealed class FaceTrackingTogglesBuilder : FTBuilder<PawlygonFTToggles>
     {
-        const string IconsFolder = "Packages/net.pawlygon.vrc-facetracking/Icons/";
+        public override FTPhase Phase => FTPhase.Setup;
 
-        // After Face Tracking has set up the blendshapes sets the visemes are taken from
-        public override FTPhase Phase => FTPhase.Animator;
-
-        /// <summary>
-        /// Splits the visemes into their own sets and adds the layers, parameters and menu toggle before VRCFury and
-        /// Modular Avatar run, so they merge them. Without a toggle to add, the avatar builds exactly as it would
-        /// without this component.
-        /// </summary>
         protected override void BuildDescriptor(PawlygonFTToggles component, FTBuildContext context)
         {
-            var plan = FTTogglesPlan.Resolve(component, context.Sets, UsesFaceTrackingLipSync(context), FTMerger.Find() != null);
-            if (plan.VisemesSkipped != null)
-            {
-                Debug.LogWarning($"[{FTErrorBoundary.Title}] {plan.VisemesSkipped}", component);
-            }
-            if (!plan.AddsVisemesToggle) return;
-
-            plan.SplitVisemes(context.Sets);
-
-            var fx = context.Generated.FX;
-            FTToggleLayers.AddVisemesDriver(fx);
-            FTToggleLayers.AddVisemesWeightLayer(fx, plan.VisemeSets);
-
-            var parameters = context.Generated.Parameters;
-            // Read by the owner's driver only, so it doesn't need syncing
-            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.DisableVisemesParameter, VRCExpressionParameters.ValueType.Bool,
-                component.visemesDisabledByDefault ? 1 : 0, true, false);
-            FTAvatarAssets.AddParameter(parameters, FTTogglesPlan.VisemesMutedParameter, VRCExpressionParameters.ValueType.Bool, 0, false, true);
-
-            AddMenuToggle(component, context);
-        }
-
-        /// <summary>Face Tracking has already applied its lip sync mode to the descriptor by now.</summary>
-        static bool UsesFaceTrackingLipSync(FTBuildContext context)
-        {
-            return context.EnableFaceTracking && context.Descriptor.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking;
-        }
-
-        static void AddMenuToggle(PawlygonFTToggles component, FTBuildContext context)
-        {
-            // Empty puts the toggle in the main menu
-            var menuName = component.menuName?.Trim() ?? "";
-            // The avatar's own menu may have one already
-            var existing = menuName.Length == 0
-                ? context.Descriptor.expressionsMenu
-                : FTAvatarAssets.FindSubmenu(context.Descriptor.expressionsMenu, menuName)?.subMenu;
-            if (existing != null && existing.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
-
-            var submenu = context.Generated.GetSubmenu(menuName, AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "FaceTrackingIcon.png"));
-            if (submenu.controls.Any(c => c.parameter?.name == FTTogglesPlan.DisableVisemesParameter)) return;
-
-            submenu.controls.Add(FTAvatarAssets.CreateControl("Disable Visemes", VRCExpressionsMenu.Control.ControlType.Toggle,
-                FTTogglesPlan.DisableVisemesParameter,AssetDatabase.LoadAssetAtPath<Texture2D>(IconsFolder + "Visemes_Icon.png")));
-            EditorUtility.SetDirty(submenu);
+            Debug.LogWarning($"[{FTErrorBoundary.Title}] Face Tracking Toggles was replaced in 2.2: the Visemes menu is set in Face Tracking " +
+                             "and the pupil toggles in Pupil Emulation. This avatar still has one, and its settings are used. " +
+                             "Select it and click Move Settings to bring the avatar up to date.", component);
         }
     }
 }

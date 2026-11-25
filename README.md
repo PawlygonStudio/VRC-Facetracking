@@ -7,7 +7,7 @@ Face tracking for avatars with Unified Expressions blendshapes, using VRChat's n
 * Unity 2022.3 with the VRChat Avatars SDK 3.10.6 or newer, which has native face tracking
 * Avatar with [Unified Expression Blendshapes](https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes) (ARKit names are matched too)  
   → See the full list of [Supported UE Blendshapes](./UEBlendshapes.md)
-* [VRCFury](https://vrcfury.com) (1.935.0 or newer) or [Modular Avatar](https://modular-avatar.nadena.dev) (1.9.0 or newer) for Face Tracking Guards, Face Tracking Toggles and Pupil Emulation: they merge the animator layers, parameters and menu toggles those components add. The rest works without either.
+* [VRCFury](https://vrcfury.com) (1.935.0 or newer) or [Modular Avatar](https://modular-avatar.nadena.dev) (1.9.0 or newer) for Face Tracking Guards, the Visemes menu and Pupil Emulation: they merge the animator layers, parameters and menu toggles those components add. The rest works without either.
 
 ## How to use it
 Coming from 1.x? Follow [Upgrading from 1.x](#upgrading-from-1x).
@@ -22,12 +22,11 @@ The prefab contains these components. Each one shows what it will do in its insp
 
 | Component | What it does |
 |---|---|
-| **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. |
+| **Face Tracking** | Sets up native face tracking on the avatar descriptor: meshes, blendshape mapping, visemes, eyelids and eye gaze. Adds a **Visemes** menu to turn visemes down while face tracking is active. |
 | **Face Tracking Parameters** | Keeps animators made for OSC face tracking working by feeding their `FT/v2/...` parameters from native face tracking. |
 | **Face Tracking Guards** | Pauses gesture expressions and blink animations while face / eye tracking is active, with a **Disable Gestures** menu toggle. |
-| **Face Tracking Toggles** | Adds a **Disable Visemes** menu toggle, which mutes visemes while face tracking is active. |
 | **Blendshape Fixes** | Drives the fix shapes that prevent clipping when two shapes combine, like `MouthSmileLeft-EyeClosedLeft`. |
-| **Pupil Emulation** | Lively pupils on headsets without pupil tracking, handing over to real pupil tracking when the headset has it. |
+| **Pupil Emulation** | Pupils that move on their own, with the headset's pupil tracking on top when it has it, and a menu toggle for each. |
 | **Face Tracking Emulation** | Fills in shapes some trackers don't send (e.g. brows from the eyelids), and relaxes shapes that fight each other. |
 
 ### Upgrading from 1.x
@@ -59,20 +58,29 @@ Controllers made by **Bake Guards** (`<name> (FT Guards).controller`) and by **R
 ## Components
 
 ### Face Tracking
-Sets up native face tracking on the avatar descriptor when the avatar is built: which meshes are tracked, which blendshape each tracking key drives, lip sync, eyelids and eye gaze. It replaces any face tracking setup already on the descriptor. The inspector shows what every tracking key is mapped to, and lets you change it (see below).
+Sets up native face tracking on the avatar descriptor when the avatar is built: which meshes are tracked, which blendshape each tracking key drives, lip sync, eyelids and eye gaze. It replaces any face tracking setup already on the descriptor. The inspector shows what every tracking key is mapped to, and lets you change it (see below). Warnings are listed at the top, and one about a single setting also shows as an icon next to it.
 
 | Setting | Default | What it does |
 |---|---|---|
 | Mesh Mode | Auto | **Auto** picks every mesh with face tracking blendshapes, except the ones a VRCFury Full Controller configures for face tracking, which VRCFury sets up itself. **Manual** uses the Meshes list (up to 16). |
-| All Tracking Keys | On | Maps every tracking key. Off limits the avatar to eye look and eyelids. Pupil Emulation's real pupil tracking and mood reactions, and Face Tracking Emulation, need it. |
+| All Tracking Keys | On | Maps every tracking key. Off limits the avatar to eye look and eyelids. Pupil Emulation's pupil tracking and mood reactions, and Face Tracking Emulation, need it. |
 | Tongue Mode | Auto | Only shown for avatars with tongue step blendshapes, like `Tongue_LongStep1` and `Tongue_LongStep2`. **Steps** plays them one after the other as the tongue comes out: the first step over the first half, the second over the rest. **TongueOut** maps a single `TongueOut` blendshape. **Auto** uses TongueOut when the avatar has that blendshape, and the steps otherwise. |
 | Lip Sync > Mode | Face Tracking Visemes | **Face Tracking Visemes** switches lip sync to the face tracking viseme mode, reusing the avatar's viseme blendshapes. **Keep Existing** leaves lip sync as it is. |
 | Lip Sync > Dampening | None | How visemes and mouth tracking are blended: **Dampen Tracking** lets active visemes dampen mouth tracking, **Dampen Visemes** the other way round. **Amount** sets how much. Needs face tracking visemes and All Tracking Keys. |
+| Visemes Menu | On | Adds a **Visemes** submenu to the avatar's menu, see below. Needs lip sync set to face tracking visemes, and VRCFury or Modular Avatar. |
+| Visemes Menu > Default Level | Full | The level the menu starts on. The pick is saved. |
+| Visemes Menu > In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the Visemes submenu. Created if missing. Leave empty to put it in the main menu. |
 | Eyes > Eyelids | Face Tracking | **Face Tracking** drives the eyelids with the `EyeClosed` blendshapes. **Keep Existing** leaves the descriptor's eyelid setup. |
 | Eyes > Gaze | Auto | **Auto** uses **Both** with `EyeLook` blendshapes and eye bones set up in the descriptor's Eye Look, **Face Tracking** with only the blendshapes, **Bone Rotation** with only the bones, and leaves it unchanged with neither. |
 | Eyes > Rotation | Keep Existing | How far the eye bones turn, when Gaze rotates them. **Keep Existing** uses the Looking Up/Down/Left/Right from the descriptor's Eye Look section. **Humanoid Rig** works them out from the rig's humanoid eye limits, times the multipliers 1.x used (up x2.8, down x3.5, in and out x2), so the eyes turn as far as they did with 1.x. Only the uploaded avatar gets them. It also changes how far the eyes turn for people without eye tracking. Hold the arrows next to it to preview either one in the Scene view. |
 
-Blendshapes are matched by their Unified Expressions names, and by the ARKit and other aliases the VRChat SDK knows. The **Tracking Keys** list shows what every key is mapped to, grouped by face region, with a search and an All / Unmapped / Edited filter. Click a key's blendshape to pick another one, or None to leave it unmapped; the reset button goes back to the automatic match. When an unmapped key has a blendshape with almost the same name (e.g. a misspelled `EyeContsrictLeft`), it's suggested next to the key.
+Blendshapes are matched by their Unified Expressions names, and by the ARKit and other aliases the VRChat SDK knows. The **Tracking Keys** list is a table of every key with its blendshape and multiplier. It has a search, an All / Unmapped / Edited filter and a filter per face region, and scrolls inside a fixed height. Click a key's blendshape to pick another one, or None to leave it unmapped; the reset button goes back to the automatic match. When an unmapped key has a blendshape with almost the same name (e.g. a misspelled `EyeContsrictLeft`), it's suggested next to the key.
+
+Each mapped key has a **multiplier** at the end of its row, for blendshapes that look wrong at full strength: 1 is full, 0.8 stops the blendshape at 80%, and values above 1 (up to 10) make it reach full sooner. It's the Multiplier column of the descriptor's blendshapes set, and it's kept for blendshapes that Blendshape Fixes, Face Tracking Emulation, tongue steps and Pupil Emulation drive instead of the set. The row above the list sets the multiplier of every key shown, so pick a face region, search or filter first. Keys with a multiplier other than 1 count as Edited.
+
+**Visemes menu.** The submenu has four levels: **Full**, **Medium** (67%), **Low** (33%) and **Off**. The level applies while face tracking is active, so visemes don't play at full strength on top of the tracked mouth. Without a tracker they always play in full, whatever the level, so the avatar never ends up with a mouth that doesn't move. Turning a level's toggle off goes back to Full.
+
+When the avatar is built, the visemes get a blendshapes set of their own (`Pawlygon Visemes`), and an animator layer changes that set's weight with VRChat's blendshapes set weight. The rest of the face tracking setup isn't touched, and with Visemes Menu off the avatar builds with the single base set. The level picked in the menu isn't synced. The level in effect is worked out on the owner's side and synced, 2 bits.
 
 ### Face Tracking Parameters
 Keeps animators made for OSC face tracking working, such as Pawlygon Unity Tools' Face Tracking Extras or your own custom animations: their face tracking parameters are fed from native face tracking instead of VRCFaceTracking.
@@ -102,19 +110,6 @@ With VRCFury, gesture layers in a Gesture controller count too when they animate
 
 Each parameter is only driven when a layer of an animator reads it, so avatars don't pay for unused synced bits: `FacialExpressionsDisabled`, `EyeTrackingActive` and `LipTrackingActive` (e.g. for Face Tracking Extras or 1.x custom animations). A controller that only declares one of them doesn't count. They're set by the avatar's owner and synced, 1 bit each.
 
-### Face Tracking Toggles
-Adds a **Disable Visemes** toggle to the avatar's menu. Visemes play as usual until it's turned on. While it's on, visemes are muted whenever face tracking is active, so they don't play on top of the tracked mouth. Without a tracker they keep playing, whatever the toggle says, so the avatar never ends up with a mouth that doesn't move.
-
-When the avatar is built, the visemes get a blendshapes set of their own (`Pawlygon Visemes`), and an animator layer fades that set with VRChat's blendshapes set weight. The rest of the face tracking setup isn't touched, and with the toggle unticked the avatar builds exactly as it would without this component.
-
-| Setting | Default | What it does |
-|---|---|---|
-| Visemes | On | Adds the **Disable Visemes** menu toggle. Needs lip sync set to face tracking visemes, and VRCFury or Modular Avatar. |
-| Disabled By Default | Off | The toggle starts on, so visemes are muted with face tracking until it's turned off. Its state is saved. |
-| In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the toggle. Created if missing. Leave empty to put the toggle in the main menu. |
-
-The toggle itself isn't synced. Whether visemes are muted is worked out on the owner's side and synced, 1 bit.
-
 ### Blendshape Fixes
 Drives fix shapes: helper blendshapes that prevent clipping while two face tracking shapes are active together, like `MouthSmileLeft-EyeClosedLeft`. Each fix follows the same tracking keys as the shapes it fixes, straight from face tracking, without animators.
 
@@ -126,7 +121,7 @@ Drives fix shapes: helper blendshapes that prevent clipping while two face track
 | Manual | Empty | Extra fixes: a fix blendshape and the blendshapes it fixes, separated by commas. An entry with the same blendshape as a detected fix replaces it. |
 
 ### Pupil Emulation
-Gives the pupils life on headsets without pupil tracking. While eye tracking is active, the pupils drift gently and react to every blink: they reopen wide, tighten, then settle. As soon as the headset reports real pupil dilation, that plays instead, per eye when the avatar has left/right pupil blendshapes, until eye tracking stops.
+Gives the pupils life, with or without pupil tracking. While eye tracking is active, the pupils drift gently and react to every blink: they reopen wide, tighten, then settle. When the headset tracks pupils, that plays on top, per eye when the avatar has left/right pupil blendshapes. The menu gets a **Pupil Tracking** and a **Pupil Emulation** toggle, both on to start with, so either can be turned off in game.
 
 When the avatar is built, the `EyeDilation` / `EyeConstrict` blendshapes are taken over from native face tracking and driven by an FX layer. Remove the component to keep native pupil tracking only.
 
@@ -137,10 +132,13 @@ When the avatar is built, the `EyeDilation` / `EyeConstrict` blendshapes are tak
 | Blink Reflex: Constriction | 50 | `EyeConstrict` at the tightest point of the reflex. |
 | Blink Reflex: Duration | 1.8 s | Time for the reflex to settle back to the idle drift. |
 | Blink Reflex: Closed Below / Reopened Above | 0.15 / 0.35 | Eyelid values (0 closed, 0.75 normally open) that count as a blink and as reopened. The gap stops noisy tracking from triggering false reflexes. |
-| Mood Reactions | On | While the pupils are emulated, wide eyes constrict them and a frown on both sides dilates them. |
+| Mood Reactions | On | Wide eyes constrict the emulated pupils and a frown on both sides dilates them. |
 | Mood Reactions: Wide Eyes Constrict / Frown Dilation | 70 / 70 | How much each adds. |
+| Menu Toggles: Pupil Tracking | On | Adds the **Pupil Tracking** toggle. Off in the menu ignores the pupil size the headset reports. Needs All Tracking Keys. |
+| Menu Toggles: Pupil Emulation | On | Adds the **Pupil Emulation** toggle. Off in the menu stops the emulated pupil movement. |
+| Menu Toggles: In Menu | `Face Tracking` | Submenu of the avatar's main menu that gets the toggles. Created if missing. Leave empty to put them in the main menu. |
 
-Real pupil tracking and mood reactions need All Tracking Keys. The layer is gated by `EyeTrackingActive`, which is shared with Face Tracking Guards (1 synced bit), and adds a few forwarded parameters: the eyelids, one per eye for real pupil tracking (one in all when both eyes share their pupil blendshapes), and two for mood reactions.
+Pupil tracking and mood reactions need All Tracking Keys. Each menu toggle is synced, 1 bit. The layer is gated by `EyeTrackingActive`, which is shared with Face Tracking Guards (1 synced bit), and adds a few forwarded parameters: the eyelids, one per eye for pupil tracking (one in all when both eyes share their pupil blendshapes), and two for mood reactions.
 
 Fake pupil layers avatars bring from 1.x, the one Face Tracking Extras generated or one made by hand, animate the same pupil blendshapes, so they play on top of Pupil Emulation until they're removed. A layer counts when it animates nothing but pupil blendshapes, reads face or eye tracking parameters, and doesn't react to hand gestures. Building the avatar doesn't change its animators, so the inspector lists them under **Fake Pupil Layers** with a warning, and the build logs one too. **Remove Fake Pupils** empties them: in their controller (with undo) when it's in `Assets`, or in a copy the avatar switches to (`<name> (No Fake Pupils).controller`) when it's in a package. Untick Fake Pupil Dilation in Face Tracking Extras before generating again, or it comes back.
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -15,6 +16,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         readonly FTDynamic issuesView = new FTDynamic();
         VisualElement body;
+        HashSet<FTMark> lastMarks = new HashSet<FTMark>();
 
         protected T Component => (T)target;
 
@@ -72,6 +74,13 @@ namespace Pawlygon.FaceTracking.Editor
             if (onAvatar) Refresh(avatar, issues);
 
             issuesView.Update(issues.Key, issues.Render);
+
+            // Marks that weren't set again are over
+            foreach (var mark in lastMarks)
+            {
+                if (!issues.Marks.Contains(mark)) mark.Hide();
+            }
+            lastMarks = issues.Marks;
         }
 
         protected static void Select(UnityEngine.Object target)

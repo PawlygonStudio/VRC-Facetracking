@@ -137,6 +137,51 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
+        public void MultipliersAreWrittenToTheSet()
+        {
+            avatar.AddMesh("Body", "JawOpen", "EyeWideLeft", "EyeWideRight");
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "JawOpen", multiplier = 0.8f });
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "EyeWideLeft", multiplier = 25f });
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "EyeWideRight", multiplier = 1f });
+            // Not on the avatar, and not a key at all
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "TongueOut", multiplier = 0.5f });
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "Nope", multiplier = 0.5f });
+            var plan = Resolve();
+
+            var multipliers = plan.Set.faceTrackingBlendshapeMultipliers;
+            Assert.That(multipliers[(int)Key.JawOpen], Is.EqualTo(0.8f));
+            Assert.That(multipliers[(int)Key.EyeWideLeft], Is.EqualTo(FaceTrackingSetupPlan.MaxMultiplier));
+            Assert.That(multipliers[(int)Key.EyeWideRight], Is.EqualTo(1f));
+            Assert.That(multipliers[(int)Key.TongueOut], Is.EqualTo(1f));
+            Assert.That(plan.Multipliers.Keys, Is.EquivalentTo(new[] { (int)Key.JawOpen, (int)Key.EyeWideLeft }));
+            Assert.That(plan.Warnings.Any(w => w.Contains("Nope")), Is.True);
+        }
+
+        [Test]
+        public void MultipliersDoNotChangeTheMapping()
+        {
+            avatar.AddMesh("Body", "JawOpen", "MyJaw");
+            component.keyOverrides.Add(new FTKeyOverride { key = "JawOpen", blendshape = "MyJaw" });
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "JawOpen", multiplier = 0.5f });
+            var plan = Resolve();
+
+            Assert.That(Mapped(plan, Key.JawOpen), Is.EqualTo("MyJaw"));
+            Assert.That(plan.Set.faceTrackingBlendshapeMultipliers[(int)Key.JawOpen], Is.EqualTo(0.5f));
+        }
+
+        [Test]
+        public void TongueStepsTakeTongueOutsMultiplier()
+        {
+            avatar.AddMesh("Body", "JawOpen", "Tongue_LongStep1", "Tongue_LongStep2");
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "TongueOut", multiplier = 0.5f });
+            var plan = Resolve();
+
+            var steps = plan.TongueSteps.Expressions().ToDictionary(s => s.Blendshape, s => s.Expression);
+            Assert.That(steps["Tongue_LongStep1"], Is.EqualTo("clamp((TongueOut * 0.5) * 2, 0, 1)"));
+            Assert.That(steps["Tongue_LongStep2"], Is.EqualTo("clamp((TongueOut * 0.5) * 2 - 1, 0, 1)"));
+        }
+
+        [Test]
         public void TongueStepsAreUsedWhenThereIsNoTongueOut()
         {
             avatar.AddMesh("Body", "JawOpen", "Tongue_LongStep1", "Tongue_LongStep2");

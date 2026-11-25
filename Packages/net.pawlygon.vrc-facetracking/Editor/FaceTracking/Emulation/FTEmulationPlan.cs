@@ -220,7 +220,7 @@ namespace Pawlygon.FaceTracking.Editor
                 var shape = plan.Shapes.FirstOrDefault(s => s.Blendshape == blendshape);
                 if (shape != null) return shape;
                 shape = new Shape { Blendshape = blendshape, Set = PawlygonFaceTracking.BaseSetName, TongueStep = step };
-                shape.Keys.Add((key, 1f));
+                shape.Keys.Add((key, tongueSteps.Multiplier));
                 plan.Shapes.Add(shape);
                 return shape;
             }
