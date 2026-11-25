@@ -21,8 +21,6 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             Assert.That(mark.ClassListContains("ft-mark--warning"), Is.False);
             Assert.That(mark.tooltip, Does.Contain("First.").And.Contain("Second.").And.Contain("Why.").And.Contain("Third."));
             Assert.That(issues.Marks, Does.Contain(mark));
-            // Marks aren't listed at the top
-            Assert.That(issues.Key, Is.Empty);
 
             // The next refresh starts the mark over
             var next = new FTIssues();
@@ -33,37 +31,6 @@ namespace Pawlygon.FaceTracking.Editor.Tests
             mark.Hide();
             Assert.That(mark.style.display.value, Is.EqualTo(DisplayStyle.None));
             Assert.That(mark.ClassListContains("ft-mark--warning"), Is.False);
-        }
-
-        [Test]
-        public void ATabShowsTheWorstProblemOfItsPage()
-        {
-            var tabs = new FTTabs("PawlygonFT.Tab.Test");
-            var first = tabs.Add("First");
-            var second = tabs.Add("Second");
-            tabs.Select(1);
-            Assert.That(first.style.display.value, Is.EqualTo(DisplayStyle.None));
-            Assert.That(second.style.display.value, Is.EqualTo(DisplayStyle.Flex));
-
-            Image Status(int index) => tabs.Element.Query<Image>(className: "ft-tab__status").ToList()[index];
-
-            tabs.RefreshStatus();
-            Assert.That(Status(0).style.display.value, Is.EqualTo(DisplayStyle.None));
-
-            // On the page that isn't open
-            var mark = new FTMark();
-            first.Add(mark);
-            new FTIssues().Mark(mark, FTKind.Warning, "Look here.");
-            tabs.RefreshStatus();
-            Assert.That(Status(0).style.display.value, Is.EqualTo(DisplayStyle.Flex));
-            Assert.That(Status(1).style.display.value, Is.EqualTo(DisplayStyle.None));
-
-            mark.Hide();
-            second.Add(FTUI.Issue(FTKind.Error, "Broken.", null, null));
-            tabs.RefreshStatus();
-            Assert.That(Status(0).style.display.value, Is.EqualTo(DisplayStyle.None));
-            Assert.That(Status(1).style.display.value, Is.EqualTo(DisplayStyle.Flex));
-            tabs.Select(0);
         }
 
         [Test]

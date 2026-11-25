@@ -283,99 +283,6 @@ namespace Pawlygon.FaceTracking.Editor
     }
 
     /// <summary>
-    /// Tabs: one page of the inspector at a time. A tab can show a count next to its name, and shows a warning or
-    /// error icon while its page has a problem, so problems on the pages that aren't open stay visible. The open tab
-    /// is remembered for the session.
-    /// </summary>
-    internal sealed class FTTabs
-    {
-        sealed class Tab
-        {
-            public Button Button;
-            public Label Count;
-            public Image Status;
-            public VisualElement Page;
-        }
-
-        readonly List<Tab> tabs = new List<Tab>();
-        readonly VisualElement bar = new VisualElement();
-        readonly VisualElement pages = new VisualElement();
-        readonly string stateKey;
-        readonly int defaultIndex;
-
-        public VisualElement Element { get; } = new VisualElement();
-
-        public FTTabs(string stateKey, int defaultIndex = 0)
-        {
-            this.stateKey = stateKey;
-            this.defaultIndex = defaultIndex;
-            bar.AddToClassList("ft-tabs");
-            Element.Add(bar);
-            Element.Add(pages);
-        }
-
-        /// <summary>Adds a tab and returns its page.</summary>
-        public VisualElement Add(string title, string tooltip = null)
-        {
-            var index = tabs.Count;
-            var tab = new Tab { Button = new Button(() => Select(index)) { tooltip = tooltip }, Page = new VisualElement() };
-            tab.Button.AddToClassList("ft-tab");
-            tab.Button.Add(FTUI.Text(title, "ft-tab__title"));
-            tab.Count = FTUI.Text("", "ft-tab__count");
-            tab.Button.Add(tab.Count);
-            tab.Status = new Image();
-            tab.Status.AddToClassList("ft-tab__status");
-            tab.Button.Add(tab.Status);
-            tab.Page.AddToClassList("ft-page");
-            bar.Add(tab.Button);
-            pages.Add(tab.Page);
-            tabs.Add(tab);
-
-            Show(SessionState.GetInt(stateKey, defaultIndex));
-            return tab.Page;
-        }
-
-        public void SetCount(VisualElement page, string text)
-        {
-            var tab = tabs.Find(t => t.Page == page);
-            if (tab != null) tab.Count.text = text ?? "";
-        }
-
-        public void Select(int index)
-        {
-            SessionState.SetInt(stateKey, index);
-            Show(index);
-        }
-
-        void Show(int index)
-        {
-            index = Mathf.Clamp(index, 0, tabs.Count - 1);
-            for (var i = 0; i < tabs.Count; i++)
-            {
-                tabs[i].Page.style.display = i == index ? DisplayStyle.Flex : DisplayStyle.None;
-                tabs[i].Button.EnableInClassList("ft-tab--selected", i == index);
-            }
-        }
-
-        /// <summary>Shows on each tab the worst problem its page has: a mark, a message or a badge.</summary>
-        public void RefreshStatus()
-        {
-            foreach (var tab in tabs)
-            {
-                var worst = Has(tab.Page, "error") ? FTKind.Error : Has(tab.Page, "warning") ? FTKind.Warning : (FTKind?)null;
-                tab.Status.image = worst.HasValue ? FTUI.Icon(worst.Value) : null;
-                tab.Status.style.display = worst.HasValue ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-        }
-
-        static bool Has(VisualElement page, string kind)
-        {
-            return page.Q(className: "ft-mark--" + kind) != null || page.Q(className: "ft-issue--" + kind) != null
-                   || page.Q(className: "ft-badge--" + kind) != null;
-        }
-    }
-
-    /// <summary>
     /// A part of the inspector rebuilt on refresh, only when its content key changed. Keeps foldouts,
     /// focus and buttons stable while the inspector polls the avatar.
     /// </summary>
@@ -403,16 +310,15 @@ namespace Pawlygon.FaceTracking.Editor
     }
 
     /// <summary>
-    /// Messages collected during a refresh. The ones that stop a build or concern the whole avatar are shown at the top
-    /// of the inspector. One about a single setting goes next to it with <see cref="Mark"/>, and one about a page can
-    /// be rendered inside that page.
+    /// Messages collected during a refresh and shown at the top of the inspector. One about a single setting can
+    /// also put an icon next to that setting with <see cref="Mark"/>.
     /// </summary>
     internal sealed class FTIssues
     {
         /// <summary>The marks set in this refresh. The editor clears the ones set before that aren't among them.</summary>
         public readonly HashSet<FTMark> Marks = new HashSet<FTMark>();
 
-        /// <summary>Shows the message as an icon next to a setting.</summary>
+        /// <summary>Puts an icon next to a setting, with the message in its tooltip.</summary>
         public void Mark(FTMark mark, FTKind kind, string text, string tooltip = null)
         {
             if (mark == null) return;

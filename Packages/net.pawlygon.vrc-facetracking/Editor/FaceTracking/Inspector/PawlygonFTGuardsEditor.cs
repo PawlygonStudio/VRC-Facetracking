@@ -47,8 +47,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
-            var tabs = Tabs(body);
-            var gestures = FTUI.Card(tabs.Add("Gestures", "Hand gesture expressions, paused while face tracking is active."), "Gesture Layers", out var gestureExtras);
+            var gestures = FTUI.Card(body, "Gestures", out var gestureExtras);
             gestureExtras.Add(gestureBadge.Element);
             gestureExtras.Add(EnabledToggle(nameof(PawlygonFTGuards.guardGestures)));
             gestureBody = new VisualElement();
@@ -60,7 +59,7 @@ namespace Pawlygon.FaceTracking.Editor
             gestureBody.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTGuards.menuName)), "In Menu"));
             gestures.Add(gestureBody);
 
-            var blinking = FTUI.Card(tabs.Add("Blinking", "Blink animations, paused while eye tracking is active."), "Blink Layers", out var blinkExtras);
+            var blinking = FTUI.Card(body, "Blinking", out var blinkExtras);
             blinkExtras.Add(blinkBadge.Element);
             blinkExtras.Add(EnabledToggle(nameof(PawlygonFTGuards.guardBlinking)));
             blinkBody = new VisualElement();
@@ -68,12 +67,11 @@ namespace Pawlygon.FaceTracking.Editor
             blinkBody.Add(blinkList.Element);
             blinking.Add(blinkBody);
 
-            var animator = tabs.Add("Animator", "The parameters the guards wait for, and baking guards into the avatar's controllers.");
-            var driven = FTUI.Card(animator, "Driven Parameters", out _);
+            var driven = FTUI.Card(body, "Driven Parameters", out _);
             driven.Add(drivenList.Element);
 
             // Card() returns the body; the card itself is hidden while there's nothing to bake or restore
-            var bakeBody = FTUI.Card(animator, "Bake Guards", out _);
+            var bakeBody = FTUI.Card(body, "Bake Guards", out _);
             bakeBody.Add(bakeView.Element);
             bakeCard = bakeBody.parent;
         }

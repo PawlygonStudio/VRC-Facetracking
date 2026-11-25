@@ -115,7 +115,7 @@ namespace Pawlygon.FaceTracking.Editor
             if (Application.isPlaying || Application.isBatchMode) return;
 
             var proceed = UnityEditor.EditorUtility.DisplayDialog(FTErrorBoundary.Title,
-                FTKeys.AutoFillMissingMessage + "\n\nThe Keys tab of the Face Tracking inspector shows what's mapped.",
+                FTKeys.AutoFillMissingMessage + "\n\nThe Tracking Keys list in the Face Tracking inspector shows what's mapped.",
                 "Continue with exact names only", "Cancel build");
             if (!proceed) throw new FTBuildCancelledException("Build cancelled: blendshapes would only be matched by their exact Unified Expressions names.");
         }

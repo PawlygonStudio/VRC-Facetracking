@@ -24,8 +24,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         protected override void BuildBody(VisualElement body)
         {
-            var tabs = Tabs(body);
-            var emulations = tabs.Add("Emulations", "Shapes some trackers don't send, filled in from others.");
+            var emulations = FTUI.Card(body, "Emulations", out _);
             emulations.Add(FTUI.Text("Each one only adds to the tracked value. The slider sets how strongly.", "ft-muted", "ft-card__note"));
             AddRule(emulations, nameof(PawlygonFTEmulation.tongueOpensJaw), nameof(PawlygonFTEmulation.tongueOpensJawAmount), "Tongue Opens Jaw");
             AddRule(emulations, nameof(PawlygonFTEmulation.browsUpWithWideEyes), nameof(PawlygonFTEmulation.browsUpWithWideEyesAmount), "Brows Up With Wide Eyes");
@@ -33,7 +32,7 @@ namespace Pawlygon.FaceTracking.Editor
             AddRule(emulations, nameof(PawlygonFTEmulation.angryBrows), nameof(PawlygonFTEmulation.angryBrowsAmount), "Angry Brows");
             AddRule(emulations, nameof(PawlygonFTEmulation.sadBrows), nameof(PawlygonFTEmulation.sadBrowsAmount), "Sad Brows");
 
-            var limits = tabs.Add("Limits", "Shapes that fight each other, relaxed.");
+            var limits = FTUI.Card(body, "Limits", out _);
             limits.Add(FTUI.Text("Recommended", "ft-group-title"));
             AddRule(limits, nameof(PawlygonFTEmulation.limitFunnelByChinRaise), null, "Funnel Relaxed by Chin Raise");
             AddRule(limits, nameof(PawlygonFTEmulation.limitRaisersByMouthClosed), null, "Raisers Relaxed by Closed Mouth");
@@ -44,7 +43,7 @@ namespace Pawlygon.FaceTracking.Editor
             AddRule(limits, nameof(PawlygonFTEmulation.limitFrownByMouthSideways), null, "Frown Reduced by Mouth Sideways");
             AddRule(limits, nameof(PawlygonFTEmulation.limitLipSuckByMouthClosed), null, "Lip Suck Relaxed by Closed Mouth");
 
-            var shapes = FTUI.Card(tabs.Add("Rewritten", "The blendshapes these rules drive instead of the set."), "Rewritten Blendshapes", out var shapesExtras);
+            var shapes = FTUI.Card(body, "Rewritten Blendshapes", out var shapesExtras);
             shapesExtras.Add(shapesBadge.Element);
             shapes.Add(shapesList.Element);
         }

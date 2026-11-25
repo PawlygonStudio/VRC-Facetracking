@@ -37,8 +37,7 @@ namespace Pawlygon.FaceTracking.Editor
         {
             body.Add(new PropertyField(serializedObject.FindProperty(nameof(PawlygonFTBlendshapeFixes.combine)), "Combine"));
 
-            var tabs = Tabs(body);
-            var detected = FTUI.Card(tabs.Add("Detected", "Fix shapes found by their name."), "Detected Fixes", out var detectedExtras);
+            var detected = FTUI.Card(body, "Detected", out var detectedExtras);
             var autoDetect = new Toggle { text = "Auto-detect", tooltip = "Drive every blendshape named after the face tracking shapes it fixes, joined with '-'." };
             autoDetect.AddToClassList("ft-toggle");
             autoDetect.BindProperty(serializedObject.FindProperty(nameof(PawlygonFTBlendshapeFixes.autoDetect)));
@@ -46,7 +45,7 @@ namespace Pawlygon.FaceTracking.Editor
             detectedExtras.Add(detectedBadge.Element);
             detected.Add(detectedList.Element);
 
-            var manual = FTUI.Card(tabs.Add("Manual", "Fix shapes added by hand."), "Manual Fixes", out var manualExtras);
+            var manual = FTUI.Card(body, "Manual", out var manualExtras);
             manualExtras.Add(manualBadge.Element);
             manualRows = new VisualElement();
             manual.Add(manualRows);
