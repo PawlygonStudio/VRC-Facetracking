@@ -10,8 +10,8 @@ namespace Pawlygon.FaceTracking
     public enum FTVisemesLevel
     {
         Full = 0,
-        Lively = 1,
-        Subtle = 2,
+        Medium = 1,
+        Low = 2,
         Off = 3,
     }
 
@@ -28,7 +28,7 @@ namespace Pawlygon.FaceTracking
     {
         public override int LatestVersion => 1;
 
-        [Tooltip("Add a Visemes submenu to the avatar's menu, with Full, Lively, Subtle and Off. The level applies while face tracking is active.")]
+        [Tooltip("Add a Visemes submenu to the avatar's menu, with Full, Medium, Low and Off. The level applies while face tracking is active.")]
         [FormerlySerializedAs("visemesToggle")]
         public bool visemesMenu = true;
 

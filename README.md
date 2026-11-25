@@ -105,7 +105,7 @@ Each parameter is only driven when a layer of an animator reads it, so avatars d
 ### Face Tracking Toggles
 Adds menu controls for face tracking: a **Visemes** submenu, and toggles for the pupils.
 
-**Visemes.** The submenu has four levels: **Full**, **Lively** (67%), **Subtle** (33%) and **Off**. The level applies while face tracking is active, so visemes don't play at full strength on top of the tracked mouth. Without a tracker they always play in full, whatever the level, so the avatar never ends up with a mouth that doesn't move. Turning a level's toggle off goes back to Full.
+**Visemes.** The submenu has four levels: **Full**, **Medium** (67%), **Low** (33%) and **Off**. The level applies while face tracking is active, so visemes don't play at full strength on top of the tracked mouth. Without a tracker they always play in full, whatever the level, so the avatar never ends up with a mouth that doesn't move. Turning a level's toggle off goes back to Full.
 
 When the avatar is built, the visemes get a blendshapes set of their own (`Pawlygon Visemes`), and an animator layer changes that set's weight with VRChat's blendshapes set weight. The rest of the face tracking setup isn't touched, and with Visemes unticked the avatar builds exactly as it would without this component.
 

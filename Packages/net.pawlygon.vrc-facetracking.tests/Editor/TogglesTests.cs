@@ -48,14 +48,14 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         {
             // Full is the menu parameter's 0, so turning a level's toggle off in the menu goes back to full visemes
             Assert.That((int)FTVisemesLevel.Full, Is.EqualTo(0));
-            Assert.That(FTTogglesPlan.Levels, Is.EqualTo(new[] { FTVisemesLevel.Full, FTVisemesLevel.Lively, FTVisemesLevel.Subtle, FTVisemesLevel.Off }));
+            Assert.That(FTTogglesPlan.Levels, Is.EqualTo(new[] { FTVisemesLevel.Full, FTVisemesLevel.Medium, FTVisemesLevel.Low, FTVisemesLevel.Off }));
             Assert.That(FTTogglesPlan.Levels.Select(l => (FTTogglesPlan.BitA(l), FTTogglesPlan.BitB(l))).Distinct().Count(), Is.EqualTo(4));
             Assert.That((FTTogglesPlan.BitA(FTVisemesLevel.Full), FTTogglesPlan.BitB(FTVisemesLevel.Full)), Is.EqualTo((false, false)));
 
             Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Full), Is.EqualTo(1f));
             Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Off), Is.EqualTo(0f));
-            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Lively), Is.GreaterThan(FTTogglesPlan.LevelWeight(FTVisemesLevel.Subtle)));
-            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Subtle), Is.GreaterThan(0f));
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Medium), Is.GreaterThan(FTTogglesPlan.LevelWeight(FTVisemesLevel.Low)));
+            Assert.That(FTTogglesPlan.LevelWeight(FTVisemesLevel.Low), Is.GreaterThan(0f));
         }
 
         [Test]

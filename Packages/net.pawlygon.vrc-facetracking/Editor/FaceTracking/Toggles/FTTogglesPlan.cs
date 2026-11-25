@@ -25,15 +25,15 @@ namespace Pawlygon.FaceTracking.Editor
         public const string VisemesMenuName = "Visemes";
 
         /// <summary>The levels, in menu order.</summary>
-        public static readonly FTVisemesLevel[] Levels = { FTVisemesLevel.Full, FTVisemesLevel.Lively, FTVisemesLevel.Subtle, FTVisemesLevel.Off };
+        public static readonly FTVisemesLevel[] Levels = { FTVisemesLevel.Full, FTVisemesLevel.Medium, FTVisemesLevel.Low, FTVisemesLevel.Off };
 
         /// <summary>How much of a viseme set's weight a level keeps.</summary>
         public static float LevelWeight(FTVisemesLevel level)
         {
             switch (level)
             {
-                case FTVisemesLevel.Lively: return 2f / 3f;
-                case FTVisemesLevel.Subtle: return 1f / 3f;
+                case FTVisemesLevel.Medium: return 2f / 3f;
+                case FTVisemesLevel.Low: return 1f / 3f;
                 case FTVisemesLevel.Off: return 0f;
                 default: return 1f;
             }

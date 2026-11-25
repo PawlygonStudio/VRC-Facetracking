@@ -24,7 +24,7 @@ namespace Pawlygon.FaceTracking.Editor
         protected override string Subtitle => "Menu controls for face tracking.";
 
         protected override string Details =>
-            "Visemes: adds a Visemes submenu with Full, Lively, Subtle and Off. The level applies while face tracking is active, " +
+            "Visemes: adds a Visemes submenu with Full, Medium, Low and Off. The level applies while face tracking is active, " +
             "so visemes don't play at full strength on top of the tracked mouth, and without a tracker they always play in full. " +
             "Pupils: adds toggles for the headset's pupil tracking and for Pupil Emulation, which play together when both are on. " +
             "When the avatar is built, the visemes get their own blendshapes set, and animator layers merged by VRCFury or " +

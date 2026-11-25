@@ -1,7 +1,7 @@
 # Changelog
 
 ## [2.2.0] - Unreleased
-- Face Tracking Toggles: the **Disable Visemes** toggle is now a **Visemes** submenu with four levels, **Full**, **Lively**, **Subtle** and **Off**, for how much of the visemes plays while face tracking is active. Without a tracker they still always play in full. **Default Level** replaces Disabled By Default: if you had that on, set Default Level to Off. It uses 2 synced bits instead of 1, and the level picked in game starts over once, since the parameter changed.
+- Face Tracking Toggles: the **Disable Visemes** toggle is now a **Visemes** submenu with four levels, **Full**, **Medium**, **Low** and **Off**, for how much of the visemes plays while face tracking is active. Without a tracker they still always play in full. **Default Level** replaces Disabled By Default: if you had that on, set Default Level to Off. It uses 2 synced bits instead of 1, and the level picked in game starts over once, since the parameter changed.
 - Pupil Emulation: the headset's pupil tracking now plays on top of the emulated pupils instead of replacing them. Face Tracking Toggles adds **Pupil Tracking** and **Pupil Emulation** menu toggles, both on to start with, so either can be turned off in game. 1 synced bit each, and each can be left out in the component.
 
 ## [2.1.0] - 2026-11-17
