@@ -247,6 +247,7 @@ namespace Pawlygon.FaceTracking.Editor
 
             var sets = setup.Set != null ? new[] { setup.Set } : new VRCAvatarDescriptor.FaceTrackingBlendshapesSet[0];
             var plan = FTVisemesPlan.Resolve(settings.Menu, sets, setup.UseFaceTrackingLipSync, FTMerger.Find() != null);
+            if (plan.VisemesSkipped != null && !plan.NoVisemes) issues.Warning("The Visemes menu won't be added.", plan.VisemesSkipped);
 
             // The 2.1 component's settings can't be edited here
             visemesBody.SetEnabled(settings.Menu && settings.Legacy == null);
