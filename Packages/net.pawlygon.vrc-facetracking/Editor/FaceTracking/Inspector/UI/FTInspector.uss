@@ -189,6 +189,8 @@
 .ft-tab__title {
     margin: 0;
     padding: 0;
+    flex-shrink: 1;
+    overflow: hidden;
     color: var(--ft-muted);
 }
 
@@ -628,7 +630,7 @@
     flex-grow: 1;
     flex-shrink: 1;
     width: auto;
-    min-width: 60px;
+    min-width: 40px;
     margin: 0 4px 0 0;
 }
 
@@ -639,7 +641,7 @@
 
 .ft-key-tools__filter > .ft-segmented__button {
     flex-grow: 0;
-    padding: 0 8px;
+    padding: 0 6px;
 }
 
 .ft-table__header {
@@ -661,6 +663,8 @@
 
 .ft-table__grow {
     flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
 }
 
 .ft-table__last {
@@ -699,14 +703,16 @@
 /* The face regions: small tabs on top of the table */
 .ft-key-regions {
     flex-direction: row;
+    flex-wrap: wrap;
     margin: 2px 0 0 0;
 }
 
+/* Wraps onto a second line in a narrow Inspector */
 .ft-key-region {
     flex-grow: 1;
     height: 18px;
     margin: 0;
-    padding: 0 1px;
+    padding: 0 3px;
     border-width: 0;
     border-bottom-width: 2px;
     border-color: rgba(0, 0, 0, 0);
@@ -792,10 +798,11 @@
 }
 
 .ft-key-bulk__label {
+    flex-grow: 1;
     flex-shrink: 1;
     font-size: 11px;
+    white-space: normal;
     -unity-text-align: middle-right;
-    overflow: hidden;
 }
 
 .ft-key-bulk__button {

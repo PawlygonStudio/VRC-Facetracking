@@ -601,8 +601,8 @@ namespace Pawlygon.FaceTracking.Editor
 
             shownKeys = visible.Where(k => plan.MappedKeys.Contains(k)).ToList();
             bulkLabel.text = filtering
-                ? $"Multiplier for the {shownKeys.Count} mapped {(shownKeys.Count == 1 ? "key" : "keys")} shown"
-                : $"Multiplier for all {shownKeys.Count} mapped keys";
+                ? $"Multiplier for the {shownKeys.Count} {(shownKeys.Count == 1 ? "key" : "keys")} shown"
+                : $"Multiplier for all {shownKeys.Count} keys";
 
             var listKey = string.Join("|", visible.Select(k => k + ":" + plan.Set.faceTrackingBlendshapeNames[k] + (plan.OverriddenKeys.Contains(k) ? "*" : "")
                                                               + (plan.Multipliers.TryGetValue(k, out var scale) ? "x" + scale : "")
