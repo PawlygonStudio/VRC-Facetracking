@@ -81,6 +81,36 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
+        public void FixesAndEmulationKeepTheMultipliers()
+        {
+            // Both take their shapes out of the set and drive them with expressions, so the multiplier has to go along
+            avatar.AddMesh("Body", "JawOpen", "TongueOut", "EyeClosedLeft", "JawOpen-EyeClosedLeft");
+            var tracking = avatar.Add<PawlygonFaceTracking>();
+            tracking.keyMultipliers.Add(new FTKeyMultiplier { key = "JawOpen", multiplier = 0.8f });
+            var setup = FaceTrackingSetupPlan.Resolve(tracking, avatar.Descriptor);
+
+            var fix = FTFixPlan.Resolve(avatar.Add<PawlygonFTBlendshapeFixes>(), setup.Meshes, new[] { setup.Set }).Entries.Single();
+            Assert.That(fix.Expression, Is.EqualTo("(JawOpen * 0.8 + EyeClosedLeft) / 2"));
+
+            var emulation = FTEmulationPlan.Resolve(avatar.Add<PawlygonFTEmulation>(), new[] { setup.Set }, true);
+            Assert.That(emulation.Shapes.Single(s => s.Blendshape == "JawOpen").Expression, Is.EqualTo("max(JawOpen * 0.8, TongueOut * 0.25)"));
+        }
+
+        [Test]
+        public void PupilTrackingKeepsTheMultipliers()
+        {
+            // Pupil Emulation takes the pupil keys out of the set and forwards them to its layer
+            avatar.AddMesh("Body", "EyeDilationLeft", "EyeDilationRight", "EyeConstrictLeft", "EyeConstrictRight");
+            var tracking = avatar.Add<PawlygonFaceTracking>();
+            tracking.keyMultipliers.Add(new FTKeyMultiplier { key = "EyeDilationLeft", multiplier = 0.5f });
+            var setup = FaceTrackingSetupPlan.Resolve(tracking, avatar.Descriptor);
+
+            var channels = FTPupilEmulationPlan.Resolve(setup.Meshes, new[] { setup.Set }, true).Channels.ToDictionary(c => c.Side, c => c.Expression);
+            Assert.That(channels["Left"], Is.EqualTo("EyeDilationLeft * 0.5 - EyeConstrictLeft"));
+            Assert.That(channels["Right"], Is.EqualTo("EyeDilationRight - EyeConstrictRight"));
+        }
+
+        [Test]
         public void EmulationNeedsAllTrackingKeys()
         {
             var setup = Setup(TestAvatar.AllKeyNames);

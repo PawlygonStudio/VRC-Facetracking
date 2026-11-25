@@ -30,6 +30,12 @@ namespace Pawlygon.FaceTracking.Editor
         public string[] Blendshapes = new string[0];
         public readonly Dictionary<int, string> AutoMatches = new Dictionary<int, string>();
         public readonly HashSet<int> OverriddenKeys = new HashSet<int>();
+
+        /// <summary>The same range the SDK allows for a blendshape's multiplier.</summary>
+        public const float MaxMultiplier = 10f;
+
+        // The mapped keys whose multiplier isn't 1
+        public readonly Dictionary<int, float> Multipliers = new Dictionary<int, float>();
         public int MappedVisemes;
         public bool VisemesFromDescriptor;
 
@@ -72,6 +78,7 @@ namespace Pawlygon.FaceTracking.Editor
             plan.Set = FTBuildContext.CreateSet(PawlygonFaceTracking.BaseSetName, 1f);
             plan.MapKeys(component, blendshapes);
             plan.ResolveTongue(component, blendshapes);
+            plan.ApplyMultipliers(component);
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
 
@@ -178,6 +185,32 @@ namespace Pawlygon.FaceTracking.Editor
                 if (key < 0) Warnings.Add($"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
                 else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warnings.Add($"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
             }
+        }
+
+        /// <summary>
+        /// The multipliers set by hand, written to the set like the descriptor's own Multiplier column. Tongue steps
+        /// aren't in the set, so they take TongueOut's multiplier in their expressions.
+        /// </summary>
+        void ApplyMultipliers(PawlygonFaceTracking component)
+        {
+            foreach (var entry in component.keyMultipliers ?? new List<FTKeyMultiplier>())
+            {
+                if (entry == null) continue;
+                var key = FTKeys.KeyByName(entry.key);
+                if (key < 0)
+                {
+                    Warnings.Add($"'{entry.key}' isn't a tracking key, so its multiplier is ignored.");
+                    continue;
+                }
+                if (!MappedKeys.Contains(key)) continue;
+
+                var value = Mathf.Clamp(entry.multiplier, 0f, MaxMultiplier);
+                Set.faceTrackingBlendshapeMultipliers[key] = value;
+                if (Mathf.Approximately(value, 1f)) Multipliers.Remove(key);
+                else Multipliers[key] = value;
+            }
+
+            if (TongueSteps != null && Multipliers.TryGetValue(FTKeys.KeyByName(FTTongueSteps.Key), out var tongue)) TongueSteps.Multiplier = tongue;
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 # Changelog
 
 ## [2.2.0] - Unreleased
+- New: tracking key **multipliers**. Every mapped key in Face Tracking's Tracking Keys list has a multiplier at the end of its row, for blendshapes that look wrong at full strength: 0.8 stops the blendshape at 80%, values above 1 make it reach full sooner (0 to 10). The row under the search sets it for every key shown, so a search or filter picks a group. It's the descriptor's own Multiplier column, and it's kept for blendshapes that Blendshape Fixes, Face Tracking Emulation, tongue steps and Pupil Emulation drive.
 - Face Tracking Toggles: the **Disable Visemes** toggle is now a **Visemes** submenu with four levels, **Full**, **Medium**, **Low** and **Off**, for how much of the visemes plays while face tracking is active. Without a tracker they still always play in full. **Default Level** replaces Disabled By Default: if you had that on, set Default Level to Off. It uses 2 synced bits instead of 1, and the level picked in game starts over once, since the parameter changed.
 - Pupil Emulation: the headset's pupil tracking now plays on top of the emulated pupils instead of replacing them. Face Tracking Toggles adds **Pupil Tracking** and **Pupil Emulation** menu toggles, both on to start with, so either can be turned off in game. 1 synced bit each, and each can be left out in the component.
 

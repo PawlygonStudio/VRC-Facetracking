@@ -74,6 +74,8 @@ Sets up native face tracking on the avatar descriptor when the avatar is built: 
 
 Blendshapes are matched by their Unified Expressions names, and by the ARKit and other aliases the VRChat SDK knows. The **Tracking Keys** list shows what every key is mapped to, grouped by face region, with a search and an All / Unmapped / Edited filter. Click a key's blendshape to pick another one, or None to leave it unmapped; the reset button goes back to the automatic match. When an unmapped key has a blendshape with almost the same name (e.g. a misspelled `EyeContsrictLeft`), it's suggested next to the key.
 
+Each mapped key has a **multiplier** at the end of its row, for blendshapes that look wrong at full strength: 1 is full, 0.8 stops the blendshape at 80%, and values above 1 (up to 10) make it reach full sooner. It's the Multiplier column of the descriptor's blendshapes set, and it's kept for blendshapes that Blendshape Fixes, Face Tracking Emulation, tongue steps and Pupil Emulation drive instead of the set. The row under the search sets the multiplier of every key shown, so search or filter first to pick a group, like `Brow` or `Mouth`. Keys with a multiplier other than 1 count as Edited.
+
 ### Face Tracking Parameters
 Keeps animators made for OSC face tracking working, such as Pawlygon Unity Tools' Face Tracking Extras or your own custom animations: their face tracking parameters are fed from native face tracking instead of VRCFaceTracking.
 

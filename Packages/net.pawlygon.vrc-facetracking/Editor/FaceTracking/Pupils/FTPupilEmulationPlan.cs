@@ -19,6 +19,9 @@ namespace Pawlygon.FaceTracking.Editor
             public bool IsDilation;
             public readonly List<int> Keys = new List<int>();
 
+            /// <summary>The keys' multipliers in the set they were mapped in, where they aren't 1.</summary>
+            public readonly Dictionary<int, float> Multipliers = new Dictionary<int, float>();
+
             /// <summary>Left, Right, or Both when the shape's keys cover both eyes.</summary>
             public string Side
             {
@@ -52,17 +55,27 @@ namespace Pawlygon.FaceTracking.Editor
             {
                 get
                 {
-                    var dilation = Average(DilationShapes.SelectMany(s => s.Keys).Distinct().ToList());
-                    var constrict = Average(ConstrictShapes.SelectMany(s => s.Keys).Distinct().ToList());
+                    var dilation = Average(DilationShapes);
+                    var constrict = Average(ConstrictShapes);
                     if (constrict == null) return dilation;
                     return $"{dilation ?? "0"} - {constrict}";
                 }
             }
 
-            static string Average(List<int> keys)
+            /// <summary>The shapes' keys, each with the multiplier it had in its set, since the pupil keys are taken out of the sets.</summary>
+            static string Average(IEnumerable<Shape> shapes)
             {
+                var keys = new List<string>();
+                var seen = new HashSet<int>();
+                foreach (var shape in shapes)
+                {
+                    foreach (var key in shape.Keys.Where(seen.Add))
+                    {
+                        keys.Add(FTKeys.Scaled(FTKeys.KeyName(key), shape.Multipliers.TryGetValue(key, out var multiplier) ? multiplier : 1f));
+                    }
+                }
                 if (keys.Count == 0) return null;
-                return keys.Count == 1 ? FTKeys.KeyName(keys[0]) : $"({string.Join(" + ", keys.Select(FTKeys.KeyName))}) / {keys.Count}";
+                return keys.Count == 1 ? keys[0] : $"({string.Join(" + ", keys)}) / {keys.Count}";
             }
         }
 
@@ -129,8 +142,13 @@ namespace Pawlygon.FaceTracking.Editor
 
             foreach (var key in pupilKeys)
             {
-                var shape = setList.Select(s => key < s.faceTrackingBlendshapeNames.Length ? s.faceTrackingBlendshapeNames[key] : null)
-                    .FirstOrDefault(n => !string.IsNullOrEmpty(n) && names.Contains(n));
+                var source = setList.FirstOrDefault(s => key < s.faceTrackingBlendshapeNames.Length
+                                                         && !string.IsNullOrEmpty(s.faceTrackingBlendshapeNames[key])
+                                                         && names.Contains(s.faceTrackingBlendshapeNames[key]));
+                var shape = source?.faceTrackingBlendshapeNames[key];
+                var multiplier = source?.faceTrackingBlendshapeMultipliers != null && key < source.faceTrackingBlendshapeMultipliers.Length
+                    ? source.faceTrackingBlendshapeMultipliers[key]
+                    : 1f;
                 if (shape == null)
                 {
                     var index = FTKeys.FindKey(names, key);
@@ -145,6 +163,7 @@ namespace Pawlygon.FaceTracking.Editor
                     plan.Shapes.Add(entry);
                 }
                 entry.Keys.Add(key);
+                if (!Mathf.Approximately(multiplier, 1f)) entry.Multipliers[key] = multiplier;
             }
             return plan;
         }

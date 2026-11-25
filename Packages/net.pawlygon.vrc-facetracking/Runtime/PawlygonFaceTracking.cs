@@ -63,6 +63,17 @@ namespace Pawlygon.FaceTracking
         public string blendshape;
     }
 
+    /// <summary>How strongly a tracking key moves its blendshape, when it isn't 1.</summary>
+    [Serializable]
+    public class FTKeyMultiplier
+    {
+        [Tooltip("The tracking key's name, e.g. EyeWideLeft.")]
+        public string key;
+
+        [Tooltip("1 is full strength. 0.8 stops the blendshape at 80%.")]
+        public float multiplier = 1f;
+    }
+
     /// <summary>
     /// Sets up VRChat native face tracking on the avatar descriptor at build time.
     /// Replaces any face tracking configuration already on the descriptor.
@@ -87,6 +98,9 @@ namespace Pawlygon.FaceTracking
 
         [Tooltip("Tracking keys mapped by hand, replacing the automatic match. Edited from the Tracking Keys list.")]
         public List<FTKeyOverride> keyOverrides = new List<FTKeyOverride>();
+
+        [Tooltip("How strongly each tracking key moves its blendshape, for the keys where it isn't 1. Edited from the Tracking Keys list.")]
+        public List<FTKeyMultiplier> keyMultipliers = new List<FTKeyMultiplier>();
 
         [Tooltip("Avatars with tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2). Steps plays them one after the other " +
                  "as the tongue comes out. TongueOut maps a single blendshape. Auto uses TongueOut when the avatar has that blendshape, and the steps otherwise.")]

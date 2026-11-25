@@ -24,6 +24,8 @@ namespace Pawlygon.FaceTracking.Editor
         PropertyField tongueMode;
         VisualElement keysTools;
         Button[] filterButtons;
+        Label bulkLabel;
+        List<int> shownKeys = new List<int>();
 
         enum KeyFilter
         {
@@ -334,7 +336,34 @@ namespace Pawlygon.FaceTracking.Editor
                 segmented.Add(button);
             }
             keysTools.Add(segmented);
+
+            var wrapper = new VisualElement();
+            wrapper.Add(keysTools);
+            wrapper.Add(BuildBulkMultiplier());
+            keysTools = wrapper;
             return keysTools;
+        }
+
+        /// <summary>Sets the multiplier of every key the list shows, so a search or a filter picks which.</summary>
+        VisualElement BuildBulkMultiplier()
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ft-key-bulk");
+            bulkLabel = FTUI.Text("", "ft-muted", "ft-key-bulk__label");
+            row.Add(bulkLabel);
+
+            var field = new FloatField { value = 1f, tooltip = "1 is full strength, 0.8 stops the blendshapes at 80%. 0 to 10." };
+            field.AddToClassList("ft-key__multiplier");
+            row.Add(field);
+
+            var set = new Button(() => SetMultipliers(shownKeys.Select(FTKeys.KeyName).ToList(), field.value))
+            {
+                text = "Set",
+                tooltip = "Sets this multiplier on every mapped key shown below. Search or filter first to pick the keys.",
+            };
+            set.AddToClassList("ft-key-bulk__button");
+            row.Add(set);
+            return row;
         }
 
         void UpdateKeys(FaceTrackingSetupPlan plan, FTIssues issues)
@@ -376,7 +405,7 @@ namespace Pawlygon.FaceTracking.Editor
             }
 
             // Filter buttons show their counts
-            var counts = new[] { total, plan.UnmappedKeys.Count, plan.OverriddenKeys.Count };
+            var counts = new[] { total, plan.UnmappedKeys.Count, plan.OverriddenKeys.Union(plan.Multipliers.Keys).Count() };
             for (var i = 0; i < filterButtons.Length; i++)
             {
                 var filter = (KeyFilter)i;
@@ -388,7 +417,13 @@ namespace Pawlygon.FaceTracking.Editor
             var visible = keys.Where(k => MatchesFilter(plan, k)).ToList();
             var filtering = keyFilter != KeyFilter.All || !string.IsNullOrWhiteSpace(keySearch);
 
+            shownKeys = visible.Where(k => plan.MappedKeys.Contains(k)).ToList();
+            bulkLabel.text = filtering
+                ? $"Multiplier for the {shownKeys.Count} mapped {(shownKeys.Count == 1 ? "key" : "keys")} shown"
+                : $"Multiplier for all {shownKeys.Count} mapped keys";
+
             var listKey = string.Join("|", visible.Select(k => k + ":" + plan.Set.faceTrackingBlendshapeNames[k] + (plan.OverriddenKeys.Contains(k) ? "*" : "")
+                                                              + (plan.Multipliers.TryGetValue(k, out var scale) ? "x" + scale : "")
                                                               + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")
                                                               + (plan.ArkitOverlaps.TryGetValue(k, out var skip) ? "!" + skip.Arkit : "")))
                           + filtering + string.Join(",", openGroups) + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "");
@@ -397,7 +432,7 @@ namespace Pawlygon.FaceTracking.Editor
                 if (visible.Count == 0)
                 {
                     container.Add(FTUI.Text(keyFilter == KeyFilter.Edited && string.IsNullOrWhiteSpace(keySearch)
-                        ? "No keys are mapped by hand. Click a key's blendshape to change it."
+                        ? "No keys are changed. Click a key's blendshape to map it by hand, or type in its multiplier."
                         : "No matching keys.", "ft-muted", "ft-card__note"));
                     return;
                 }
@@ -425,7 +460,7 @@ namespace Pawlygon.FaceTracking.Editor
         bool MatchesFilter(FaceTrackingSetupPlan plan, int key)
         {
             if (keyFilter == KeyFilter.Unmapped && !plan.UnmappedKeys.Contains(key)) return false;
-            if (keyFilter == KeyFilter.Edited && !plan.OverriddenKeys.Contains(key)) return false;
+            if (keyFilter == KeyFilter.Edited && !plan.OverriddenKeys.Contains(key) && !plan.Multipliers.ContainsKey(key)) return false;
             if (string.IsNullOrWhiteSpace(keySearch)) return true;
 
             var search = keySearch.Trim();
@@ -453,6 +488,7 @@ namespace Pawlygon.FaceTracking.Editor
                 steps.tooltip = $"Tongue steps: {plan.TongueSteps.Step1} over the first half of TongueOut, {plan.TongueSteps.Step2} over the second. " +
                                 "Set Tongue Mode to TongueOut to map a single blendshape instead.";
                 row.Add(steps);
+                row.Add(MultiplierField(plan, key));
                 return row;
             }
 
@@ -486,6 +522,7 @@ namespace Pawlygon.FaceTracking.Editor
                 use.AddToClassList("ft-key__suggestion");
                 row.Add(use);
             }
+            if (mapped) row.Add(MultiplierField(plan, key));
             if (edited)
             {
                 var reset = new Button(() => SetOverride(keyName, null, plan)) { text = "↺", tooltip = $"Back to the automatic match ({auto ?? "unmapped"})." };
@@ -493,6 +530,45 @@ namespace Pawlygon.FaceTracking.Editor
                 row.Add(reset);
             }
             return row;
+        }
+
+        /// <summary>
+        /// How strongly the key moves its blendshape. Applied when Enter is pressed or the field loses focus, so the
+        /// list doesn't redraw while typing.
+        /// </summary>
+        FloatField MultiplierField(FaceTrackingSetupPlan plan, int key)
+        {
+            var keyName = FTKeys.KeyName(key);
+            var changed = plan.Multipliers.TryGetValue(key, out var value);
+            var field = new FloatField { value = changed ? value : 1f, isDelayed = true };
+            field.AddToClassList("ft-key__multiplier");
+            field.EnableInClassList("ft-key__multiplier--edited", changed);
+            field.tooltip = $"Multiplier: how strongly {keyName} moves its blendshape. 1 is full strength, 0.8 stops it at 80%. 0 to {FaceTrackingSetupPlan.MaxMultiplier:0}.";
+            field.RegisterValueChangedCallback(e => SetMultipliers(new List<string> { keyName }, e.newValue));
+            return field;
+        }
+
+        /// <summary>Stores the multiplier for the keys. Only values other than 1 are kept.</summary>
+        void SetMultipliers(List<string> keyNames, float value)
+        {
+            value = Mathf.Clamp(value, 0f, FaceTrackingSetupPlan.MaxMultiplier);
+            var list = serializedObject.FindProperty(nameof(PawlygonFaceTracking.keyMultipliers));
+            for (var i = list.arraySize - 1; i >= 0; i--)
+            {
+                if (keyNames.Contains(list.GetArrayElementAtIndex(i).FindPropertyRelative(nameof(FTKeyMultiplier.key)).stringValue)) list.DeleteArrayElementAtIndex(i);
+            }
+            if (!Mathf.Approximately(value, 1f))
+            {
+                foreach (var keyName in keyNames)
+                {
+                    list.arraySize++;
+                    var entry = list.GetArrayElementAtIndex(list.arraySize - 1);
+                    entry.FindPropertyRelative(nameof(FTKeyMultiplier.key)).stringValue = keyName;
+                    entry.FindPropertyRelative(nameof(FTKeyMultiplier.multiplier)).floatValue = value;
+                }
+            }
+            serializedObject.ApplyModifiedProperties();
+            RefreshNow();
         }
 
         /// <summary>
