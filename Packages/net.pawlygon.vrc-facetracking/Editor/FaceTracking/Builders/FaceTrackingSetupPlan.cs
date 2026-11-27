@@ -57,6 +57,9 @@ namespace Pawlygon.FaceTracking.Editor
         public FTTongueSteps TongueSteps;
         public string TongueConflict;
 
+        // The avatar's tongue morph blendshapes. The ones without a Skipped reason are driven by expressions.
+        public readonly List<FTTongueMorph> TongueMorphs = new List<FTTongueMorph>();
+
         // Keys left unmapped because their only match was an ARKit blendshape that also moves a key driven by a Unified
         // Expressions one: the ARKit blendshape, and that other key
         public readonly Dictionary<int, (string Arkit, int Covered)> ArkitOverlaps = new Dictionary<int, (string, int)>();
@@ -101,6 +104,7 @@ namespace Pawlygon.FaceTracking.Editor
             plan.MapKeys(component, blendshapes);
             plan.ResolveTongue(component, blendshapes);
             plan.ApplyMultipliers(component);
+            plan.ResolveTongueMorphs(component, descriptor, blendshapes);
             plan.MapVisemes(component, descriptor, blendshapes);
             plan.ResolveEyes(component, descriptor);
 
@@ -207,6 +211,42 @@ namespace Pawlygon.FaceTracking.Editor
                 if (key < 0) Warn(FTSetupArea.Keys, $"'{manual.key}' isn't a tracking key, so its manual mapping is ignored.");
                 else if (!component.useAllTrackingKeys && !FTKeys.IsBasic(key)) Warn(FTSetupArea.Keys, $"{manual.key} is mapped by hand, but only used with All Tracking Keys.");
             }
+        }
+
+        /// <summary>
+        /// Tongue morphs aren't tracking keys, so the ones the avatar has are driven by their two direction keys
+        /// multiplied. A morph needs both of its keys mapped, and is left to a manual Blendshape Fix when one drives it.
+        /// </summary>
+        void ResolveTongueMorphs(PawlygonFaceTracking component, VRCAvatarDescriptor descriptor, string[] blendshapes)
+        {
+            if (!component.useAllTrackingKeys) return;
+
+            var mapped = new HashSet<string>(MappedKeys.Select(k => Set.faceTrackingBlendshapeNames[k]).Where(n => !string.IsNullOrEmpty(n)));
+            var fixedByHand = new HashSet<string>(FTAvatarUtils.GetBuildComponents<PawlygonFTBlendshapeFixes>(descriptor.gameObject)
+                .SelectMany(f => f.fixes ?? new List<FTBlendshapeFix>())
+                .Where(f => f != null && !string.IsNullOrWhiteSpace(f.blendshape))
+                .Select(f => f.blendshape.Trim()));
+
+            foreach (var morph in FTTongueMorphs.Find(blendshapes))
+            {
+                // Mapped to a tracking key by hand: it's that key's blendshape then, not a morph
+                if (mapped.Contains(morph.Blendshape)) continue;
+
+                var missing = new[] { morph.Vertical, morph.Horizontal }
+                    .Where(key => !MappedKeys.Contains(FTKeys.KeyByName(key)) || string.IsNullOrEmpty(Set.faceTrackingBlendshapeNames[FTKeys.KeyByName(key)]))
+                    .ToList();
+                if (component.tongueMorphs == FTTongueMorphMode.Off) morph.Skipped = "Tongue Morphs is Off.";
+                else if (fixedByHand.Contains(morph.Blendshape)) morph.Skipped = "A manual fix in Blendshape Fixes drives it.";
+                else if (missing.Count > 0) morph.Skipped = $"{string.Join(" and ", missing)} {(missing.Count == 1 ? "isn't" : "aren't")} mapped.";
+                TongueMorphs.Add(morph);
+            }
+        }
+
+        /// <summary>The expression that drives a tongue morph, with its keys' multipliers.</summary>
+        public string TongueMorphExpression(FTTongueMorph morph)
+        {
+            float Multiplier(string key) => Multipliers.TryGetValue(FTKeys.KeyByName(key), out var value) ? value : 1f;
+            return morph.Expression(Multiplier(morph.Vertical), Multiplier(morph.Horizontal));
         }
 
         /// <summary>

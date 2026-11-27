@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
@@ -43,6 +44,11 @@ namespace Pawlygon.FaceTracking.Editor
                 {
                     context.Behaviors.Add(CreateBlendshapeBehavior(blendshape, expression, PawlygonFaceTracking.BaseSetName));
                 }
+            }
+
+            foreach (var morph in plan.TongueMorphs.Where(m => m.Skipped == null))
+            {
+                context.Behaviors.Add(CreateBlendshapeBehavior(morph.Blendshape, plan.TongueMorphExpression(morph), PawlygonFaceTracking.BaseSetName));
             }
 
             ApplyAvatarSettings(plan, descriptor);

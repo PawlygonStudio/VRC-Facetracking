@@ -87,6 +87,24 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
+        public void TongueMorphsAreDrivenByExpressions()
+        {
+            avatar.AddMesh("Body", TestAvatar.AllKeyNames.Concat(new[] { "TongueUpRightMorph", "TongueDownLeftMorph" }).ToArray());
+            AddFaceTracking();
+            // A manual fix for one of them: it keeps that one, so no blendshape ends up with two behaviors
+            avatar.Add<PawlygonFTBlendshapeFixes>().fixes.Add(new FTBlendshapeFix { blendshape = "TongueDownLeftMorph", sources = "TongueDown, TongueLeft" });
+
+            FTBuildRunner.Run(avatar.Root, FTPass.Descriptor);
+
+            var driven = avatar.Descriptor.faceTrackingParameterBehaviors.Where(b => b.targetMode == TargetMode.ApplyToBlendshape).ToList();
+            var upRight = driven.Single(b => b.targetBlendshapeName == "TongueUpRightMorph");
+            Assert.That(upRight.customExpression, Is.EqualTo("TongueUp * TongueRight"));
+            Assert.That(upRight.weightBlendSetName, Is.EqualTo(PawlygonFaceTracking.BaseSetName));
+            Assert.That(driven.Count(b => b.targetBlendshapeName == "TongueDownLeftMorph"), Is.EqualTo(1));
+            Assert.That(FaceTrackingExpressionValidator.CollectWarnings(avatar.Descriptor), Is.Empty);
+        }
+
+        [Test]
         public void TongueStepsAreDrivenByExpressions()
         {
             avatar.AddMesh("Body", "JawOpen", "Tongue_LongStep1", "Tongue_LongStep2");
