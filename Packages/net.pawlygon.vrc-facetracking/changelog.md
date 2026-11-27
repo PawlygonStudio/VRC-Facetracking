@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.3.0] - Unreleased
+## [2.3.0] - 2026-11-27
 - New: **tongue morphs**. Face Tracking now drives `TongueUpRightMorph`, `TongueUpLeftMorph`, `TongueDownRightMorph` and `TongueDownLeftMorph` (or SRanipal's `Tongue_UpRight_Morph` spelling) when the avatar has them. They're the corrections for the tongue pointing two ways at once, and face tracking has no key for them, so each is driven by its two direction keys multiplied: nothing while the tongue points one way, fully on when it points fully both ways. They follow the multipliers of those two keys and are listed under the tongue keys in the Tracking Keys list. **Tongue Morphs** (Auto / Off) only shows on avatars that have them. A manual fix for the same blendshape in Blendshape Fixes keeps driving it.
 
 ## [2.2.0] - 2026-11-27
