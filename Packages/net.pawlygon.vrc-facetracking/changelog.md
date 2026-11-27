@@ -1,5 +1,8 @@
 # Changelog
 
+## [2.2.0] - Unreleased
+- Upgrade to 2.0 window: the eye gaze step now explains what changed. With 1.x an animator layer turned the eyes; with 2.0 VRChat turns them itself, only as far as the descriptor's Eye Look section allows, which is usually less. It shows how far the eyes turn now and how far they would with the rig's range, with **Use Humanoid Rig** as the main button and **Open Avatar Descriptor** to change the limits there. It only shows on avatars whose eye gaze turns the eye bones, and once Humanoid Rig is picked it's one line with a way back.
+
 ## [2.2.0-beta.1] - 2026-11-25
 A beta of 2.2.0, to try the new menu controls and multipliers in VRChat before the release. The tests and test builds pass, but none of it has been tried in game yet.
 - New: tracking key **multipliers**. Every mapped key in Face Tracking's Tracking Keys list has a multiplier at the end of its row, for blendshapes that look wrong at full strength: 0.8 stops the blendshape at 80%, values above 1 make it reach full sooner (0 to 10). The row above the list sets it for every key shown, so a face region, a search or a filter picks a group. It's the descriptor's own Multiplier column, and it's kept for blendshapes that Blendshape Fixes, Face Tracking Emulation, tongue steps and Pupil Emulation drive.

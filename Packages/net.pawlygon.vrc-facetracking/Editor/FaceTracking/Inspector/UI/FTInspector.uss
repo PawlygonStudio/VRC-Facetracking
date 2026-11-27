@@ -176,6 +176,90 @@
     padding: 8px;
 }
 
+/* A step that needs explaining: a heading, the explanation, and its buttons */
+
+.ft-step {
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: 4px;
+    padding-bottom: 6px;
+}
+
+.ft-step__title {
+    flex-direction: row;
+    align-items: center;
+}
+
+.ft-step__heading {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+    -unity-font-style: bold;
+}
+
+/* In line with the heading's text, past its icon */
+.ft-step__body {
+    margin-left: 22px;
+}
+
+.ft-step__text {
+    margin-top: 2px;
+    font-size: 11px;
+    white-space: normal;
+}
+
+.ft-step__ranges {
+    margin-top: 4px;
+}
+
+.ft-step__range {
+    flex-direction: row;
+}
+
+.ft-step__range-label {
+    width: 190px;
+    flex-shrink: 1;
+    font-size: 11px;
+    color: var(--ft-muted);
+}
+
+.ft-step__range-value {
+    font-size: 11px;
+}
+
+.ft-step__range-value--strong {
+    -unity-font-style: bold;
+}
+
+.ft-step__buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.ft-step__button {
+    height: 20px;
+    margin: 0 4px 2px 0;
+}
+
+.ft-step__note {
+    margin-top: 4px;
+    font-size: 11px;
+    white-space: normal;
+    color: var(--ft-muted);
+}
+
+/* The action a step recommends */
+.ft-button--primary {
+    background-color: var(--ft-primary);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
+
+.ft-button--primary:hover {
+    background-color: var(--ft-primary-hover);
+}
+
 .ft-issue__icon {
     width: 16px;
     height: 16px;

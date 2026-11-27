@@ -38,6 +38,7 @@ The prefab contains these components. Each one shows what it will do in its insp
 4. **Add** `Packages/Pawlygon - VRC Facetracking/Prefabs/!Pawlygon - Face Tracking` anywhere inside the avatar.
 5. **Check the inspectors** of the new prefab's components. Each one tells you what's left to do:
    * **Face Tracking**: the Tracking Keys list shows what every key is mapped to. Fix any key that's mapped wrong or missing.
+   * **Eye gaze**: with 1.x an animator layer turned the eyes. With 2.0 VRChat turns them itself, only as far as the descriptor's Eye Look section allows, which is usually less. Set Face Tracking's **Eyes > Rotation** to **Humanoid Rig** to get the range 1.x had, or change Looking Up, Down, Left and Right in the descriptor.
    * **Face Tracking Guards**: FX controllers already guarded with Unity Tools' FX Gesture Checker keep working as they are. For layers without guards, use [Bake Guards](#face-tracking-guards).
    * **Pupil Emulation**: Face Tracking Extras and Pawlygon Custom Animations prefabs bring fake pupil layers it replaces. They play on top of Pupil Emulation until they're removed: click **Remove Fake Pupils**, and untick Fake Pupil Dilation in Face Tracking Extras before generating it again.
 6. **Upload.** Everything is applied to the uploaded copy, so the avatar in the scene doesn't change.

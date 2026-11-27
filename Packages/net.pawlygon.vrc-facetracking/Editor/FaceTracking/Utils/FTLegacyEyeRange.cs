@@ -92,6 +92,21 @@ namespace Pawlygon.FaceTracking.Editor
             }
         }
 
+        /// <summary>
+        /// How far the eyes turn, as text: degrees up, down and to the sides. With the 1.x <paramref name="range"/>
+        /// for the rig, or the descriptor's own Eye Look rotations when it's null.
+        /// </summary>
+        public static string Describe(VRCAvatarDescriptor descriptor, Range range)
+        {
+            int Turn(Direction direction)
+            {
+                var rotations = range != null ? Apply(descriptor, range, direction) : FromDescriptor(descriptor, direction);
+                return Mathf.RoundToInt(Degrees(descriptor, rotations));
+            }
+            var sides = (Turn(Direction.Left) + Turn(Direction.Right)) / 2;
+            return $"↑{Turn(Direction.Up)}° ↓{Turn(Direction.Down)}° ↔{sides}°";
+        }
+
         /// <summary>How far a rotation turns the eyes from the descriptor's Looking Straight, averaged over both eyes.</summary>
         public static float Degrees(VRCAvatarDescriptor descriptor, EyeRotations rotations)
         {
