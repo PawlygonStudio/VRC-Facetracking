@@ -256,6 +256,16 @@ namespace Pawlygon.FaceTracking.Editor
                 return;
             }
 
+            // The limits were already widened in the descriptor, so there's nothing to recommend
+            if (rig != null && FTLegacyEyeRange.DescriptorCovers(avatar, rig))
+            {
+                body.Add(FTUI.Issue(FTKind.Ok, $"Eye gaze uses the descriptor's Eye Look limits ({FTLegacyEyeRange.Describe(avatar, null)}).",
+                    $"They already turn the eyes at least as far as 1.x did for this rig ({FTLegacyEyeRange.Describe(avatar, rig)}). " +
+                    "Use Humanoid Rig sets Face Tracking's Eyes > Rotation to the rig's range instead. Undoable.",
+                    new[] { ("Use Humanoid Rig", (System.Action)(() => SetEyeRange(component, FTEyeRotationRange.HumanoidRig))) }));
+                return;
+            }
+
             var block = new VisualElement();
             block.AddToClassList("ft-issue");
             block.AddToClassList("ft-issue--info");

@@ -98,13 +98,27 @@ namespace Pawlygon.FaceTracking.Editor
         /// </summary>
         public static string Describe(VRCAvatarDescriptor descriptor, Range range)
         {
+            var (up, down, sides) = Turns(descriptor, range);
+            return $"↑{up}° ↓{down}° ↔{sides}°";
+        }
+
+        /// <summary>How far the eyes turn in whole degrees: up, down, and to the sides (the average of left and right).</summary>
+        public static (int Up, int Down, int Sides) Turns(VRCAvatarDescriptor descriptor, Range range)
+        {
             int Turn(Direction direction)
             {
                 var rotations = range != null ? Apply(descriptor, range, direction) : FromDescriptor(descriptor, direction);
                 return Mathf.RoundToInt(Degrees(descriptor, rotations));
             }
-            var sides = (Turn(Direction.Left) + Turn(Direction.Right)) / 2;
-            return $"↑{Turn(Direction.Up)}° ↓{Turn(Direction.Down)}° ↔{sides}°";
+            return (Turn(Direction.Up), Turn(Direction.Down), (Turn(Direction.Left) + Turn(Direction.Right)) / 2);
+        }
+
+        /// <summary>Whether the descriptor's own Eye Look rotations already turn the eyes at least as far as the 1.x range does.</summary>
+        public static bool DescriptorCovers(VRCAvatarDescriptor descriptor, Range range)
+        {
+            var own = Turns(descriptor, null);
+            var rig = Turns(descriptor, range);
+            return own.Up >= rig.Up && own.Down >= rig.Down && own.Sides >= rig.Sides;
         }
 
         /// <summary>How far a rotation turns the eyes from the descriptor's Looking Straight, averaged over both eyes.</summary>
