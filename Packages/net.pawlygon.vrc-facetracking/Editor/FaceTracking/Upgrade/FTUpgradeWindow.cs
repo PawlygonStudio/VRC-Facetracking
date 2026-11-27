@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VRC.SDK3.Avatars.Components;
+using EyeGazeMode = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode;
 
 namespace Pawlygon.FaceTracking.Editor
 {
@@ -189,14 +190,7 @@ namespace Pawlygon.FaceTracking.Editor
             // 4. 1.x turned the eyes further than most descriptors do
             if (status.HasNewPrefab)
             {
-                var faceTracking = FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault();
-                if (faceTracking != null && faceTracking.eyeRotationRange == FTEyeRotationRange.KeepExisting)
-                {
-                    body.Add(FTUI.Issue(FTKind.Info, "Keep the 1.x eye rotation range?",
-                        "1.x turned the eye bones further than the descriptor's Eye Look section usually does. Use Humanoid Rig sets Face Tracking's " +
-                        "Eye Rotation to the same range for this rig. Undoable.",
-                        new[] { ("Use Humanoid Rig", (System.Action)(() => UseRigEyeRange(faceTracking))) }));
-                }
+                AddEyeGaze(body, avatar, FTAvatarUtils.GetBuildComponents<PawlygonFaceTracking>(avatar.gameObject).FirstOrDefault());
             }
 
             // 5. Check
@@ -206,6 +200,141 @@ namespace Pawlygon.FaceTracking.Editor
                     "Face Tracking shows every tracking key's mapping, Face Tracking Guards lists unguarded layers (Bake Guards), " +
                     "and Pupil Emulation offers Remove Fake Pupils for Face Tracking Extras and Custom Animations.", null));
             }
+        }
+
+        internal enum EyeGazeStep
+        {
+            // Eye gaze doesn't turn the eye bones on this avatar, so there's no range to pick
+            None,
+            // The eyes turn as far as the descriptor's Eye Look says
+            Ask,
+            // Face Tracking uses the 1.x range for the rig
+            Rig,
+        }
+
+        /// <summary>
+        /// Where the avatar stands on eye gaze. 1.x turned the eye bones from an animator layer, by the rig's humanoid
+        /// eye limits. With native face tracking VRChat turns them, as far as the descriptor's Eye Look rotations go.
+        /// </summary>
+        internal static EyeGazeStep EyeGazeStepFor(VRCAvatarDescriptor avatar, PawlygonFaceTracking component)
+        {
+            if (avatar == null || component == null) return EyeGazeStep.None;
+
+            var settings = avatar.customEyeLookSettings;
+            var gaze = FaceTrackingSetupPlan.Resolve(component, avatar).GazeMode ?? settings.eyeGazeMode;
+            var rotatesBones = gaze == EyeGazeMode.Both || gaze == EyeGazeMode.BoneRotation;
+            var hasEyeBones = avatar.enableEyeLook && settings.leftEye != null && settings.rightEye != null;
+            if (!rotatesBones || !hasEyeBones) return EyeGazeStep.None;
+
+            return component.eyeRotationRange == FTEyeRotationRange.HumanoidRig ? EyeGazeStep.Rig : EyeGazeStep.Ask;
+        }
+
+        /// <summary>
+        /// The eye gaze step: what changed from 1.x, how far the eyes turn now and how far they would with the rig's
+        /// range, and the two ways to settle it. Once Humanoid Rig is picked it's one line like the other finished steps.
+        /// </summary>
+        void AddEyeGaze(VisualElement body, VRCAvatarDescriptor avatar, PawlygonFaceTracking component)
+        {
+            var step = EyeGazeStepFor(avatar, component);
+            if (step == EyeGazeStep.None) return;
+
+            var rig = FTLegacyEyeRange.Find(avatar, out var problem);
+            if (step == EyeGazeStep.Rig)
+            {
+                var back = new[] { ("Keep Existing", (System.Action)(() => SetEyeRange(component, FTEyeRotationRange.KeepExisting))) };
+                if (rig != null)
+                {
+                    body.Add(FTUI.Issue(FTKind.Ok, $"Eye gaze turns as far as with 1.x (Humanoid Rig: {FTLegacyEyeRange.Describe(avatar, rig)}).",
+                        "Face Tracking's Eyes > Rotation is Humanoid Rig: the uploaded avatar gets the range 1.x had for this rig. " +
+                        "Keep Existing goes back to the descriptor's own Eye Look limits. Undoable.", back));
+                }
+                else
+                {
+                    body.Add(FTUI.Issue(FTKind.Warning, "Eye Rotation is Humanoid Rig, but the rig's range couldn't be worked out.",
+                        problem + " The descriptor's Eye Look limits are used. Keep Existing sets Eyes > Rotation back. Undoable.", back));
+                }
+                return;
+            }
+
+            // The limits were already widened in the descriptor, so there's nothing to recommend
+            if (rig != null && FTLegacyEyeRange.DescriptorCovers(avatar, rig))
+            {
+                body.Add(FTUI.Issue(FTKind.Ok, $"Eye gaze uses the descriptor's Eye Look limits ({FTLegacyEyeRange.Describe(avatar, null)}).",
+                    $"They already turn the eyes at least as far as 1.x did for this rig ({FTLegacyEyeRange.Describe(avatar, rig)}). " +
+                    "Use Humanoid Rig sets Face Tracking's Eyes > Rotation to the rig's range instead. Undoable.",
+                    new[] { ("Use Humanoid Rig", (System.Action)(() => SetEyeRange(component, FTEyeRotationRange.HumanoidRig))) }));
+                return;
+            }
+
+            var block = new VisualElement();
+            block.AddToClassList("ft-issue");
+            block.AddToClassList("ft-issue--info");
+            block.AddToClassList("ft-step");
+
+            var title = new VisualElement();
+            title.AddToClassList("ft-step__title");
+            var icon = new Image { image = FTUI.Icon(FTKind.Info) };
+            icon.AddToClassList("ft-issue__icon");
+            title.Add(icon);
+            title.Add(FTUI.Text("Eye gaze: the eyes turn less than with 1.x", "ft-step__heading"));
+            block.Add(title);
+
+            var content = new VisualElement();
+            content.AddToClassList("ft-step__body");
+            block.Add(content);
+
+            content.Add(FTUI.Text("With 1.x, an animator layer turned the eyes. With 2.0, VRChat turns them itself from your eye tracking, " +
+                                  "and only as far as the Eye Look section of the avatar descriptor allows. Those limits are usually set " +
+                                  "for people without eye tracking, so they're smaller.", "ft-step__text"));
+
+            var ranges = new VisualElement();
+            ranges.AddToClassList("ft-step__ranges");
+            ranges.Add(RangeRow("Now, from the descriptor", FTLegacyEyeRange.Describe(avatar, null), false,
+                "How far the eyes turn from Looking Straight with the descriptor's Looking Up, Down, Left and Right: up, down, and to the sides."));
+            if (rig != null)
+            {
+                ranges.Add(RangeRow("With Humanoid Rig, like 1.x", FTLegacyEyeRange.Describe(avatar, rig), true,
+                    "The rig's humanoid eye limits, times what 1.x's Eye Rotation layer used: up x2.8, down x3.5, in and out x2."));
+            }
+            content.Add(ranges);
+
+            var buttons = new VisualElement();
+            buttons.AddToClassList("ft-step__buttons");
+            if (rig != null)
+            {
+                var useRig = new Button(() => SetEyeRange(component, FTEyeRotationRange.HumanoidRig))
+                {
+                    text = "Use Humanoid Rig",
+                    tooltip = "Sets Face Tracking's Eyes > Rotation to Humanoid Rig. Only the uploaded avatar gets the wider limits. Undoable.",
+                };
+                useRig.AddToClassList("ft-step__button");
+                useRig.AddToClassList("ft-button--primary");
+                buttons.Add(useRig);
+            }
+            var open = new Button(() => Select(avatar.gameObject))
+            {
+                text = "Open Avatar Descriptor",
+                tooltip = "Selects the avatar, to change Looking Up, Down, Left and Right in its Eye Look section yourself.",
+            };
+            open.AddToClassList("ft-step__button");
+            buttons.Add(open);
+            content.Add(buttons);
+
+            content.Add(FTUI.Text(rig != null
+                ? "Humanoid Rig also changes how far the eyes turn for people without eye tracking."
+                : $"Humanoid Rig isn't available for this avatar. {problem}", "ft-step__note"));
+            body.Add(block);
+        }
+
+        static VisualElement RangeRow(string label, string value, bool strong, string tooltip)
+        {
+            var row = new VisualElement { tooltip = tooltip };
+            row.AddToClassList("ft-step__range");
+            row.Add(FTUI.Text(label, "ft-step__range-label"));
+            var number = FTUI.Text(value, "ft-step__range-value");
+            number.EnableInClassList("ft-step__range-value--strong", strong);
+            row.Add(number);
+            return row;
         }
 
         static void AddLegacy(VisualElement body, List<LegacyOscDetector.Finding> findings, string what, string why)
@@ -237,10 +366,11 @@ namespace Pawlygon.FaceTracking.Editor
             Select(instance);
         }
 
-        void UseRigEyeRange(PawlygonFaceTracking component)
+        void SetEyeRange(PawlygonFaceTracking component, FTEyeRotationRange range)
         {
-            Undo.RecordObject(component, "Use Humanoid Rig Eye Rotation");
-            component.eyeRotationRange = FTEyeRotationRange.HumanoidRig;
+            Undo.RecordObject(component, range == FTEyeRotationRange.HumanoidRig ? "Use Humanoid Rig Eye Rotation" : "Keep Existing Eye Rotation");
+            component.eyeRotationRange = range;
+            EditorUtility.SetDirty(component);
             PrefabUtility.RecordPrefabInstancePropertyModifications(component);
             Rebuild();
         }

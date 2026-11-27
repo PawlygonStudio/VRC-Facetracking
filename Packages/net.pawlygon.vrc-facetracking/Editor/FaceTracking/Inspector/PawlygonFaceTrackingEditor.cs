@@ -870,15 +870,7 @@ namespace Pawlygon.FaceTracking.Editor
 
         static string EyeRangeText(VRCAvatarDescriptor avatar, FaceTrackingSetupPlan plan)
         {
-            int Degrees(FTLegacyEyeRange.Direction direction)
-            {
-                var rotations = plan.EyeRange != null
-                    ? FTLegacyEyeRange.Apply(avatar, plan.EyeRange, direction)
-                    : FTLegacyEyeRange.FromDescriptor(avatar, direction);
-                return Mathf.RoundToInt(FTLegacyEyeRange.Degrees(avatar, rotations));
-            }
-            var sides = (Degrees(FTLegacyEyeRange.Direction.Left) + Degrees(FTLegacyEyeRange.Direction.Right)) / 2;
-            return $"{(plan.EyeRange != null ? "→ " : "")}↑{Degrees(FTLegacyEyeRange.Direction.Up)}° ↓{Degrees(FTLegacyEyeRange.Direction.Down)}° ↔{sides}°";
+            return (plan.EyeRange != null ? "→ " : "") + FTLegacyEyeRange.Describe(avatar, plan.EyeRange);
         }
 
     }
