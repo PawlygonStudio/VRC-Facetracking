@@ -28,6 +28,9 @@ namespace Pawlygon.FaceTracking.Editor
         string keyRegion;
         PropertyField manualMeshes;
         PropertyField tongueMode;
+        VisualElement tongueMorphsRow;
+        Label tongueMorphsResult;
+        FTMark tongueMorphsMark;
         VisualElement keysTools;
         Button[] filterButtons;
         Label bulkLabel;
@@ -90,6 +93,10 @@ namespace Pawlygon.FaceTracking.Editor
             tongueMode = new PropertyField(serializedObject.FindProperty(nameof(PawlygonFaceTracking.tongueMode)), "Tongue Mode");
             tongueMode.style.display = DisplayStyle.None;
             keysPage.Add(tongueMode);
+            // Only shown for avatars with tongue morphs, see Refresh
+            tongueMorphsRow = FieldWithResult(nameof(PawlygonFaceTracking.tongueMorphs), "Tongue Morphs", out tongueMorphsResult, out tongueMorphsMark);
+            tongueMorphsRow.style.display = DisplayStyle.None;
+            keysPage.Add(tongueMorphsRow);
             keysPage.Add(keysDetails.Element);
             keysPage.Add(BuildKeysTools());
 
@@ -222,6 +229,11 @@ namespace Pawlygon.FaceTracking.Editor
                 issues.Warning("TongueOut is used, the tongue steps aren't.", plan.TongueConflict, ("Use Steps", () => SetTongueMode(FTTongueMode.Steps)));
             }
             tongueMode.style.display = plan.FoundTongueSteps != null || Component.tongueMode != FTTongueMode.Auto ? DisplayStyle.Flex : DisplayStyle.None;
+
+            var driven = plan.TongueMorphs.Count(m => m.Skipped == null);
+            tongueMorphsRow.style.display = plan.TongueMorphs.Count > 0 || Component.tongueMorphs != FTTongueMorphMode.Auto ? DisplayStyle.Flex : DisplayStyle.None;
+            tongueMorphsResult.text = Component.tongueMorphs == FTTongueMorphMode.Off ? "off" : $"→ {driven} {(driven == 1 ? "morph" : "morphs")}";
+            tongueMorphsResult.tooltip = "The tongue morph blendshapes that will be driven, each by its two direction keys multiplied. They're listed under the tongue keys.";
 
             UpdateMeshes(plan);
             UpdateKeys(plan, issues);
@@ -600,9 +612,38 @@ namespace Pawlygon.FaceTracking.Editor
                                                               + (plan.Multipliers.TryGetValue(k, out var scale) ? "x" + scale : "")
                                                               + (suggestions.TryGetValue(k, out var hint) ? "?" + hint : "")
                                                               + (plan.ArkitOverlaps.TryGetValue(k, out var skip) ? "!" + skip.Arkit : "")))
-                          + keyRegion + keyFilter + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "");
+                          + keyRegion + keyFilter + (plan.TongueSteps != null ? "|steps:" + string.Join(",", plan.TongueSteps.Names) : "")
+                          + "|morphs:" + string.Join(",", plan.TongueMorphs.Select(m => m.Blendshape + "=" + (m.Skipped ?? plan.TongueMorphExpression(m)))) + keySearch;
             keysRows.Update(listKey, container =>
             {
+                // Tongue morphs aren't keys: they're listed after the tongue keys, with every key shown or in the Tongue region
+                var morphs = keyFilter == KeyFilter.All && (keyRegion == null || keyRegion == "Tongue")
+                    ? plan.TongueMorphs.Where(MatchesSearch).ToList()
+                    : new List<FTTongueMorph>();
+                var morphsAdded = false;
+                void AddMorphs()
+                {
+                    if (morphsAdded || morphs.Count == 0) return;
+                    morphsAdded = true;
+                    var heading = new VisualElement();
+                    heading.AddToClassList("ft-key-group");
+                    heading.Add(FTUI.Text("Tongue morphs", "ft-key-group__name"));
+                    heading.Add(FTUI.Text($"{plan.TongueMorphs.Count(m => m.Skipped == null)}/{plan.TongueMorphs.Count}", "ft-key-group__count"));
+                    container.Add(heading);
+                    var morphIndex = 0;
+                    foreach (var morph in morphs)
+                    {
+                        var row = MorphRow(plan, morph);
+                        row.EnableInClassList("ft-key--alt", morphIndex++ % 2 == 1);
+                        container.Add(row);
+                    }
+                }
+
+                if (visible.Count == 0 && morphs.Count > 0)
+                {
+                    AddMorphs();
+                    return;
+                }
                 if (visible.Count == 0)
                 {
                     container.Add(FTUI.Text(keyFilter == KeyFilter.Edited && string.IsNullOrWhiteSpace(keySearch)
@@ -631,8 +672,40 @@ namespace Pawlygon.FaceTracking.Editor
                         row.EnableInClassList("ft-key--alt", index++ % 2 == 1);
                         container.Add(row);
                     }
+                    if (group.Key == "Tongue") AddMorphs();
                 }
+                // The search left no tongue key to put them under
+                AddMorphs();
             });
+        }
+
+        bool MatchesSearch(FTTongueMorph morph)
+        {
+            if (string.IsNullOrWhiteSpace(keySearch)) return true;
+            var search = keySearch.Trim();
+            return morph.Blendshape.IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0
+                   || morph.Label.IndexOf(search, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>
+        /// A tongue morph: what drives it where a key's name would be, then its blendshape. It isn't mapped by hand
+        /// and has no multiplier of its own, so the row is read-only.
+        /// </summary>
+        static VisualElement MorphRow(FaceTrackingSetupPlan plan, FTTongueMorph morph)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("ft-key");
+            row.tooltip = morph.Skipped != null
+                ? $"{morph.Blendshape} isn't driven. {morph.Skipped}"
+                : $"{morph.Blendshape} is driven by {plan.TongueMorphExpression(morph)}: nothing while the tongue points one way only, " +
+                  "and fully on when it points fully both ways. It follows the multipliers of its two keys.";
+            // Two key names don't fit the key column, so this row sizes its first column to its text and has no
+            // multiplier column to leave room for
+            row.Add(FTUI.Text(morph.Label, "ft-key__driver"));
+            var blendshape = FTUI.Text(morph.Skipped != null ? $"{morph.Blendshape} (not driven)" : morph.Blendshape, "ft-key__plain");
+            blendshape.EnableInClassList("ft-key__plain--skipped", morph.Skipped != null);
+            row.Add(blendshape);
+            return row;
         }
 
         bool MatchesFilter(FaceTrackingSetupPlan plan, int key)

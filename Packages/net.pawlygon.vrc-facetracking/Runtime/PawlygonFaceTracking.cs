@@ -44,6 +44,12 @@ namespace Pawlygon.FaceTracking
         Steps,
     }
 
+    public enum FTTongueMorphMode
+    {
+        Auto,
+        Off,
+    }
+
     // Mirrors VRCAvatarDescriptor.VisemeDampenMode so this assembly doesn't depend on beta SDK types
     public enum FTVisemeDampenMode
     {
@@ -117,6 +123,10 @@ namespace Pawlygon.FaceTracking
         [Tooltip("Avatars with tongue step blendshapes (like Tongue_LongStep1 and Tongue_LongStep2). Steps plays them one after the other " +
                  "as the tongue comes out. TongueOut maps a single blendshape. Auto uses TongueOut when the avatar has that blendshape, and the steps otherwise.")]
         public FTTongueMode tongueMode = FTTongueMode.Auto;
+
+        [Tooltip("Tongue morphs are the corrections for the tongue pointing two ways at once, like TongueUpRightMorph. Auto drives the ones " +
+                 "the avatar has, each by its two direction keys multiplied. Off leaves them alone.")]
+        public FTTongueMorphMode tongueMorphs = FTTongueMorphMode.Auto;
 
         [Tooltip("Face Tracking Visemes switches lip sync to the face tracking viseme mode, reusing the avatar's viseme blendshapes.")]
         public FTLipSyncMode lipSync = FTLipSyncMode.FaceTrackingVisemes;

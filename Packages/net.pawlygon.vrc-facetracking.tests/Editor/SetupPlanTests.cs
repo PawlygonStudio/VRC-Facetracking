@@ -182,6 +182,71 @@ namespace Pawlygon.FaceTracking.Editor.Tests
         }
 
         [Test]
+        public void TongueMorphsAreDrivenByTheirTwoKeysMultiplied()
+        {
+            // Both spellings: Unified Expressions' and SRanipal's
+            avatar.AddMesh("Body", "TongueUp", "TongueDown", "TongueLeft", "TongueRight", "TongueUpRightMorph", "Tongue_DownLeft_Morph");
+            var plan = Resolve();
+
+            var morphs = plan.TongueMorphs.ToDictionary(m => m.Blendshape, m => m);
+            Assert.That(morphs.Keys, Is.EquivalentTo(new[] { "TongueUpRightMorph", "Tongue_DownLeft_Morph" }));
+            Assert.That(morphs.Values.Select(m => m.Skipped), Is.All.Null);
+            Assert.That(plan.TongueMorphExpression(morphs["TongueUpRightMorph"]), Is.EqualTo("TongueUp * TongueRight"));
+            Assert.That(plan.TongueMorphExpression(morphs["Tongue_DownLeft_Morph"]), Is.EqualTo("TongueDown * TongueLeft"));
+            Assert.That(FTExpressionCheck.Validate(plan.TongueMorphExpression(morphs["TongueUpRightMorph"]), true, out _), Is.Null);
+
+            // The direction keys stay in the set, and no key takes a morph as its blendshape
+            Assert.That(Mapped(plan, Key.TongueUp), Is.EqualTo("TongueUp"));
+            Assert.That(plan.Set.faceTrackingBlendshapeNames, Has.None.Contains("Morph"));
+        }
+
+        [Test]
+        public void TongueMorphsFollowTheirKeysMultipliers()
+        {
+            avatar.AddMesh("Body", "TongueUp", "TongueRight", "TongueUpRightMorph");
+            component.keyMultipliers.Add(new FTKeyMultiplier { key = "TongueUp", multiplier = 0.5f });
+
+            var plan = Resolve();
+            Assert.That(plan.TongueMorphExpression(plan.TongueMorphs.Single()), Is.EqualTo("TongueUp * 0.5 * TongueRight"));
+        }
+
+        [Test]
+        public void TongueMorphsAreListedButNotDrivenWhenTheyCannotBe()
+        {
+            // No TongueLeft blendshape for the second one
+            avatar.AddMesh("Body", "TongueUp", "TongueRight", "TongueUpRightMorph", "TongueUpLeftMorph");
+            var plan = Resolve();
+            Assert.That(plan.TongueMorphs.Single(m => m.Blendshape == "TongueUpRightMorph").Skipped, Is.Null);
+            Assert.That(plan.TongueMorphs.Single(m => m.Blendshape == "TongueUpLeftMorph").Skipped, Does.Contain("TongueLeft"));
+
+            component.tongueMorphs = FTTongueMorphMode.Off;
+            Assert.That(Resolve().TongueMorphs.Select(m => m.Skipped), Is.All.Not.Null);
+            component.tongueMorphs = FTTongueMorphMode.Auto;
+
+            // The morph keys aren't among the basic ones
+            component.useAllTrackingKeys = false;
+            Assert.That(Resolve().TongueMorphs, Is.Empty);
+        }
+
+        [Test]
+        public void AManualFixKeepsItsTongueMorph()
+        {
+            avatar.AddMesh("Body", "TongueUp", "TongueRight", "TongueUpRightMorph");
+            avatar.Add<PawlygonFTBlendshapeFixes>().fixes.Add(new FTBlendshapeFix { blendshape = "TongueUpRightMorph", sources = "TongueUp, TongueRight" });
+
+            Assert.That(Resolve().TongueMorphs.Single().Skipped, Does.Contain("Blendshape Fixes"));
+        }
+
+        [Test]
+        public void AMorphShapeMappedToAKeyByHandIsNotAMorph()
+        {
+            avatar.AddMesh("Body", "TongueUp", "TongueRight", "TongueUpRightMorph");
+            component.keyOverrides.Add(new FTKeyOverride { key = "TongueRoll", blendshape = "TongueUpRightMorph" });
+
+            Assert.That(Resolve().TongueMorphs, Is.Empty);
+        }
+
+        [Test]
         public void TongueStepsAreUsedWhenThereIsNoTongueOut()
         {
             avatar.AddMesh("Body", "JawOpen", "Tongue_LongStep1", "Tongue_LongStep2");

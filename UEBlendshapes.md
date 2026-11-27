@@ -82,6 +82,7 @@
 - `TongueUp`  
 
 ## Optional Tongue Morphs
+Driven by Face Tracking when the avatar has them, each by its two direction shapes' tracking multiplied (e.g. `TongueUp * TongueRight`).
 - `TongueDownLeftMorph`  
 - `TongueDownRightMorph`  
 - `TongueUpLeftMorph`  
